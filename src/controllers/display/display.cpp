@@ -81,8 +81,7 @@ void displaySensorData(Adafruit_SH1106G& display) {
   }
   
   if (vibAlert) {
-    display.setCursor(80, 24);
-    display.println("ALERT");
+    Serial.println("VIBRATION ALERT!");
   }
   
   display.display();
