@@ -8,14 +8,13 @@
 #include "../../controllers/led/led.h"
 
 #define AWS_IOT_PUBLISH_TOPIC "esp32/esp32-to-aws"
-#define AWS_IOT_SUBSCRIBE_TOPIC "esp32/aws-to-esp32"
 #define PUBLISH_INTERVAL 4000
 #define MAX_QUEUE_SIZE 50
 
 struct DataPoint {
   unsigned long timestamp;
   float temperature;
-  float data;
+  float vibration;
 };
 
 static DataPoint dataQueue[MAX_QUEUE_SIZE];
@@ -23,7 +22,7 @@ static int queueHead = 0;
 static int queueTail = 0;
 static int queueCount = 0;
 
-void queueData(float temperature, float data);
+void queueData(float temperature, float vibration);
 void syncQueuedData(MQTTClient& client);
 
 void messageHandler(String &topic, String &payload) {
@@ -70,7 +69,6 @@ void connectToAWS(Adafruit_SH110X& display, WiFiClientSecure& net, MQTTClient& c
     return;
   }
 
-  client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC);
   Serial.println("ESP32 - AWS IoT Connected!");
   display.clearDisplay();
   display.setCursor(0, 0);
@@ -119,7 +117,6 @@ void handleAWS(Adafruit_SH110X& display, WiFiClientSecure& net, MQTTClient& clie
       if (connecting) {
         if (client.connect(THINGNAME)) {
           Serial.println("AWS IoT reconnected!");
-          client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC);
           connecting = false;
           retryCount = 0;
           setConnectionStatus(STATUS_AWS_CONNECTED);
@@ -147,27 +144,28 @@ void handleAWS(Adafruit_SH110X& display, WiFiClientSecure& net, MQTTClient& clie
   }
 }
 
-void queueData(float temperature, float data) {
+void queueData(float temperature, float vibration) {
   if (queueCount < MAX_QUEUE_SIZE) {
     dataQueue[queueTail].timestamp = millis();
     dataQueue[queueTail].temperature = temperature;
-    dataQueue[queueTail].data = data;
+    dataQueue[queueTail].vibration = vibration;
     queueTail = (queueTail + 1) % MAX_QUEUE_SIZE;
     queueCount++;
   } else {
     queueHead = (queueHead + 1) % MAX_QUEUE_SIZE;
     dataQueue[queueTail].timestamp = millis();
     dataQueue[queueTail].temperature = temperature;
-    dataQueue[queueTail].data = data;
+    dataQueue[queueTail].vibration = vibration;
     queueTail = (queueTail + 1) % MAX_QUEUE_SIZE;
   }
 }
 
-void sendToAWS(MQTTClient& client, float temperature) {
+void sendToAWS(MQTTClient& client, float temperature, float vibration) {
   StaticJsonDocument<512> message;
-  message["timestamp"] = millis();
+  message["device_id"] = "ESP32";
   message["temperature"] = temperature;
-  message["data"] = analogRead(A0);
+  message["vibration"] = vibration;
+  message["timestamp"] = millis();
   char messageBuffer[512];
   serializeJson(message, messageBuffer);
 
@@ -179,7 +177,7 @@ void sendToAWS(MQTTClient& client, float temperature) {
     Serial.print("- payload:");
     Serial.println(messageBuffer);
   } else {
-    queueData(temperature, analogRead(A0));
+    queueData(temperature, vibration);
     Serial.println("AWS disconnected, data queued");
   }
 }
@@ -192,9 +190,10 @@ void syncQueuedData(MQTTClient& client) {
   
   DataPoint& data = dataQueue[queueHead];
   StaticJsonDocument<512> message;
-  message["timestamp"] = data.timestamp;
+  message["device_id"] = "ESP32"; 
   message["temperature"] = data.temperature;
-  message["data"] = data.data;
+  message["vibration"] = data.vibration;
+  message["timestamp"] = data.timestamp;
   char messageBuffer[512];
   serializeJson(message, messageBuffer);
   
@@ -203,5 +202,6 @@ void syncQueuedData(MQTTClient& client) {
     queueHead = (queueHead + 1) % MAX_QUEUE_SIZE;
     queueCount--;
     lastSync = millis();
+    Serial.println(queueCount);
   }
 }

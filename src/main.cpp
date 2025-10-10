@@ -109,12 +109,18 @@ void loop() {
     lastDisplayUpdate = millis();
   }
   
-  /*
   if (millis() - lastPublishTime > PUBLISH_INTERVAL) {
     float temp = getLastTemperature();
-    sendToAWS(client, temp);
+    float vib = getLastVibration();
+    
+    // Debug output
+    Serial.print("Publishing to topic: esp32/esp32-to-aws - ");
+    Serial.print("Temp: "); Serial.print(temp);
+    Serial.print("°C, Vib: "); Serial.println(vib);
+    
+    sendToAWS(client, temp, vib);
+    syncQueuedData(client);
     lastPublishTime = millis();
   }
-  */
   delay(100);
 }
