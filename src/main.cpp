@@ -12,13 +12,11 @@
 #include "../src/connection/internet/WiFi.h"
 #include "../src/connection/secret/WiFi_KEY.h"
 
-#include "../src/connection/aws/AWS.h"
-#include "../src/connection/secret/AWS_KEY.h"
-
 #include "../src/controllers/led/led.h"
 #include "../src/controllers/temperature/temperature.h"
 #include "../src/controllers/vibration/vibration.h"
 #include "../src/controllers/display/display.h"
+#include "../src/controllers/current/current.h"
  
 #define PUBLISH_INTERVAL 4000
 
@@ -35,6 +33,8 @@ unsigned long lastPublishTime = 0;
 unsigned long lastReconnectAttempt = 0;
 unsigned long lastTempReading = 0;
 unsigned long lastVibrationReading = 0;
+unsigned long lastCurrentReading = 0;
+const unsigned long currentInterval = 5000;
 const unsigned long reconnectInterval = 30000;
 const unsigned long tempInterval = 3000; 
 const unsigned long vibrationInterval = 1000; 
@@ -50,6 +50,7 @@ void setup() {
   setupDisplay(display);
   setupTemperatureSensor(display);
   setupVibrationSensor(display);
+  setupCurrentSensor(display);
 
   setConnectionStatus(STATUS_WIFI_CONNECTING);
   setupWiFi(display, WIFI_SSID, WIFI_PASSWORD);
@@ -58,18 +59,7 @@ void setup() {
     setConnectionStatus(STATUS_WIFI_CONNECTED);
     blinkLED(LED_BLUE, 2);
     delay(1000);
-    
-    Serial.println("WiFi connected, attempting AWS connection...");
-    setConnectionStatus(STATUS_AWS_CONNECTING);
-    delay(2000);
-    connectToAWS(display, net, client, THINGNAME, AWS_IOT_ENDPOINT, AWS_CERT_CA, AWS_CERT_CRT, AWS_CERT_PRIVATE);
-    
-    if (client.connected()) {
-      setConnectionStatus(STATUS_AWS_CONNECTED);
-      blinkLED(LED_GREEN, 3);
-    } else {
-      setConnectionStatus(STATUS_ERROR);
-    }
+    Serial.println("WiFi connected. AWS features are disabled in this build.");
   } else {
     setConnectionStatus(STATUS_ERROR);
   }
@@ -83,7 +73,6 @@ void loop() {
   if (WiFi.status() != WL_CONNECTED) {
     handleWiFi(display, WIFI_SSID, WIFI_PASSWORD);
   } else {
-    handleAWS(display, net, client, THINGNAME, AWS_IOT_ENDPOINT, AWS_CERT_CA, AWS_CERT_CRT, AWS_CERT_PRIVATE);
   }
   
   if (millis() - lastTempReading > tempInterval) {
@@ -102,6 +91,12 @@ void loop() {
     float magnitude = readVibration();
     lastVibrationReading = millis();
   }
+
+  if (millis() - lastCurrentReading > currentInterval) {
+    CurrentMetrics cur = readCurrentSensor(display);
+    lastCurrentReading = millis();
+    Serial.print("Current: busV="); Serial.print(cur.busVoltageV); Serial.print(" V, current="); Serial.print(cur.currentmA); Serial.println(" mA");
+  }
   
   static unsigned long lastDisplayUpdate = 0;
   if (millis() - lastDisplayUpdate > 2000) {
@@ -113,13 +108,10 @@ void loop() {
     float temp = getLastTemperature();
     float vib = getLastVibration();
     
-    // Debug output
-    Serial.print("Publishing to topic: esp32/esp32-to-aws - ");
     Serial.print("Temp: "); Serial.print(temp);
     Serial.print("°C, Vib: "); Serial.println(vib);
     
-    sendToAWS(client, temp, vib);
-    syncQueuedData(client);
+  Serial.println("(AWS disabled) Skipping publish to AWS IoT Core.");
     lastPublishTime = millis();
   }
   delay(100);

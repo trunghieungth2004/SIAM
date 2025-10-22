@@ -21,6 +21,7 @@ declare -A COMPONENTS=(
     ["6"]="Secrets"
     ["7"]="Lambda"
     ["8"]="IoT"
+    ["9"]="Greengrass"
 )
 
 # Component descriptions
@@ -33,6 +34,7 @@ declare -A DESCRIPTIONS=(
     ["Secrets"]="Secrets Manager for secure key storage"
     ["Lambda"]="Lambda functions and IAM roles"
     ["IoT"]="IoT Core - Things, certificates, and rules"
+    ["Greengrass"]="IoT Greengrass Core for edge computing"
 )
 
 show_component_menu() {
@@ -41,7 +43,7 @@ show_component_menu() {
     echo ":: Choose which components to $1:"
     echo ""
     
-    for i in {1..8}; do
+    for i in {1..9}; do
         local component="${COMPONENTS[$i]}"
         local desc="${DESCRIPTIONS[$component]}"
         printf "%2s  %-12s %s\n" "$i" "$component" "$desc"
@@ -59,7 +61,7 @@ parse_selection() {
     
     if [ -z "$selection" ] || [ "$selection" = "all" ]; then
         # Default: all components
-        for i in {1..8}; do
+        for i in {1..9}; do
             selected_components+=("${COMPONENTS[$i]}")
         done
     else
@@ -69,7 +71,7 @@ parse_selection() {
             exclude_mode=true
             selection="${selection#^}"
             # Start with all components for exclusion
-            for i in {1..8}; do
+            for i in {1..9}; do
                 selected_components+=("${COMPONENTS[$i]}")
             done
         fi
@@ -123,7 +125,7 @@ run_component() {
     
     chmod +x "$script_path"
     
-    export PROJECT_NAME THING_NAME
+    export PROJECT_NAME THING_NAME PI_SSH_TARGET
     
     if "$script_path" "$action"; then
         print_log -g "[ok] " "${component} ${action} completed successfully."
@@ -146,7 +148,6 @@ get_project_inputs() {
     read -p "Enter a name for your IoT device (Thing Name): " THING_NAME
     if [ -z "$THING_NAME" ]; then
         print_log -r "[error] " "Thing Name cannot be empty."
-        exit 1
     fi
     
     print_log -g "[project] " "Using project name: ${PROJECT_NAME}"
@@ -167,6 +168,16 @@ run_setup() {
     # Parse selection
     selected_components=($(parse_selection "$selection"))
     
+    # Prompt for PI SSH target if Greengrass is selected
+    if [[ " ${selected_components[*]} " =~ " Greengrass " ]]; then
+        read -p "Enter the SSH target for your Raspberry Pi (e.g., user@host): " PI_SSH_TARGET
+        if [ -z "$PI_SSH_TARGET" ] || [[ ! "$PI_SSH_TARGET" =~ "@" ]]; then
+            print_log -r "[error] " "Invalid SSH target format. It must be in the format 'user@host'."
+            exit 1
+        fi
+        print_log -g "[pi] " "Using PI SSH target: ${PI_SSH_TARGET}"
+    fi
+    
     if [ ${#selected_components[@]} -eq 0 ]; then
         print_log -r "[error] " "No valid components selected."
         exit 1
@@ -176,7 +187,7 @@ run_setup() {
     echo ""
     
     # Run components in dependency order
-    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "IoT")
+    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "IoT" "Greengrass")
     
     for component in "${setup_order[@]}"; do
         if [[ " ${selected_components[*]} " =~ " ${component} " ]]; then
@@ -196,7 +207,7 @@ run_setup() {
     print_log -g "--------------------------------------"
     echo ""
     print_log -m "[Project Name] " "${PROJECT_NAME}"
-    print_log -y "[next] " "The remaining steps (API Gateway, Query Lambda, SageMaker, Greengrass) require additional configuration."
+    print_log -y "[next] " "The remaining steps (API Gateway, Query Lambda, SageMaker) require additional configuration."
 }
 
 run_cleanup() {
@@ -228,6 +239,16 @@ run_cleanup() {
     # Parse selection
     selected_components=($(parse_selection "$selection"))
     
+    # Prompt for PI SSH target if Greengrass is selected
+    if [[ " ${selected_components[*]} " =~ " Greengrass " ]]; then
+        read -p "Enter the SSH target for your Raspberry Pi (e.g., user@host): " PI_SSH_TARGET
+        if [ -z "$PI_SSH_TARGET" ] || [[ ! "$PI_SSH_TARGET" =~ "@" ]]; then
+            print_log -r "[error] " "Invalid SSH target format. It must be in the format 'user@host'."
+            exit 1
+        fi
+        print_log -g "[pi] " "Using PI SSH target: ${PI_SSH_TARGET}"
+    fi
+    
     if [ ${#selected_components[@]} -eq 0 ]; then
         print_log -r "[error] " "No valid components selected."
         exit 1
@@ -237,7 +258,7 @@ run_cleanup() {
     echo ""
     
     # Run cleanup in reverse dependency order
-    local cleanup_order=("IoT" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
+    local cleanup_order=("Greengrass" "IoT" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
     local failed_components=()
     
     for component in "${cleanup_order[@]}"; do

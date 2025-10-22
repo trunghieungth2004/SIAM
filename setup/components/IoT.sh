@@ -27,7 +27,6 @@ setup_iot() {
             return 1
         fi
         
-        CERT_DIR="../certificates/IOT/${THING_NAME}"
         if ! mkdir -p $CERT_DIR; then
             print_log -r "[error] " "Failed to create certificate directory: ${CERT_DIR}"
             return 1
@@ -137,7 +136,6 @@ EOL
     fi
     
     # Read certificate files
-    CERT_DIR="../certificates/IOT/${THING_NAME}"
     if [ -f "${CERT_DIR}/certificate.pem.crt" ] && [ -f "${CERT_DIR}/private.pem.key" ]; then
         if ! DEVICE_CERT=$(cat "${CERT_DIR}/certificate.pem.crt"); then
             print_log -r "[error] " "Failed to read device certificate"

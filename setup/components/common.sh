@@ -76,6 +76,9 @@ validate_inputs() {
         print_log -r "[error] " "THING_NAME is not set."
         exit 1
     fi
+    
+    # Export global certificate directory path
+    export CERT_DIR="./certificates/IOT/${THING_NAME}"
 }
 
 # --- Clean up temporary files ---
