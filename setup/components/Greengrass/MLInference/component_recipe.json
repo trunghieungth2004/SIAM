@@ -1,0 +1,42 @@
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "com.test.MLInference",
+  "ComponentVersion": "1.0.1",
+  "ComponentDescription": "TPU-accelerated ML inference with Coral USB Accelerator",
+  "ComponentPublisher": "test",
+  "ComponentDependencies": {
+    "aws.greengrass.StreamManager": {
+      "VersionRequirement": ">=2.0.0"
+    }
+  },
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Lifecycle": {
+        "Install": {
+          "RequiresPrivilege": true,
+          "Script": "mkdir -p /tmp/greengrass_ml; tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully' && docker run --rm -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple"
+        },
+
+        "Run": {
+          "RequiresPrivilege": true,
+          "Script": "docker run --rm --device=/dev/bus/usb --privileged -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/inference_service.py"
+        }
+      },
+      "Artifacts": [
+        {
+          "Uri": "s3://test-iot-data-ac00a34a/sagemaker/output/test-maintenance-20251028-004125/output/model.tar.gz",
+          "Unarchive": "NONE"
+        },
+        {
+          "Uri": "s3://test-iot-data-ac00a34a/greengrass/artifacts/inference_service.py"
+        },
+        {
+          "Uri": "s3://test-iot-data-ac00a34a/greengrass/artifacts/convert_model_to_tflite.py"
+        }
+      ]
+    }
+  ]
+}

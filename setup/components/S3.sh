@@ -131,14 +131,31 @@ EOL
     # Write to the setup directory (parent of components)
     SETUP_DIR="$(dirname "$(dirname "$0")")"
     RESOURCE_FILE="${SETUP_DIR}/${PROJECT_NAME}_resources.txt"
-    touch "$RESOURCE_FILE"
+    
+    print_log -c "[save] " "Writing resource file to: ${RESOURCE_FILE}"
+    
+    # Ensure directory exists
+    mkdir -p "$(dirname "$RESOURCE_FILE")"
+    
+    # Create or update resource file
     if [ -f "$RESOURCE_FILE" ]; then
         grep -v "^S3_" "$RESOURCE_FILE" > "${RESOURCE_FILE}.tmp" 2>/dev/null || touch "${RESOURCE_FILE}.tmp"
         mv "${RESOURCE_FILE}.tmp" "$RESOURCE_FILE"
+    else
+        touch "$RESOURCE_FILE"
     fi
+    
     echo "S3_DATA_BUCKET=${BUCKET_NAME}" >> "$RESOURCE_FILE"
     echo "S3_FRONTEND_BUCKET=${FRONTEND_BUCKET_NAME}" >> "$RESOURCE_FILE"
-    print_log -y "[info] " "Resource file updated at: ${RESOURCE_FILE}"
+    
+    # Verify file was written
+    if [ -f "$RESOURCE_FILE" ] && grep -q "S3_DATA_BUCKET" "$RESOURCE_FILE"; then
+        print_log -g "[ok] " "Resource file written successfully: ${RESOURCE_FILE}"
+        print_log -y "[content] " "$(cat "$RESOURCE_FILE")"
+    else
+        print_log -r "[error] " "Failed to write resource file"
+        return 1
+    fi
     
     # Export variables for other components
     export S3_DATA_BUCKET="$BUCKET_NAME"

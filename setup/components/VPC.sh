@@ -32,19 +32,23 @@ setup_vpc() {
         aws ec2 modify-vpc-attribute --vpc-id $VPC_ID --enable-dns-hostnames
     fi
 
+    # Get first available AZ
+    AVAILABILITY_ZONE=$(aws ec2 describe-availability-zones --query "AvailabilityZones[0].ZoneName" --output text)
+    
     PUBLIC_SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=tag:Name,Values=public-subnet-${PROJECT_NAME}" --query "Subnets[0].SubnetId" --output text)
     if [ "$PUBLIC_SUBNET_ID" == "None" ] || [ -z "$PUBLIC_SUBNET_ID" ]; then
-        print_log -c "[create] " "Creating Public Subnet..."
-        PUBLIC_SUBNET_ID=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.0.0/24 --query Subnet.SubnetId --output text)
+        print_log -c "[create] " "Creating Public Subnet in AZ: ${AVAILABILITY_ZONE}..."
+        PUBLIC_SUBNET_ID=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.0.0/24 --availability-zone $AVAILABILITY_ZONE --query Subnet.SubnetId --output text)
         aws ec2 create-tags --resources $PUBLIC_SUBNET_ID --tags Key=Name,Value="public-subnet-${PROJECT_NAME}"
+        aws ec2 modify-subnet-attribute --subnet-id $PUBLIC_SUBNET_ID --map-public-ip-on-launch
     else
         print_log -y "[skip] " "Public Subnet already exists: ${PUBLIC_SUBNET_ID}"
     fi
 
     PRIVATE_SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=tag:Name,Values=private-subnet-${PROJECT_NAME}" --query "Subnets[0].SubnetId" --output text)
     if [ "$PRIVATE_SUBNET_ID" == "None" ] || [ -z "$PRIVATE_SUBNET_ID" ]; then
-        print_log -c "[create] " "Creating Private Subnet..."
-        PRIVATE_SUBNET_ID=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --query Subnet.SubnetId --output text)
+        print_log -c "[create] " "Creating Private Subnet in AZ: ${AVAILABILITY_ZONE}..."
+        PRIVATE_SUBNET_ID=$(aws ec2 create-subnet --vpc-id $VPC_ID --cidr-block 10.0.1.0/24 --availability-zone $AVAILABILITY_ZONE --query Subnet.SubnetId --output text)
         aws ec2 create-tags --resources $PRIVATE_SUBNET_ID --tags Key=Name,Value="private-subnet-${PROJECT_NAME}"
     else
         print_log -y "[skip] " "Private Subnet already exists: ${PRIVATE_SUBNET_ID}"
@@ -115,10 +119,26 @@ setup_vpc() {
         print_log -y "[skip] " "Secrets Manager Interface Endpoint already exists."
     fi
 
+    # Create Greengrass Security Group
+    GG_SG_NAME="${PROJECT_NAME}-greengrass"
+    GG_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=${GG_SG_NAME}" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null)
+    if [ "$GG_SG_ID" == "None" ] || [ -z "$GG_SG_ID" ]; then
+        print_log -c "[create] " "Creating Greengrass Security Group..."
+        GG_SG_ID=$(aws ec2 create-security-group --group-name $GG_SG_NAME --description "Security group for Greengrass core devices" --vpc-id $VPC_ID --query GroupId --output text)
+        # Allow HTTPS outbound for AWS services
+        aws ec2 authorize-security-group-egress --group-id $GG_SG_ID --protocol tcp --port 443 --cidr 0.0.0.0/0 > /dev/null 2>&1 || true
+        # Allow HTTP outbound for package updates
+        aws ec2 authorize-security-group-egress --group-id $GG_SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0 > /dev/null 2>&1 || true
+        # Allow SSH inbound from VPC
+        aws ec2 authorize-security-group-ingress --group-id $GG_SG_ID --protocol tcp --port 22 --cidr 10.0.0.0/16 > /dev/null 2>&1 || true
+    else
+        print_log -y "[skip] " "Greengrass Security Group already exists: ${GG_SG_ID}"
+    fi
+
     print_log -g "[ok] " "VPC Infrastructure setup complete!"
     
     # Export variables for other components
-    export VPC_ID PRIVATE_SUBNET_ID PUBLIC_SUBNET_ID SG_ID
+    export VPC_ID PRIVATE_SUBNET_ID PUBLIC_SUBNET_ID SG_ID GG_SG_ID AVAILABILITY_ZONE
 }
 
 cleanup_vpc() {
@@ -199,16 +219,53 @@ cleanup_vpc() {
             fi
             
             print_log -c "[delete] " "Deleting Network Interface: $ENI_ID"
-            aws ec2 delete-network-interface --network-interface-id $ENI_ID 2>/dev/null || true
+            DELETE_RESULT=$(aws ec2 delete-network-interface --network-interface-id $ENI_ID 2>&1)
+            if [ $? -ne 0 ]; then
+                if echo "$DELETE_RESULT" | grep -q 'does not exist\|NotFound'; then
+                    print_log -y "[skip] " "ENI $ENI_ID already deleted"
+                elif echo "$DELETE_RESULT" | grep -q 'currently in use'; then
+                    print_log -y "[retry] " "ENI $ENI_ID in use - will retry"
+                else
+                    print_log -r "[error] " "Failed to delete ENI $ENI_ID: $DELETE_RESULT"
+                fi
+            fi
         done
-        print_log -y "[wait] " "Waiting for Network Interfaces to be deleted..."
+        
+        # Force delete any remaining ENIs immediately, then wait with retry limit
+        print_log -y "[wait] " "Checking for remaining Network Interfaces..."
+        local wait_count=0
         while true; do
             REMAINING_ENIS=$(aws ec2 describe-network-interfaces --filters "Name=vpc-id,Values=${VPC_ID}" --query "NetworkInterfaces[?Status!='deleting'].NetworkInterfaceId" --output text 2>/dev/null | tr -s '\t' ' ')
             if [ -z "$REMAINING_ENIS" ] || [ "$REMAINING_ENIS" == "None" ]; then
                 print_log -g "[ready] " "All Network Interfaces have been deleted."
                 break
             fi
-            print_log -y "[waiting] " "Still waiting for ENIs to delete: $REMAINING_ENIS"
+            
+            # Handle remaining ENIs based on type
+            for STUCK_ENI in $REMAINING_ENIS; do
+                ENI_TYPE=$(aws ec2 describe-network-interfaces --network-interface-ids $STUCK_ENI --query "NetworkInterfaces[0].InterfaceType" --output text 2>/dev/null)
+                ENI_DESC=$(aws ec2 describe-network-interfaces --network-interface-ids $STUCK_ENI --query "NetworkInterfaces[0].Description" --output text 2>/dev/null)
+                
+                if [ "$ENI_TYPE" = "lambda" ] && [[ "$ENI_DESC" == *"Lambda"* ]]; then
+                    # Extract Lambda function name from description
+                    LAMBDA_FUNC=$(echo "$ENI_DESC" | sed 's/.*ENI-\(.*\)/\1/')
+                    print_log -c "[lambda] " "Deleting Lambda function to release ENI: $LAMBDA_FUNC"
+                    aws lambda delete-function --function-name "$LAMBDA_FUNC" 2>/dev/null || true
+                    sleep 3
+                else
+                    # Try normal detach and delete for non-Lambda ENIs
+                    print_log -c "[detach] " "Force detaching ENI: $STUCK_ENI"
+                    ATTACHMENT_ID=$(aws ec2 describe-network-interfaces --network-interface-ids $STUCK_ENI --query "NetworkInterfaces[0].Attachment.AttachmentId" --output text 2>/dev/null)
+                    if [ ! -z "$ATTACHMENT_ID" ] && [ "$ATTACHMENT_ID" != "None" ] && [ "$ATTACHMENT_ID" != "null" ]; then
+                        aws ec2 detach-network-interface --attachment-id $ATTACHMENT_ID --force 2>/dev/null || true
+                    fi
+                    print_log -c "[force] " "Force deleting ENI: $STUCK_ENI"
+                    aws ec2 delete-network-interface --network-interface-id $STUCK_ENI 2>/dev/null || true
+                fi
+            done
+            
+            wait_count=$((wait_count + 1))
+            print_log -y "[waiting] " "Still waiting for ENIs to delete: $REMAINING_ENIS (attempt ${wait_count})"
             sleep 5
         done
     else
@@ -286,33 +343,41 @@ cleanup_vpc() {
 
     # Step 9: Finally delete the VPC
     print_log -c "[network] " "Finally, deleting the VPC..."
-    RETRY_COUNT=0
-    MAX_RETRIES=10
-    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    while true; do
         if aws ec2 delete-vpc --vpc-id $VPC_ID 2>/dev/null; then
             print_log -g "[ok] " "VPC deleted successfully."
             return 0
         else
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            print_log -y "[retry] " "VPC deletion failed, checking for remaining dependencies... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            print_log -y "[retry] " "VPC deletion failed, checking for remaining dependencies..."
             
-            # Check for remaining dependencies
-            DEPENDENT_RESOURCES=$(aws ec2 describe-vpc-attribute --vpc-id $VPC_ID --attribute enableDnsSupport 2>/dev/null && echo "VPC still exists" || echo "VPC deleted")
-            if [ "$DEPENDENT_RESOURCES" == "VPC deleted" ]; then
+            # Check if VPC still exists
+            if ! aws ec2 describe-vpc-attribute --vpc-id $VPC_ID --attribute enableDnsSupport >/dev/null 2>&1; then
                 print_log -g "[ok] " "VPC has been deleted."
                 return 0
             fi
             
-            print_log -y "[info] " "Checking for remaining resources in VPC..."
-            aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" --query "Subnets[].SubnetId" --output text 2>/dev/null || true
-            aws ec2 describe-security-groups --filters "Name=vpc-id,Values=${VPC_ID}" --query "SecurityGroups[].GroupId" --output text 2>/dev/null || true
+            # Clean up any remaining security groups
+            print_log -y "[cleanup] " "Cleaning up remaining security groups..."
+            REMAINING_SGS=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=${VPC_ID}" --query "SecurityGroups[?GroupName!='default'].GroupId" --output text 2>/dev/null | tr -s '\t' ' ')
+            for SG_ID in $REMAINING_SGS; do
+                if [ "$SG_ID" != "None" ] && [ ! -z "$SG_ID" ]; then
+                    print_log -c "[delete] " "Force deleting remaining Security Group: $SG_ID"
+                    aws ec2 delete-security-group --group-id $SG_ID 2>/dev/null || true
+                fi
+            done
+            
+            # Clean up any remaining subnets
+            REMAINING_SUBNETS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" --query "Subnets[].SubnetId" --output text 2>/dev/null | tr -s '\t' ' ')
+            for SUBNET_ID in $REMAINING_SUBNETS; do
+                if [ "$SUBNET_ID" != "None" ] && [ ! -z "$SUBNET_ID" ]; then
+                    print_log -c "[delete] " "Force deleting remaining Subnet: $SUBNET_ID"
+                    aws ec2 delete-subnet --subnet-id $SUBNET_ID 2>/dev/null || true
+                fi
+            done
             
             sleep 10
         fi
     done
-    
-    print_log -r "[error] " "Failed to delete VPC after $MAX_RETRIES attempts. Manual cleanup may be required."
-    print_log -y "[info] " "VPC ID: $VPC_ID"
 }
 
 # Main execution

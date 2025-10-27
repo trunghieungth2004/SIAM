@@ -1,0 +1,35 @@
+FROM python:3.9-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    libgpiod-dev \
+    i2c-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add Coral repository
+RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/coral-edgetpu.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/coral-edgetpu.gpg] https://packages.cloud.google.com/apt coral-edgetpu-stable main" > /etc/apt/sources.list.d/coral-edgetpu.list
+
+# Install Coral TPU runtime
+RUN apt-get update && apt-get install -y \
+    libedgetpu1-std \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    tflite-runtime \
+    pycoral \
+    numpy \
+    tensorflow==2.13.0
+
+WORKDIR /app
+COPY tpu_inference_service.py /app/
+COPY convert_model_to_tflite.py /app/
+
+# Create model directory
+RUN mkdir -p /tmp/greengrass_ml
+
+# Model will be provided by Greengrass as artifact
+CMD ["python3", "/app/tpu_inference_service.py"]

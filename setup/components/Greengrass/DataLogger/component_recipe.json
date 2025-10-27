@@ -1,0 +1,40 @@
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "com.test.DataLogger",
+  "ComponentVersion": "1.0.1",
+  "ComponentDescription": "IoT sensor datalogger with StreamManager integration",
+  "ComponentPublisher": "test",
+  "ComponentDependencies": {
+    "aws.greengrass.StreamManager": {
+      "VersionRequirement": ">=2.0.0"
+    }
+  },
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Lifecycle": {
+        "Install": {
+          "RequiresPrivilege": true,
+          "Script": "docker build -f {artifacts:path}/Dockerfile.datalogger -t test-datalogger:latest {artifacts:path}"
+        },
+        "Run": {
+          "RequiresPrivilege": true,
+          "Script": "docker run --rm --privileged --device=/dev/i2c-1 --device=/dev/gpiochip0 -v /tmp/sensor_data:/shared -v {artifacts:path}:/app/scripts test-datalogger:latest & sleep 2 && python3 {artifacts:path}/streammanager_datalogger.py"
+        }
+      },
+      "Artifacts": [
+        {
+          "Uri": "s3://test-iot-data-ac00a34a/greengrass/artifacts/datalogger.c"
+        },
+        {
+          "Uri": "s3://test-iot-data-ac00a34a/greengrass/artifacts/Dockerfile.datalogger"
+        },
+        {
+          "Uri": "s3://test-iot-data-ac00a34a/greengrass/artifacts/streammanager_datalogger.py"
+        }
+      ]
+    }
+  ]
+}

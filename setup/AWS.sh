@@ -20,8 +20,10 @@ declare -A COMPONENTS=(
     ["5"]="SQS"
     ["6"]="Secrets"
     ["7"]="Lambda"
-    ["8"]="IoT"
+    ["8"]="SageMaker"
     ["9"]="Greengrass"
+    ["10"]="IoT"
+    ["11"]="CloudWatch"
 )
 
 # Component descriptions
@@ -35,6 +37,8 @@ declare -A DESCRIPTIONS=(
     ["Lambda"]="Lambda functions and IAM roles"
     ["IoT"]="IoT Core - Things, certificates, and rules"
     ["Greengrass"]="IoT Greengrass Core for edge computing"
+    ["SageMaker"]="ML model training for predictive maintenance"
+    ["CloudWatch"]="Monitoring, alarms, and dashboards"
 )
 
 show_component_menu() {
@@ -43,7 +47,7 @@ show_component_menu() {
     echo ":: Choose which components to $1:"
     echo ""
     
-    for i in {1..9}; do
+    for i in {1..11}; do
         local component="${COMPONENTS[$i]}"
         local desc="${DESCRIPTIONS[$component]}"
         printf "%2s  %-12s %s\n" "$i" "$component" "$desc"
@@ -61,7 +65,7 @@ parse_selection() {
     
     if [ -z "$selection" ] || [ "$selection" = "all" ]; then
         # Default: all components
-        for i in {1..9}; do
+        for i in {1..11}; do
             selected_components+=("${COMPONENTS[$i]}")
         done
     else
@@ -71,7 +75,7 @@ parse_selection() {
             exclude_mode=true
             selection="${selection#^}"
             # Start with all components for exclusion
-            for i in {1..9}; do
+            for i in {1..11}; do
                 selected_components+=("${COMPONENTS[$i]}")
             done
         fi
@@ -186,8 +190,13 @@ run_setup() {
     print_log -b "[info] " "Setting up components: ${selected_components[*]}"
     echo ""
     
+    # Set flags for component dependencies
+    if [[ " ${selected_components[*]} " =~ " SageMaker " ]]; then
+        export ENABLE_SAGEMAKER="true"
+    fi
+    
     # Run components in dependency order
-    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "IoT" "Greengrass")
+    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "SageMaker" "Greengrass" "IoT" "CloudWatch")
     
     for component in "${setup_order[@]}"; do
         if [[ " ${selected_components[*]} " =~ " ${component} " ]]; then
@@ -207,7 +216,7 @@ run_setup() {
     print_log -g "--------------------------------------"
     echo ""
     print_log -m "[Project Name] " "${PROJECT_NAME}"
-    print_log -y "[next] " "The remaining steps (API Gateway, Query Lambda, SageMaker) require additional configuration."
+    print_log -m "[Thing Name] " "${THING_NAME}"
 }
 
 run_cleanup() {
@@ -258,7 +267,7 @@ run_cleanup() {
     echo ""
     
     # Run cleanup in reverse dependency order
-    local cleanup_order=("Greengrass" "IoT" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
+    local cleanup_order=("CloudWatch" "IoT" "Greengrass" "SageMaker" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
     local failed_components=()
     
     for component in "${cleanup_order[@]}"; do

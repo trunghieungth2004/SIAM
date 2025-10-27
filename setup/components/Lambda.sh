@@ -194,16 +194,16 @@ EOL
     if ! aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME > /dev/null 2>&1; then
         print_log -c "[lambda] " "Creating Lambda function: ${LAMBDA_FUNCTION_NAME}..."
         
-        # Copy the ingestion Lambda code from the Lambda directory
+        # Copy the updated ingestion Lambda code
         if [ -f "components/Lambda/ingestion.js" ]; then
             if ! cp components/Lambda/ingestion.js index.mjs; then
                 print_log -r "[error] " "Failed to copy ingestion.js"
                 return 1
             fi
-            print_log -c "[lambda] " "Using ingestion code from components/Lambda/ingestion.js"
+            print_log -c "[lambda] " "Using updated ingestion code with full sensor data support"
         else
-            print_log -y "[warn] " "ingestion.js not found, creating basic Lambda function..."
-            echo 'export const handler = async (event) => { console.log(`Received event: ${JSON.stringify(event)}`); return { statusCode: 200, body: "Hello from Lambda!" }; };' > index.mjs
+            print_log -r "[error] " "ingestion.js not found in components/Lambda/"
+            return 1
         fi
         
         if ! zip deployment.zip index.mjs; then
@@ -322,6 +322,9 @@ EOL
         return 1
     fi
 
+    # Create retraining Lambda function if SageMaker is enabled
+
+
     print_log -g "[ok] " "Lambda setup complete!"
     print_log -m "[Lambda Function ARN] " "${LAMBDA_FUNCTION_ARN}"
     print_log -m "[Query Lambda ARN] " "${QUERY_LAMBDA_ARN}"
@@ -338,6 +341,144 @@ EOL
     export API_ENDPOINT
     
     cleanup_temp_files
+}
+
+setup_retraining_pipeline() {
+    print_log -c "[pipeline] " "Setting up SageMaker Pipeline for retraining..."
+    
+    # Get SageMaker role ARN (created by SageMaker component)
+    SAGEMAKER_ROLE_NAME="SageMakerExecutionRole-${PROJECT_NAME}"
+    if ! SAGEMAKER_ROLE_ARN=$(aws iam get-role --role-name $SAGEMAKER_ROLE_NAME --query Role.Arn --output text 2>/dev/null); then
+        print_log -r "[error] " "SageMaker role not found. Run SageMaker setup first."
+        return 1
+    fi
+    
+    # Create SageMaker Pipeline definition
+    PIPELINE_NAME="${PROJECT_NAME}-retraining-pipeline"
+    
+    cat > pipeline_definition.json << 'PIPELINE_EOF'
+{
+  "Version": "2020-12-01",
+  "Metadata": {},
+  "Parameters": [
+    {
+      "Name": "TrainingInstanceType",
+      "Type": "String",
+      "DefaultValue": "ml.m5.large"
+    },
+    {
+      "Name": "ModelApprovalStatus",
+      "Type": "String",
+      "DefaultValue": "PendingManualApproval"
+    }
+  ],
+  "PipelineExperimentConfig": {
+    "ExperimentName": "PIPELINE_NAME-experiment",
+    "TrialName": "PIPELINE_NAME-trial"
+  },
+  "Steps": [
+    {
+      "Name": "TrainingStep",
+      "Type": "Training",
+      "Arguments": {
+        "TrainingJobName": "PIPELINE_NAME-training",
+        "RoleArn": "SAGEMAKER_ROLE_ARN",
+        "AlgorithmSpecification": {
+          "TrainingImage": "TRAINING_IMAGE_URI",
+          "TrainingInputMode": "File"
+        },
+        "InputDataConfig": [
+          {
+            "ChannelName": "training",
+            "DataSource": {
+              "S3DataSource": {
+                "S3DataType": "S3Prefix",
+                "S3Uri": "S3_TRAINING_PATH",
+                "S3DataDistributionType": "FullyReplicated"
+              }
+            }
+          }
+        ],
+        "OutputDataConfig": {
+          "S3OutputPath": "S3_OUTPUT_PATH"
+        },
+        "ResourceConfig": {
+          "InstanceType": {"Get": "Parameters.TrainingInstanceType"},
+          "InstanceCount": 1,
+          "VolumeSizeInGB": 10
+        },
+        "StoppingCondition": {
+          "MaxRuntimeInSeconds": 3600
+        },
+        "HyperParameters": {
+          "sagemaker_program": "train.py",
+          "sagemaker_submit_directory": "S3_CODE_PATH"
+        }
+      }
+    },
+    {
+      "Name": "CreateModelStep",
+      "Type": "Model",
+      "Arguments": {
+        "ModelName": "PIPELINE_NAME-model",
+        "PrimaryContainer": {
+          "Image": "TRAINING_IMAGE_URI",
+          "ModelDataUrl": {"Get": "Steps.TrainingStep.ModelArtifacts.S3ModelArtifacts"},
+          "Environment": {
+            "SAGEMAKER_PROGRAM": "inference.py",
+            "SAGEMAKER_SUBMIT_DIRECTORY": "S3_CODE_PATH"
+          }
+        },
+        "ExecutionRoleArn": "SAGEMAKER_ROLE_ARN"
+      }
+    }
+  ]
+}
+PIPELINE_EOF
+    
+    # Replace placeholders
+    sed -i "s/PIPELINE_NAME/${PIPELINE_NAME}/g" pipeline_definition.json
+    sed -i "s|SAGEMAKER_ROLE_ARN|${SAGEMAKER_ROLE_ARN}|g" pipeline_definition.json
+    sed -i "s|TRAINING_IMAGE_URI|$(get_sagemaker_ecr_uri ${AWS_REGION})/sagemaker-scikit-learn:0.23-1-cpu-py3|g" pipeline_definition.json
+    sed -i "s|S3_TRAINING_PATH|s3://${S3_DATA_BUCKET}/sagemaker/training-data/|g" pipeline_definition.json
+    sed -i "s|S3_OUTPUT_PATH|s3://${S3_DATA_BUCKET}/sagemaker/retrained-models/|g" pipeline_definition.json
+    sed -i "s|S3_CODE_PATH|s3://${S3_DATA_BUCKET}/sagemaker/code/sourcedir.tar.gz|g" pipeline_definition.json
+    
+    # Create or update pipeline
+    if ! aws sagemaker describe-pipeline --pipeline-name $PIPELINE_NAME > /dev/null 2>&1; then
+        print_log -c "[create] " "Creating SageMaker Pipeline..."
+        aws sagemaker create-pipeline \
+            --pipeline-name $PIPELINE_NAME \
+            --pipeline-definition file://pipeline_definition.json \
+            --role-arn $SAGEMAKER_ROLE_ARN > /dev/null
+    else
+        print_log -c "[update] " "Updating SageMaker Pipeline..."
+        aws sagemaker update-pipeline \
+            --pipeline-name $PIPELINE_NAME \
+            --pipeline-definition file://pipeline_definition.json > /dev/null
+    fi
+    
+    # Create EventBridge rule to trigger pipeline weekly
+    RULE_NAME="${PROJECT_NAME}-weekly-retrain"
+    if ! aws events describe-rule --name $RULE_NAME > /dev/null 2>&1; then
+        print_log -c "[schedule] " "Creating weekly pipeline trigger..."
+        aws events put-rule \
+            --name $RULE_NAME \
+            --schedule-expression "rate(7 days)" \
+            --description "Weekly SageMaker Pipeline execution" > /dev/null
+        
+        # Add SageMaker Pipeline as target
+        ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        aws events put-targets \
+            --rule $RULE_NAME \
+            --targets "Id=1,Arn=arn:aws:sagemaker:$AWS_REGION:$ACCOUNT_ID:pipeline/$PIPELINE_NAME,RoleArn=$SAGEMAKER_ROLE_ARN,SageMakerPipelineParameters={PipelineParameterList=[{Name=TrainingInstanceType,Value=ml.m5.large}]}" > /dev/null
+    fi
+    
+    print_log -g "[ok] " "SageMaker Pipeline configured for retraining"
+    print_log -y "[info] " "Pipeline will execute weekly via EventBridge"
+    print_log -m "[Pipeline] " "${PIPELINE_NAME}"
+    
+    rm -f pipeline_definition.json
 }
 
 cleanup_lambda() {
@@ -374,6 +515,21 @@ cleanup_lambda() {
     aws iam detach-role-policy --role-name $LAMBDA_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole 2>/dev/null || true
     aws iam delete-role --role-name $LAMBDA_ROLE_NAME 2>/dev/null || true
     print_log -g "[ok] " "Ingestion Lambda function and IAM Role deleted."
+    
+    # Delete retraining Lambda if it exists
+    RETRAIN_LAMBDA_NAME="func-retrain-${PROJECT_NAME}"
+    RETRAIN_ROLE_NAME="role-lambda-retrain-${PROJECT_NAME}"
+    RULE_NAME="${PROJECT_NAME}-weekly-retrain"
+    
+    print_log -b "[delete] " "Deleting retraining Lambda function..."
+    aws events remove-targets --rule $RULE_NAME --ids "1" 2>/dev/null || true
+    aws events delete-rule --name $RULE_NAME 2>/dev/null || true
+    aws lambda delete-function --function-name $RETRAIN_LAMBDA_NAME 2>/dev/null || true
+    aws iam detach-role-policy --role-name $RETRAIN_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole 2>/dev/null || true
+    aws iam detach-role-policy --role-name $RETRAIN_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess 2>/dev/null || true
+    aws iam detach-role-policy --role-name $RETRAIN_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess 2>/dev/null || true
+    aws iam delete-role --role-name $RETRAIN_ROLE_NAME 2>/dev/null || true
+    print_log -g "[ok] " "Retraining Lambda function deleted."
 }
 
 # Main execution

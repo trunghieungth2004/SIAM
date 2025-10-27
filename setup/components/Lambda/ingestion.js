@@ -30,15 +30,21 @@ export const handler = async (event) => {
         }
 
         // 1. Get data from the event payload - handle both deviceId and device_id
-        const device_id = payload.deviceId || payload.device_id;
-        const temperature = payload.temperature;
-        const vibration = payload.vibration;
+        const device_id = payload.deviceId || payload.device_id || 'esp32-device';
+        const temp_c = payload.temp_c;
+        const ax = payload.ax; const ay = payload.ay; const az = payload.az;
+        const gx = payload.gx; const gy = payload.gy; const gz = payload.gz;
+        const current_a = payload.current_a;
         
-        console.log(`Processing data: device=${device_id}, temp=${temperature}, vib=${vibration}`);
+        // Calculate derived values for compatibility
+        const temperature = temp_c;
+        const vibration = Math.sqrt((ax*ax + ay*ay + az*az)) / 1000; // Convert to reasonable scale
+        
+        console.log(`Processing data: device=${device_id}, temp=${temp_c}°C, vibration=${vibration.toFixed(2)}`);
         
         // Ensure required fields are present
-        if (!device_id || temperature === undefined || vibration === undefined) {
-            const errorMsg = `Missing required fields. Got: deviceId=${device_id}, temperature=${temperature}, vibration=${vibration}`;
+        if (!device_id || temp_c === undefined || ax === undefined) {
+            const errorMsg = `Missing required fields. Got: deviceId=${device_id}, temp_c=${temp_c}, ax=${ax}`;
             console.error(errorMsg);
             throw new Error(errorMsg);
         }
@@ -53,6 +59,11 @@ export const handler = async (event) => {
             Item: {
                 device_id: device_id,
                 timestamp: timestamp,
+                temp_c: Number(temp_c),
+                ax: Number(ax), ay: Number(ay), az: Number(az),
+                gx: Number(gx), gy: Number(gy), gz: Number(gz),
+                current_a: Number(current_a),
+                // Keep derived fields for compatibility
                 temperature: Number(temperature),
                 vibration: Number(vibration),
                 ttl: timestamp + (86400 * 30) // Set TTL to expire in 30 days
@@ -61,12 +72,21 @@ export const handler = async (event) => {
         await docClient.send(new PutCommand(dynamoParams));
         console.log("Successfully wrote to DynamoDB.");
 
-        // 3. Write raw data to S3 for backup/data lake
-        const s3Key = `raw-data/${device_id}/${new Date().toISOString().split('T')[0]}/${timestamp}.json`;
+        // 3. Write raw data to S3 for backup/data lake (partitioned for ML training)
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const s3Key = `sensor-data/${year}/${month}/${day}/${device_id}-${timestamp}.json`;
         console.log(`Writing to S3 bucket: ${BUCKET_NAME}/${s3Key}`);
         const s3Data = {
             device_id: device_id,
             timestamp: timestamp,
+            temp_c: Number(temp_c),
+            ax: Number(ax), ay: Number(ay), az: Number(az),
+            gx: Number(gx), gy: Number(gy), gz: Number(gz),
+            current_a: Number(current_a),
+            // Keep derived fields for compatibility
             temperature: Number(temperature),
             vibration: Number(vibration),
             raw_event: payload
@@ -81,13 +101,15 @@ export const handler = async (event) => {
         console.log("Successfully wrote to S3.");
 
         // 4. Check for alert conditions and publish to SNS
-        const tempAlert = Number(temperature) > 35; // Lowered threshold for testing
-        const vibAlert = Number(vibration) > 10;    // Example vibration threshold
+        const tempAlert = Number(temp_c) > 35; // Temperature threshold
+        const vibAlert = Number(vibration) > 15; // Vibration magnitude threshold
+        const currentAlert = Number(current_a) > 0.2; // High current draw
         
-        if (tempAlert || vibAlert) {
+        if (tempAlert || vibAlert || currentAlert) {
             let alertMessage = `ALERT for Device ${device_id}:\n`;
-            if (tempAlert) alertMessage += `- High temperature: ${temperature}°C\n`;
-            if (vibAlert) alertMessage += `- High vibration: ${vibration}\n`;
+            if (tempAlert) alertMessage += `- High temperature: ${temp_c}°C\n`;
+            if (vibAlert) alertMessage += `- High vibration: ${vibration.toFixed(2)} (magnitude)\n`;
+            if (currentAlert) alertMessage += `- High current draw: ${current_a}A\n`;
             alertMessage += `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
             
             console.log(`Sending alert: ${alertMessage}`);
@@ -106,7 +128,7 @@ export const handler = async (event) => {
                 message: 'Data processed successfully!',
                 device_id: device_id,
                 timestamp: timestamp,
-                alerts_triggered: tempAlert || vibAlert
+                alerts_triggered: tempAlert || vibAlert || currentAlert
             }),
         };
 

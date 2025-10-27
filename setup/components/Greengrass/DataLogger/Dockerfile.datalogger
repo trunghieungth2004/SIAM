@@ -1,0 +1,19 @@
+FROM gcc:latest
+
+# Install I2C and GPIO dependencies
+RUN apt-get update && apt-get install -y \
+    libgpiod-dev \
+    i2c-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY datalogger.c /app/
+
+# Compile datalogger
+RUN gcc -o datalogger datalogger.c -lgpiod -lm
+
+# Create shared directory
+RUN mkdir -p /shared
+
+# Redirect output to shared file
+CMD ["sh", "-c", "./datalogger | tee /shared/sensor_data.json"]
