@@ -1,0 +1,123 @@
+#root {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.light {
+  background: #fff;
+  color: #333;
+}
+
+.dark {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.light h1, .light h3 {
+  color: #333;
+}
+
+.dark h1, .dark h3 {
+  color: #fff;
+}
+
+.light p {
+  color: #666;
+}
+
+.dark p {
+  color: #ccc;
+}
+
+.light .chart-container {
+  border: 1px solid #ccc;
+  padding: 20px;
+  background: white;
+}
+
+.dark .chart-container {
+  border: 1px solid #555;
+  padding: 20px;
+  background: #2a2a2a;
+}
+
+.light .chart-svg {
+  background: #fafafa;
+  border: 1px solid #eee;
+}
+
+.dark .chart-svg {
+  background: #333;
+  border: 1px solid #555;
+}
+
+table {
+  font-size: 0.9em;
+}
+
+.light table th {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+}
+
+.dark table th {
+  background: #333;
+  border: 1px solid #555;
+  color: #fff;
+}
+
+.light table td {
+  border: 1px solid #ccc;
+}
+
+.dark table td {
+  border: 1px solid #555;
+}
+
+select, input[type="file"], button {
+  font-size: 1em;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+input[type="range"] {
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+}
+
+.light input[type="range"] {
+  background: #ddd;
+}
+
+.dark input[type="range"] {
+  background: #555;
+}
+
+.light select, .light input[type="file"] {
+  border: 1px solid #ccc;
+  background: white;
+  color: #333;
+}
+
+.dark select, .dark input[type="file"] {
+  border: 1px solid #555;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-size: 1.2em;
+  padding: 8px 12px;
+}
+
+.light button {
+  background: #f0f0f0;
+}
+
+.dark button {
+  background: #333;
+}
