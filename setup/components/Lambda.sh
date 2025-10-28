@@ -189,6 +189,62 @@ EOL
         print_log -y "[skip] " "IAM Role '${QUERY_ROLE_NAME}' already exists."
     fi
 
+    # IAM Role for Deploy Lambda
+    DEPLOY_ROLE_NAME="role-lambda-deploy-${PROJECT_NAME}"
+    if ! DEPLOY_ROLE_ARN=$(aws iam get-role --role-name $DEPLOY_ROLE_NAME --query Role.Arn --output text 2>/dev/null); then
+        print_log -c "[iam] " "Creating IAM Role for Deploy Lambda..."
+        if ! DEPLOY_ROLE_ARN=$(aws iam create-role --role-name $DEPLOY_ROLE_NAME --assume-role-policy-document file://lambda-trust-policy.json --query Role.Arn --output text); then
+            print_log -r "[error] " "Failed to create Deploy Lambda IAM role"
+            return 1
+        fi
+        
+        if ! aws iam attach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole; then
+            print_log -r "[error] " "Failed to attach VPC execution policy to Deploy Lambda role"
+            return 1
+        fi
+        
+        cat > deploy-permissions.json << EOL
+{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["sagemaker:DescribeTrainingJob", "greengrassv2:CreateComponentVersion", "greengrassv2:CreateDeployment", "greengrassv2:GetCoreDevice", "iot:DescribeThing", "s3:GetObject"], "Resource": "*" }] }
+EOL
+        if ! aws iam put-role-policy --role-name $DEPLOY_ROLE_NAME --policy-name "DeployLambdaPermissions" --policy-document file://deploy-permissions.json; then
+            print_log -r "[error] " "Failed to attach custom permissions policy to Deploy Lambda role"
+            return 1
+        fi
+        
+        print_log -y "[wait] " "Waiting for Deploy IAM role to propagate..."
+        sleep 15
+    else
+        print_log -y "[skip] " "IAM Role '${DEPLOY_ROLE_NAME}' already exists."
+    fi
+
+    # IAM Role for Deploy Lambda
+    DEPLOY_ROLE_NAME="role-lambda-deploy-${PROJECT_NAME}"
+    if ! DEPLOY_ROLE_ARN=$(aws iam get-role --role-name $DEPLOY_ROLE_NAME --query Role.Arn --output text 2>/dev/null); then
+        print_log -c "[iam] " "Creating IAM Role for Deploy Lambda..."
+        if ! DEPLOY_ROLE_ARN=$(aws iam create-role --role-name $DEPLOY_ROLE_NAME --assume-role-policy-document file://lambda-trust-policy.json --query Role.Arn --output text); then
+            print_log -r "[error] " "Failed to create Deploy Lambda IAM role"
+            return 1
+        fi
+        
+        if ! aws iam attach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole; then
+            print_log -r "[error] " "Failed to attach VPC execution policy to Deploy Lambda role"
+            return 1
+        fi
+        
+        cat > deploy-permissions.json << EOL
+{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["sagemaker:DescribeTrainingJob", "greengrassv2:CreateComponentVersion", "greengrassv2:CreateDeployment", "greengrassv2:GetCoreDevice", "iot:DescribeThing", "s3:GetObject"], "Resource": "*" }] }
+EOL
+        if ! aws iam put-role-policy --role-name $DEPLOY_ROLE_NAME --policy-name "DeployLambdaPermissions" --policy-document file://deploy-permissions.json; then
+            print_log -r "[error] " "Failed to attach custom permissions policy to Deploy Lambda role"
+            return 1
+        fi
+        
+        print_log -y "[wait] " "Waiting for Deploy IAM role to propagate..."
+        sleep 15
+    else
+        print_log -y "[skip] " "IAM Role '${DEPLOY_ROLE_NAME}' already exists."
+    fi
+
     # Create Lambda Function
     LAMBDA_FUNCTION_NAME="func-ingestion-${PROJECT_NAME}"
     if ! aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME > /dev/null 2>&1; then
@@ -277,6 +333,53 @@ EOL
         fi
     fi
 
+    # Deploy Lambda Function
+    DEPLOY_LAMBDA_NAME="func-deploy-${PROJECT_NAME}"
+    if ! aws lambda get-function --function-name $DEPLOY_LAMBDA_NAME > /dev/null 2>&1; then
+        print_log -c "[lambda] " "Creating Deploy Lambda function..."
+        
+        if [ -f "components/Lambda/deploy.mjs" ]; then
+            cp components/Lambda/deploy.mjs deploy.mjs
+        else
+            print_log -r "[error] " "deploy.mjs not found in components/Lambda/"
+            return 1
+        fi
+        
+        if ! zip deploy_deployment.zip deploy.mjs; then
+            print_log -r "[error] " "Failed to create deploy deployment package"
+            return 1
+        fi
+
+        if ! DEPLOY_LAMBDA_ARN=$(aws lambda create-function \
+            --function-name $DEPLOY_LAMBDA_NAME \
+            --runtime nodejs20.x \
+            --role $DEPLOY_ROLE_ARN \
+            --handler deploy.handler \
+            --zip-file fileb://deploy_deployment.zip \
+            --vpc-config SubnetIds=$PRIVATE_SUBNET_ID,SecurityGroupIds=$SG_ID \
+            --environment "Variables={PROJECT_NAME=$PROJECT_NAME,S3_DATA_BUCKET=$S3_DATA_BUCKET,AWS_REGION=$AWS_REGION,ACCOUNT_ID=$ACCOUNT_ID}" \
+            --timeout 300 \
+            --query FunctionArn --output text); then
+            print_log -r "[error] " "Failed to create Deploy Lambda function: ${DEPLOY_LAMBDA_NAME}"
+            return 1
+        fi
+        
+        print_log -y "[wait] " "Waiting for Deploy Lambda function to be ready..."
+        if ! aws lambda wait function-active --function-name $DEPLOY_LAMBDA_NAME; then
+            print_log -r "[error] " "Timeout waiting for Deploy Lambda function to become active"
+            return 1
+        fi
+        print_log -g "[ready] " "Deploy Lambda function is active."
+    else
+        print_log -y "[skip] " "Deploy Lambda function '${DEPLOY_LAMBDA_NAME}' already exists."
+        if ! DEPLOY_LAMBDA_ARN=$(aws lambda get-function --function-name $DEPLOY_LAMBDA_NAME --query Configuration.FunctionArn --output text); then
+            print_log -r "[error] " "Failed to get existing Deploy Lambda function ARN"
+            return 1
+        fi
+    fi
+
+
+
     # API Gateway
     API_GW_NAME="api-iot-${PROJECT_NAME}"
     if ! API_ID=$(aws apigatewayv2 get-apis --query "Items[?Name=='${API_GW_NAME}'].ApiId" --output text); then
@@ -322,12 +425,10 @@ EOL
         return 1
     fi
 
-    # Create retraining Lambda function if SageMaker is enabled
-
-
     print_log -g "[ok] " "Lambda setup complete!"
     print_log -m "[Lambda Function ARN] " "${LAMBDA_FUNCTION_ARN}"
     print_log -m "[Query Lambda ARN] " "${QUERY_LAMBDA_ARN}"
+    print_log -m "[Deploy Lambda ARN] " "${DEPLOY_LAMBDA_ARN}"
     print_log -m "[API Gateway Endpoint] " "${API_ENDPOINT}"
     
     # Export variables for other components
@@ -337,149 +438,17 @@ EOL
     export QUERY_LAMBDA_ARN
     export QUERY_LAMBDA_NAME
     export QUERY_ROLE_NAME
+    export DEPLOY_LAMBDA_ARN
+    export DEPLOY_LAMBDA_NAME
+    export DEPLOY_ROLE_NAME
     export API_ID
     export API_ENDPOINT
     
-    cleanup_temp_files
+    # Cleanup temporary files
+    rm -f lambda-trust-policy.json lambda-permissions-policy.json query-permissions.json deploy-permissions.json index.mjs deployment.zip query.mjs query_deployment.zip deploy.mjs deploy_deployment.zip 2>/dev/null || true
 }
 
-setup_retraining_pipeline() {
-    print_log -c "[pipeline] " "Setting up SageMaker Pipeline for retraining..."
-    
-    # Get SageMaker role ARN (created by SageMaker component)
-    SAGEMAKER_ROLE_NAME="SageMakerExecutionRole-${PROJECT_NAME}"
-    if ! SAGEMAKER_ROLE_ARN=$(aws iam get-role --role-name $SAGEMAKER_ROLE_NAME --query Role.Arn --output text 2>/dev/null); then
-        print_log -r "[error] " "SageMaker role not found. Run SageMaker setup first."
-        return 1
-    fi
-    
-    # Create SageMaker Pipeline definition
-    PIPELINE_NAME="${PROJECT_NAME}-retraining-pipeline"
-    
-    cat > pipeline_definition.json << 'PIPELINE_EOF'
-{
-  "Version": "2020-12-01",
-  "Metadata": {},
-  "Parameters": [
-    {
-      "Name": "TrainingInstanceType",
-      "Type": "String",
-      "DefaultValue": "ml.m5.large"
-    },
-    {
-      "Name": "ModelApprovalStatus",
-      "Type": "String",
-      "DefaultValue": "PendingManualApproval"
-    }
-  ],
-  "PipelineExperimentConfig": {
-    "ExperimentName": "PIPELINE_NAME-experiment",
-    "TrialName": "PIPELINE_NAME-trial"
-  },
-  "Steps": [
-    {
-      "Name": "TrainingStep",
-      "Type": "Training",
-      "Arguments": {
-        "TrainingJobName": "PIPELINE_NAME-training",
-        "RoleArn": "SAGEMAKER_ROLE_ARN",
-        "AlgorithmSpecification": {
-          "TrainingImage": "TRAINING_IMAGE_URI",
-          "TrainingInputMode": "File"
-        },
-        "InputDataConfig": [
-          {
-            "ChannelName": "training",
-            "DataSource": {
-              "S3DataSource": {
-                "S3DataType": "S3Prefix",
-                "S3Uri": "S3_TRAINING_PATH",
-                "S3DataDistributionType": "FullyReplicated"
-              }
-            }
-          }
-        ],
-        "OutputDataConfig": {
-          "S3OutputPath": "S3_OUTPUT_PATH"
-        },
-        "ResourceConfig": {
-          "InstanceType": {"Get": "Parameters.TrainingInstanceType"},
-          "InstanceCount": 1,
-          "VolumeSizeInGB": 10
-        },
-        "StoppingCondition": {
-          "MaxRuntimeInSeconds": 3600
-        },
-        "HyperParameters": {
-          "sagemaker_program": "train.py",
-          "sagemaker_submit_directory": "S3_CODE_PATH"
-        }
-      }
-    },
-    {
-      "Name": "CreateModelStep",
-      "Type": "Model",
-      "Arguments": {
-        "ModelName": "PIPELINE_NAME-model",
-        "PrimaryContainer": {
-          "Image": "TRAINING_IMAGE_URI",
-          "ModelDataUrl": {"Get": "Steps.TrainingStep.ModelArtifacts.S3ModelArtifacts"},
-          "Environment": {
-            "SAGEMAKER_PROGRAM": "inference.py",
-            "SAGEMAKER_SUBMIT_DIRECTORY": "S3_CODE_PATH"
-          }
-        },
-        "ExecutionRoleArn": "SAGEMAKER_ROLE_ARN"
-      }
-    }
-  ]
-}
-PIPELINE_EOF
-    
-    # Replace placeholders
-    sed -i "s/PIPELINE_NAME/${PIPELINE_NAME}/g" pipeline_definition.json
-    sed -i "s|SAGEMAKER_ROLE_ARN|${SAGEMAKER_ROLE_ARN}|g" pipeline_definition.json
-    sed -i "s|TRAINING_IMAGE_URI|$(get_sagemaker_ecr_uri ${AWS_REGION})/sagemaker-scikit-learn:0.23-1-cpu-py3|g" pipeline_definition.json
-    sed -i "s|S3_TRAINING_PATH|s3://${S3_DATA_BUCKET}/sagemaker/training-data/|g" pipeline_definition.json
-    sed -i "s|S3_OUTPUT_PATH|s3://${S3_DATA_BUCKET}/sagemaker/retrained-models/|g" pipeline_definition.json
-    sed -i "s|S3_CODE_PATH|s3://${S3_DATA_BUCKET}/sagemaker/code/sourcedir.tar.gz|g" pipeline_definition.json
-    
-    # Create or update pipeline
-    if ! aws sagemaker describe-pipeline --pipeline-name $PIPELINE_NAME > /dev/null 2>&1; then
-        print_log -c "[create] " "Creating SageMaker Pipeline..."
-        aws sagemaker create-pipeline \
-            --pipeline-name $PIPELINE_NAME \
-            --pipeline-definition file://pipeline_definition.json \
-            --role-arn $SAGEMAKER_ROLE_ARN > /dev/null
-    else
-        print_log -c "[update] " "Updating SageMaker Pipeline..."
-        aws sagemaker update-pipeline \
-            --pipeline-name $PIPELINE_NAME \
-            --pipeline-definition file://pipeline_definition.json > /dev/null
-    fi
-    
-    # Create EventBridge rule to trigger pipeline weekly
-    RULE_NAME="${PROJECT_NAME}-weekly-retrain"
-    if ! aws events describe-rule --name $RULE_NAME > /dev/null 2>&1; then
-        print_log -c "[schedule] " "Creating weekly pipeline trigger..."
-        aws events put-rule \
-            --name $RULE_NAME \
-            --schedule-expression "rate(7 days)" \
-            --description "Weekly SageMaker Pipeline execution" > /dev/null
-        
-        # Add SageMaker Pipeline as target
-        ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-        aws events put-targets \
-            --rule $RULE_NAME \
-            --targets "Id=1,Arn=arn:aws:sagemaker:$AWS_REGION:$ACCOUNT_ID:pipeline/$PIPELINE_NAME,RoleArn=$SAGEMAKER_ROLE_ARN,SageMakerPipelineParameters={PipelineParameterList=[{Name=TrainingInstanceType,Value=ml.m5.large}]}" > /dev/null
-    fi
-    
-    print_log -g "[ok] " "SageMaker Pipeline configured for retraining"
-    print_log -y "[info] " "Pipeline will execute weekly via EventBridge"
-    print_log -m "[Pipeline] " "${PIPELINE_NAME}"
-    
-    rm -f pipeline_definition.json
-}
+
 
 cleanup_lambda() {
     print_log -b "[delete] " "Cleaning up Lambda Functions..."
@@ -490,6 +459,8 @@ cleanup_lambda() {
     LAMBDA_ROLE_NAME="role-lambda-${PROJECT_NAME}"
     QUERY_LAMBDA_NAME="func-query-${PROJECT_NAME}"
     QUERY_ROLE_NAME="role-lambda-query-${PROJECT_NAME}"
+    DEPLOY_LAMBDA_NAME="func-deploy-${PROJECT_NAME}"
+    DEPLOY_ROLE_NAME="role-lambda-deploy-${PROJECT_NAME}"
     API_GW_NAME="api-iot-${PROJECT_NAME}"
     
     # Delete API Gateway
@@ -508,6 +479,14 @@ cleanup_lambda() {
     aws iam delete-role --role-name $QUERY_ROLE_NAME 2>/dev/null || true
     print_log -g "[ok] " "Query Lambda function and IAM Role deleted."
     
+    # Delete Deploy Lambda Function
+    print_log -b "[delete] " "Deleting Deploy Lambda Function..."
+    aws lambda delete-function --function-name $DEPLOY_LAMBDA_NAME 2>/dev/null || true
+    aws iam delete-role-policy --role-name $DEPLOY_ROLE_NAME --policy-name "DeployLambdaPermissions" 2>/dev/null || true
+    aws iam detach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole 2>/dev/null || true
+    aws iam delete-role --role-name $DEPLOY_ROLE_NAME 2>/dev/null || true
+    print_log -g "[ok] " "Deploy Lambda function and IAM Role deleted."
+    
     # Delete Ingestion Lambda Function
     print_log -b "[delete] " "Deleting Ingestion Lambda Function..."
     aws lambda delete-function --function-name $LAMBDA_FUNCTION_NAME 2>/dev/null || true
@@ -516,20 +495,7 @@ cleanup_lambda() {
     aws iam delete-role --role-name $LAMBDA_ROLE_NAME 2>/dev/null || true
     print_log -g "[ok] " "Ingestion Lambda function and IAM Role deleted."
     
-    # Delete retraining Lambda if it exists
-    RETRAIN_LAMBDA_NAME="func-retrain-${PROJECT_NAME}"
-    RETRAIN_ROLE_NAME="role-lambda-retrain-${PROJECT_NAME}"
-    RULE_NAME="${PROJECT_NAME}-weekly-retrain"
-    
-    print_log -b "[delete] " "Deleting retraining Lambda function..."
-    aws events remove-targets --rule $RULE_NAME --ids "1" 2>/dev/null || true
-    aws events delete-rule --name $RULE_NAME 2>/dev/null || true
-    aws lambda delete-function --function-name $RETRAIN_LAMBDA_NAME 2>/dev/null || true
-    aws iam detach-role-policy --role-name $RETRAIN_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole 2>/dev/null || true
-    aws iam detach-role-policy --role-name $RETRAIN_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess 2>/dev/null || true
-    aws iam detach-role-policy --role-name $RETRAIN_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess 2>/dev/null || true
-    aws iam delete-role --role-name $RETRAIN_ROLE_NAME 2>/dev/null || true
-    print_log -g "[ok] " "Retraining Lambda function deleted."
+    print_log -y "[info] " "EventBridge component handles retraining automation"
 }
 
 # Main execution

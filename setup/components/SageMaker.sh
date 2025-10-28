@@ -441,7 +441,7 @@ EOL
     fi
 
     print_log -y "[info] " "Skipping expensive cloud endpoint - using edge deployment only"
-    print_log -y "[info] " "Retraining Lambda will be created by Lambda component"
+    print_log -y "[info] " "Retraining pipeline will be created by EventBridge component"
     
     # Create inference service for Greengrass
     COMPONENT_NAME="com.${PROJECT_NAME}.MLInference"

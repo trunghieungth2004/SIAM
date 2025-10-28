@@ -101,7 +101,11 @@ float read_temperature() {
             FILE *fp = fopen(dev_path, "r");
             if (fp && fread(buf, 1, sizeof(buf) - 1, fp) > 0) {
                 ptr = strstr(buf, "t=");
-                if (ptr != NULL) temp_c = (float)atoi(ptr + 2) / 1000.0f;
+                if (ptr != NULL) {
+                    char *endptr;
+                    long temp_raw = strtol(ptr + 2, &endptr, 10);
+                    if (endptr != ptr + 2) temp_c = (float)temp_raw / 1000.0f;
+                }
             }
             if(fp) fclose(fp);
             break;

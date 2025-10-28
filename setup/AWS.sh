@@ -24,6 +24,7 @@ declare -A COMPONENTS=(
     ["9"]="Greengrass"
     ["10"]="IoT"
     ["11"]="CloudWatch"
+    ["12"]="EventBridge"
 )
 
 # Component descriptions
@@ -39,6 +40,7 @@ declare -A DESCRIPTIONS=(
     ["Greengrass"]="IoT Greengrass Core for edge computing"
     ["SageMaker"]="ML model training for predictive maintenance"
     ["CloudWatch"]="Monitoring, alarms, and dashboards"
+    ["EventBridge"]="Automated ML pipeline and edge deployment"
 )
 
 show_component_menu() {
@@ -47,7 +49,7 @@ show_component_menu() {
     echo ":: Choose which components to $1:"
     echo ""
     
-    for i in {1..11}; do
+    for i in {1..12}; do
         local component="${COMPONENTS[$i]}"
         local desc="${DESCRIPTIONS[$component]}"
         printf "%2s  %-12s %s\n" "$i" "$component" "$desc"
@@ -65,7 +67,7 @@ parse_selection() {
     
     if [ -z "$selection" ] || [ "$selection" = "all" ]; then
         # Default: all components
-        for i in {1..11}; do
+        for i in {1..12}; do
             selected_components+=("${COMPONENTS[$i]}")
         done
     else
@@ -75,7 +77,7 @@ parse_selection() {
             exclude_mode=true
             selection="${selection#^}"
             # Start with all components for exclusion
-            for i in {1..11}; do
+            for i in {1..12}; do
                 selected_components+=("${COMPONENTS[$i]}")
             done
         fi
@@ -196,7 +198,7 @@ run_setup() {
     fi
     
     # Run components in dependency order
-    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "SageMaker" "Greengrass" "IoT" "CloudWatch")
+    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "SageMaker" "Greengrass" "IoT" "CloudWatch" "EventBridge")
     
     for component in "${setup_order[@]}"; do
         if [[ " ${selected_components[*]} " =~ " ${component} " ]]; then
