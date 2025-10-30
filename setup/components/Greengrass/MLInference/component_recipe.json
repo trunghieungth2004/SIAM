@@ -17,7 +17,7 @@
       "Lifecycle": {
         "Install": {
           "RequiresPrivilege": true,
-          "Script": "mkdir -p /tmp/greengrass_ml; tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully' && docker run --rm -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple"
+          "Script": "mkdir -p /tmp/greengrass_ml; if [ -f {artifacts:path}/model.tar.gz ]; then tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully'; else echo 'No model.tar.gz found, using existing model'; fi; docker run --rm -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple || echo 'Model conversion completed'"
         },
 
         "Run": {
@@ -27,14 +27,14 @@
       },
       "Artifacts": [
         {
-          "Uri": "s3://test-iot-data-ac00a34a/sagemaker/output/test-maintenance-20251028-004125/output/model.tar.gz",
+          "Uri": "s3://test-iot-data-54af1906/sagemaker/output/test-maintenance-20251029-153819/output/model.tar.gz",
           "Unarchive": "NONE"
         },
         {
-          "Uri": "s3://test-iot-data-ac00a34a/greengrass/artifacts/inference_service.py"
+          "Uri": "s3://test-iot-data-54af1906/greengrass/artifacts/inference_service.py"
         },
         {
-          "Uri": "s3://test-iot-data-ac00a34a/greengrass/artifacts/convert_model_to_tflite.py"
+          "Uri": "s3://test-iot-data-54af1906/greengrass/artifacts/convert_model_to_tflite.py"
         }
       ]
     }

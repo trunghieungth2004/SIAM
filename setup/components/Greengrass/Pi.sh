@@ -107,9 +107,8 @@ RUN apt-get update && apt-get install -y \
     libedgetpu1-std python3-pycoral python3-tflite-runtime \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get remove -y python3-numpy python3-pil 2>/dev/null || true
-
-RUN pip3 install --no-cache-dir --upgrade numpy boto3 awsiotsdk pillow pandas scikit-learn joblib tensorflow
+# Install compatible NumPy version and other packages
+RUN pip3 install --no-cache-dir "numpy>=1.21,<2.0" boto3 awsiotsdk pillow pandas scikit-learn joblib "tensorflow>=2.13,<2.16"
 
 ENV PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH
 

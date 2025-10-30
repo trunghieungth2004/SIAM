@@ -6,8 +6,11 @@ const sagemaker = new SageMakerClient({});
 const greengrass = new GreengrassV2Client({});
 const iot = new IoTClient({});
 
-export const handler = async (event) => {
+export const handler = async (event, context) => {
     console.log('Deploy Lambda triggered:', JSON.stringify(event, null, 2));
+    
+    // Get region from Lambda context
+    const region = context.invokedFunctionArn.split(':')[3];
     
     try {
         const trainingJobName = event.detail.TrainingJobName;
@@ -82,7 +85,7 @@ export const handler = async (event) => {
         
         const deploymentName = `${projectName}-auto-deploy-${Date.now()}`;
         const createDeploymentCommand = new CreateDeploymentCommand({
-            targetArn: `arn:aws:iot:${process.env.AWS_REGION}:${process.env.ACCOUNT_ID}:thing/${coreDeviceThingName}`,
+            targetArn: `arn:aws:iot:${region}:${process.env.ACCOUNT_ID}:thing/${coreDeviceThingName}`,
             deploymentName: deploymentName,
             components: {
                 [componentName]: {

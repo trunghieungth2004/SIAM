@@ -1,10 +1,15 @@
 FROM gcc:latest
 
-# Install I2C and GPIO dependencies
+# Install I2C, GPIO dependencies and Python
 RUN apt-get update && apt-get install -y \
     libgpiod-dev \
     i2c-tools \
+    python3 \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install StreamManager SDK
+RUN pip3 install awsiotsdk
 
 WORKDIR /app
 COPY datalogger.c /app/

@@ -357,7 +357,7 @@ EOL
             --handler deploy.handler \
             --zip-file fileb://deploy_deployment.zip \
             --vpc-config SubnetIds=$PRIVATE_SUBNET_ID,SecurityGroupIds=$SG_ID \
-            --environment "Variables={PROJECT_NAME=$PROJECT_NAME,S3_DATA_BUCKET=$S3_DATA_BUCKET,AWS_REGION=$AWS_REGION,ACCOUNT_ID=$ACCOUNT_ID}" \
+            --environment "Variables={PROJECT_NAME=$PROJECT_NAME,S3_DATA_BUCKET=$S3_DATA_BUCKET,ACCOUNT_ID=$ACCOUNT_ID}" \
             --timeout 300 \
             --query FunctionArn --output text); then
             print_log -r "[error] " "Failed to create Deploy Lambda function: ${DEPLOY_LAMBDA_NAME}"

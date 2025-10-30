@@ -75,24 +75,10 @@ def send_to_stream(client, data):
         print(f"[error] Failed to send data to stream: {e}")
         return False
 
-def run_datalogger():
-    """Run the C datalogger and process its output"""
-    try:
-        # Start the datalogger process
-        process = subprocess.Popen(
-            ['/opt/iot/datalogger'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            bufsize=1
-        )
-        
-        print("[info] Datalogger process started")
-        return process
-        
-    except Exception as e:
-        print(f"[error] Failed to start datalogger: {e}")
-        return None
+def read_sensor_data():
+    """Read sensor data from stdin (piped from Docker container)"""
+    print("[info] Reading sensor data from stdin...")
+    return sys.stdin
 
 def main():
     """Main function"""
@@ -113,20 +99,14 @@ def main():
         print(f"[error] Failed to setup stream: {e}")
         sys.exit(1)
     
-    # Start the datalogger
-    datalogger_process = run_datalogger()
-    if not datalogger_process:
-        sys.exit(1)
+    # Read sensor data from stdin
+    sensor_input = read_sensor_data()
     
     print("[info] Processing sensor data...")
     
-    # Process datalogger output
+    # Process sensor data from stdin
     try:
-        while True:
-            line = datalogger_process.stdout.readline()
-            if not line:
-                break
-                
+        for line in sensor_input:
             line = line.strip()
             if not line:
                 continue
@@ -150,10 +130,6 @@ def main():
         print(f"[error] Unexpected error: {e}")
     finally:
         # Cleanup
-        if datalogger_process:
-            datalogger_process.terminate()
-            datalogger_process.wait()
-        
         if client:
             try:
                 client.close()

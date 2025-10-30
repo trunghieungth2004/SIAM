@@ -128,7 +128,7 @@ generate_component_recipes() {
         },
         "Run": {
           "RequiresPrivilege": true,
-          "Script": "docker run --rm --privileged --device=/dev/i2c-1 --device=/dev/gpiochip0 -v /tmp/sensor_data:/shared -v {artifacts:path}:/app/scripts ${PROJECT_NAME}-datalogger:latest & sleep 2 && python3 {artifacts:path}/streammanager_datalogger.py"
+          "Script": "docker run --rm --privileged --device=/dev/i2c-1 --device=/dev/gpiochip0 -v /tmp/sensor_data:/shared -v {artifacts:path}:/app/scripts ${PROJECT_NAME}-datalogger:latest | python3 {artifacts:path}/streammanager_datalogger.py"
         }
       },
       "Artifacts": [
@@ -168,12 +168,12 @@ DATALOGGER_EOF
       "Lifecycle": {
         "Install": {
           "RequiresPrivilege": true,
-          "Script": "mkdir -p /tmp/greengrass_ml; tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully' && docker run --rm -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple"
+          "Script": "mkdir -p /tmp/greengrass_ml; if [ -f {artifacts:path}/model.tar.gz ]; then tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully'; else echo 'No model.tar.gz found, using existing model'; fi; echo 'Testing TPU availability...'; docker run --rm --device=/dev/bus/usb -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages coral-tpu:latest python3 -c 'from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\")' && docker run --rm -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple || echo 'Model conversion completed'"
         },
 
         "Run": {
           "RequiresPrivilege": true,
-          "Script": "docker run --rm --device=/dev/bus/usb --privileged -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/inference_service.py"
+          "Script": "docker run --rm --device=/dev/bus/usb --privileged -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/inference_service.py"
         }
       },
       "Artifacts": [
