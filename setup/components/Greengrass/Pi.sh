@@ -8,7 +8,17 @@
 # Source common utilities
 source "$(dirname "$0")/../common.sh"
 
+is_tailscale_ip() {
+    local ip=$(echo "$PI_SSH_TARGET" | cut -d'@' -f2)
+    [[ "$ip" =~ ^100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\. ]]
+}
+
 setup_ssh_keys() {
+    if is_tailscale_ip; then
+        print_log -c "[tailscale] " "Tailscale IP detected, skipping SSH key setup"
+        return 0
+    fi
+    
     print_log -c "[ssh] " "Setting up SSH key authentication..."
     
     # Generate SSH key if it doesn't exist
@@ -36,7 +46,7 @@ setup_pi_basics() {
         return 1
     fi
     
-    # Setup SSH keys first
+    # Setup SSH keys first (skip for Tailscale)
     setup_ssh_keys
     
     print_log -c "[remote] " "Configuring Pi basics on: ${PI_SSH_TARGET}"

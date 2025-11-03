@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class TPUInferenceService:
-    def __init__(self, model_path="/tmp/greengrass_ml"):
+    def __init__(self, model_path="/app/models"):
         self.model_path = Path(model_path)
         self.tpu_interpreter = None
         self.scaler = None

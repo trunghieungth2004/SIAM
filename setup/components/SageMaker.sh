@@ -403,7 +403,6 @@ EOL
     fi
     
     print_log -y "[wait] " "Training job started. This may take 10-15 minutes..."
-    print_log -y "[info] " "You can monitor progress in the SageMaker console."
     
     # Wait for training job to complete
     print_log -c "[monitor] " "Waiting for training job to complete..."

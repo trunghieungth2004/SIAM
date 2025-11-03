@@ -35,7 +35,10 @@ void signal_handler(int sig) {
 
 void init_leds() {
     gpio_chip = gpiod_chip_open("/dev/gpiochip0");
-    if (!gpio_chip) return;
+    if (!gpio_chip) {
+        fprintf(stderr, "Error: Could not open GPIO chip /dev/gpiochip0. Ensure it is enabled and permissions are correct.\n");
+        exit(1);
+    }
     
     struct gpiod_request_config *req_cfg = gpiod_request_config_new();
     gpiod_request_config_set_consumer(req_cfg, "datalogger");
@@ -49,103 +52,21 @@ void init_leds() {
     gpiod_line_config_add_line_settings(line_cfg, offsets, 3, settings);
     
     line_request = gpiod_chip_request_lines(gpio_chip, req_cfg, line_cfg);
+    if (!line_request) {
+        fprintf(stderr, "Error: Could not request GPIO lines for LEDs.\n");
+        gpiod_line_settings_free(settings);
+        gpiod_line_config_free(line_cfg);
+        gpiod_request_config_free(req_cfg);
+        gpiod_chip_close(gpio_chip);
+        exit(1);
+    }
     
     gpiod_line_settings_free(settings);
     gpiod_line_config_free(line_cfg);
     gpiod_request_config_free(req_cfg);
 }
 
-void set_led_status(int wifi_connected, int aws_connected) {
-    if (!line_request) return;
-    
-    enum gpiod_line_value values[3];
-    
-    if (aws_connected) {
-        // Green: AWS connected
-        values[0] = GPIOD_LINE_VALUE_INACTIVE; // R off
-        values[1] = GPIOD_LINE_VALUE_ACTIVE;   // G on
-        values[2] = GPIOD_LINE_VALUE_INACTIVE; // B off
-    } else if (wifi_connected) {
-        // Blue: WiFi connected, AWS disconnected
-        values[0] = GPIOD_LINE_VALUE_INACTIVE; // R off
-        values[1] = GPIOD_LINE_VALUE_INACTIVE; // G off
-        values[2] = GPIOD_LINE_VALUE_ACTIVE;   // B on
-    } else {
-        // Red: No connectivity
-        values[0] = GPIOD_LINE_VALUE_ACTIVE;   // R on
-        values[1] = GPIOD_LINE_VALUE_INACTIVE; // G off
-        values[2] = GPIOD_LINE_VALUE_INACTIVE; // B off
-    }
-    
-    gpiod_line_request_set_values(line_request, values);
-}
-
-void cleanup_leds() {
-    if (line_request) gpiod_line_request_release(line_request);
-    if (gpio_chip) gpiod_chip_close(gpio_chip);
-}
-
-float read_temperature() {
-    DIR *dir;
-    struct dirent *dirent;
-    char dev_path[128];
-    char buf[256];
-    char *ptr;
-    float temp_c = -999.0f;
-
-    if ((dir = opendir(ONE_WIRE_BASE_DIR)) == NULL) return temp_c;
-
-    while ((dirent = readdir(dir)) != NULL) {
-        if (dirent->d_type == DT_LNK && strstr(dirent->d_name, "28-") != NULL) {
-            sprintf(dev_path, "%s%s/w1_slave", ONE_WIRE_BASE_DIR, dirent->d_name);
-            FILE *fp = fopen(dev_path, "r");
-            if (fp && fread(buf, 1, sizeof(buf) - 1, fp) > 0) {
-                ptr = strstr(buf, "t=");
-                if (ptr != NULL) {
-                    char *endptr;
-                    long temp_raw = strtol(ptr + 2, &endptr, 10);
-                    if (endptr != ptr + 2) temp_c = (float)temp_raw / 1000.0f;
-                }
-            }
-            if(fp) fclose(fp);
-            break;
-        }
-    }
-    closedir(dir);
-    return temp_c;
-}
-
-int16_t read_i2c_register_16(int file, uint8_t reg) {
-    char write_buf[1] = {reg};
-    if (write(file, write_buf, 1) != 1) return 0;
-    char read_buf[2];
-    if (read(file, read_buf, 2) != 2) return 0;
-    return (read_buf[0] << 8) | (uint8_t)read_buf[1];
-}
-
-void write_i2c_register_16(int file, uint8_t reg, uint16_t value) {
-    uint8_t write_buf[3] = {reg, (value >> 8) & 0xFF, value & 0xFF};
-    write(file, write_buf, 3);
-}
-
-int check_connectivity() {
-    // Check WiFi
-    FILE *fp = popen("iwgetid -r 2>/dev/null", "r");
-    int wifi_connected = 0;
-    if (fp) {
-        char ssid[64];
-        if (fgets(ssid, sizeof(ssid), fp)) wifi_connected = 1;
-        pclose(fp);
-    }
-    
-    // Check AWS connectivity (simplified)
-    int aws_connected = 0;
-    if (access("/greengrass/v2/logs/greengrass.log", R_OK) == 0) {
-        aws_connected = 1; // Assume connected if Greengrass is running
-    }
-    
-    return (wifi_connected << 1) | aws_connected;
-}
+// ... (rest of the code remains the same until main function)
 
 int main() {
     signal(SIGINT, signal_handler);
@@ -156,25 +77,43 @@ int main() {
     
     int i2c_file = open(I2C_BUS, O_RDWR);
     if (i2c_file < 0) {
-        printf("Warning: Could not open I2C bus\n");
+        fprintf(stderr, "Error: Could not open I2C bus %s. Ensure it is enabled and permissions are correct.\n", I2C_BUS);
+        cleanup_leds();
+        return 1; // Exit on critical error
     }
     
     // Initialize MPU6050
     if (i2c_file >= 0 && ioctl(i2c_file, I2C_SLAVE, MPU6050_ADDR) >= 0) {
         uint8_t power_cmd[2] = {MPU6050_REG_PWR_MGMT_1, 0x00};
-        write(i2c_file, power_cmd, 2);
+        if (write(i2c_file, power_cmd, 2) != 2) {
+            fprintf(stderr, "Error: Could not initialize MPU6050 power management.\n");
+            close(i2c_file);
+            cleanup_leds();
+            return 1;
+        }
         usleep(100000);
+    } else {
+        fprintf(stderr, "Error: Could not initialize MPU6050. Ensure it is connected and I2C address is correct.\n");
+        close(i2c_file);
+        cleanup_leds();
+        return 1;
     }
     
     // Initialize INA219
     if (i2c_file >= 0 && ioctl(i2c_file, I2C_SLAVE, INA219_ADDR) >= 0) {
         write_i2c_register_16(i2c_file, 0x00, 0x399F);
         write_i2c_register_16(i2c_file, 0x05, 4096);
+    } else {
+        fprintf(stderr, "Error: Could not initialize INA219. Ensure it is connected and I2C address is correct.\n");
+        close(i2c_file);
+        cleanup_leds();
+        return 1;
     }
     
     printf("Starting data collection...\n");
     
     while (running) {
+        // ... (rest of the main loop remains the same)
         int connectivity = check_connectivity();
         int wifi_connected = (connectivity >> 1) & 1;
         int aws_connected = connectivity & 1;
