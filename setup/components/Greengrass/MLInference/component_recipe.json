@@ -1,7 +1,7 @@
 {
   "RecipeFormatVersion": "2020-01-25",
   "ComponentName": "com.test.MLInference",
-  "ComponentVersion": "1.0.16",
+  "ComponentVersion": "1.0.6",
   "ComponentDescription": "TPU-accelerated ML inference with Coral USB Accelerator",
   "ComponentPublisher": "test",
   "ComponentDependencies": {
@@ -17,7 +17,7 @@
       "Lifecycle": {
         "Install": {
           "RequiresPrivilege": true,
-          "Script": "mkdir -p /tmp/greengrass_ml; if [ -f {artifacts:path}/model.tar.gz ]; then tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully'; else echo 'No model.tar.gz found, using existing model'; fi; echo 'Testing TPU availability...'; docker run --rm --device=/dev/bus/usb -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages coral-tpu:latest python3 -c 'from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\")' && docker run --rm -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple; ls -l /tmp/greengrass_ml/ || echo 'Model conversion completed'"
+          "Script": "mkdir -p /tmp/greengrass_ml; if [ -f {artifacts:path}/model.tar.gz ]; then tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully'; else echo 'No model.tar.gz found, using existing model'; fi; echo 'Testing TPU availability...'; docker run --rm --device=/dev/bus/usb -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages coral-tpu:latest python3 -c 'from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\")' && docker run --rm -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple || echo 'Model conversion completed'"
         },
 
         "Run": {
@@ -27,14 +27,14 @@
       },
       "Artifacts": [
         {
-          "Uri": "s3://test-iot-data-a71def95/sagemaker/output/test-maintenance-20251030-211422/output/model.tar.gz",
+          "Uri": "s3://test-iot-data-f175adc0/sagemaker/output/test-maintenance-20251103-152851/output/model.tar.gz",
           "Unarchive": "NONE"
         },
         {
-          "Uri": "s3://test-iot-data-a71def95/greengrass/artifacts/inference_service.py"
+          "Uri": "s3://test-iot-data-f175adc0/greengrass/artifacts/inference_service.py"
         },
         {
-          "Uri": "s3://test-iot-data-a71def95/greengrass/artifacts/convert_model_to_tflite.py"
+          "Uri": "s3://test-iot-data-f175adc0/greengrass/artifacts/convert_model_to_tflite.py"
         }
       ]
     }

@@ -109,7 +109,7 @@ generate_component_recipes() {
   "RecipeFormatVersion": "2020-01-25",
   "ComponentName": "com.${PROJECT_NAME}.DataLogger",
   "ComponentVersion": "${DATALOGGER_VERSION}",
-  "ComponentDescription": "IoT sensor datalogger with StreamManager integration",
+  "ComponentDescription": "IoT sensor datalogger with StreamManager integration (Host-Native)",
   "ComponentPublisher": "${PROJECT_NAME}",
   "ComponentDependencies": {
     "aws.greengrass.StreamManager": {
@@ -124,19 +124,16 @@ generate_component_recipes() {
       "Lifecycle": {
         "Install": {
           "RequiresPrivilege": true,
-          "Script": "docker build -f {artifacts:path}/Dockerfile.datalogger -t ${PROJECT_NAME}-datalogger:latest {artifacts:path}"
+          "Script": "apt-get update && apt-get install -y libgpiod-dev i2c-tools python3 python3-pip && python3 -m pip install --break-system-packages git+https://github.com/aws-greengrass/aws-greengrass-stream-manager-sdk-python && gcc -o {artifacts:path}/datalogger {artifacts:path}/datalogger.c -lgpiod -lm"
         },
         "Run": {
           "RequiresPrivilege": true,
-          "Script": "docker run --rm --privileged --device=/dev/i2c-1 --device=/dev/gpiochip0 -v /tmp/sensor_data:/shared -v {artifacts:path}:/app/scripts ${PROJECT_NAME}-datalogger:latest | python3 {artifacts:path}/streammanager_datalogger.py"
+          "Script": "{artifacts:path}/datalogger | python3 {artifacts:path}/streammanager_datalogger.py"
         }
       },
       "Artifacts": [
         {
           "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/datalogger.c"
-        },
-        {
-          "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/Dockerfile.datalogger"
         },
         {
           "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/streammanager_datalogger.py"
@@ -209,9 +206,8 @@ deploy_greengrass_components() {
     print_log -c "[upload] " "Uploading component artifacts to S3..."
     
     # Upload DataLogger artifacts
-    aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/datalogger.c" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/" || true
-    aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/Dockerfile.datalogger" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/" || true
-    aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/streammanager_datalogger.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/" || true
+    aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/datalogger.c" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/datalogger.c" || true
+    aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/streammanager_datalogger.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/streammanager_datalogger.py" || true
     
     # Upload MLInference artifacts
     aws s3 cp "$(dirname "$0")/Greengrass/MLInference/tpu_inference_service.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/inference_service.py" || true
@@ -221,11 +217,18 @@ deploy_greengrass_components() {
     
     # Create and deploy DataLogger component
     print_log -c "[create] " "Creating DataLogger component..."
-    if aws greengrassv2 create-component-version --inline-recipe fileb://"$(dirname "$0")/Greengrass/DataLogger/component_recipe.json" > /dev/null 2>&1; then
-        print_log -g "[ok] " "DataLogger component created"
+    DATALOGGER_VERSION=$(grep -o '"ComponentVersion": "[^"]*"' "$(dirname "$0")/Greengrass/DataLogger/component_recipe.json" | cut -d'"' -f4)
+    if aws greengrassv2 create-component-version --inline-recipe fileb://"$(dirname "$0")/Greengrass/DataLogger/component_recipe.json" 2>&1 | tee /tmp/component_create.log; then
+        print_log -g "[ok] " "DataLogger component v${DATALOGGER_VERSION} created"
     else
-        print_log -y "[skip] " "DataLogger component may already exist"
+        if grep -q "already exists" /tmp/component_create.log; then
+            print_log -y "[skip] " "DataLogger component v${DATALOGGER_VERSION} already exists"
+        else
+            print_log -r "[error] " "Failed to create DataLogger component"
+            cat /tmp/component_create.log
+        fi
     fi
+    rm -f /tmp/component_create.log
     
     # Create and deploy MLInference component
     print_log -c "[create] " "Creating MLInference component..."
@@ -235,6 +238,9 @@ deploy_greengrass_components() {
         print_log -y "[skip] " "MLInference component may already exist"
     fi
     
+    # Get component versions
+    MLINFERENCE_VERSION=$(grep -o '"ComponentVersion": "[^"]*"' "$(dirname "$0")/Greengrass/MLInference/component_recipe.json" | cut -d'"' -f4 2>/dev/null || echo "1.0.3")
+    
     # Create deployment
     print_log -c "[deploy] " "Creating Greengrass deployment..."
     cat > /tmp/deployment.json << DEPLOYMENT_EOF
@@ -242,10 +248,13 @@ deploy_greengrass_components() {
   "targetArn": "arn:aws:iot:${AWS_REGION}:${ACCOUNT_ID}:thing/${GG_THING_NAME}",
   "deploymentName": "${PROJECT_NAME}-deployment-$(date +%s)",
   "components": {
-    "com.${PROJECT_NAME}.DataLogger": {
-      "componentVersion": "${DATALOGGER_VERSION}"
+    "com.test.DataLogger": {
+      "componentVersion": "${DATALOGGER_VERSION}",
+      "configurationUpdate": {
+        "merge": "{\"accessControl\":{\"aws.greengrass.ipc.mqttproxy\":{\"com.test.DataLogger:mqttproxy:1\":{\"policyDescription\":\"Allow publishing to IoT Core\",\"operations\":[\"aws.greengrass#PublishToIoTCore\"],\"resources\":[\"iot/data\"]}}}}"
+      }
     },
-    "com.${PROJECT_NAME}.MLInference": {
+    "com.test.MLInference": {
       "componentVersion": "${MLINFERENCE_VERSION}"
     }
   }

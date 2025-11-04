@@ -66,7 +66,71 @@ void init_leds() {
     gpiod_request_config_free(req_cfg);
 }
 
-// ... (rest of the code remains the same until main function)
+void cleanup_leds() {
+    if (line_request) gpiod_line_request_release(line_request);
+    if (gpio_chip) gpiod_chip_close(gpio_chip);
+}
+
+void set_led_status(int wifi_connected, int aws_connected) {
+    enum gpiod_line_value values[3];
+    if (wifi_connected && aws_connected) {
+        values[0] = GPIOD_LINE_VALUE_INACTIVE; values[1] = GPIOD_LINE_VALUE_ACTIVE; values[2] = GPIOD_LINE_VALUE_INACTIVE;
+    } else if (wifi_connected) {
+        values[0] = GPIOD_LINE_VALUE_INACTIVE; values[1] = GPIOD_LINE_VALUE_INACTIVE; values[2] = GPIOD_LINE_VALUE_ACTIVE;
+    } else {
+        values[0] = GPIOD_LINE_VALUE_ACTIVE; values[1] = GPIOD_LINE_VALUE_INACTIVE; values[2] = GPIOD_LINE_VALUE_INACTIVE;
+    }
+    gpiod_line_request_set_values(line_request, values);
+}
+
+int16_t read_i2c_register_16(int file, uint8_t reg) {
+    if (write(file, &reg, 1) != 1) return 0;
+    unsigned char data[2];
+    if (read(file, data, 2) != 2) return 0;
+    return (int16_t)((data[0] << 8) | data[1]);
+}
+
+void write_i2c_register_16(int file, uint8_t reg, uint16_t value) {
+    unsigned char data[3] = {reg, (value >> 8) & 0xFF, value & 0xFF};
+    write(file, data, 3);
+}
+
+float read_temperature() {
+    DIR *dir = opendir(ONE_WIRE_BASE_DIR);
+    if (!dir) return -999.0f;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strncmp(entry->d_name, "28-", 3) == 0) {
+            char path[256];
+            snprintf(path, sizeof(path), "%s%s/w1_slave", ONE_WIRE_BASE_DIR, entry->d_name);
+            FILE *f = fopen(path, "r");
+            if (f) {
+                char line[128];
+                fgets(line, sizeof(line), f);
+                if (strstr(line, "YES")) {
+                    fgets(line, sizeof(line), f);
+                    char *t = strstr(line, "t=");
+                    if (t) {
+                        fclose(f);
+                        closedir(dir);
+                        return atoi(t + 2) / 1000.0f;
+                    }
+                }
+                fclose(f);
+            }
+        }
+    }
+    closedir(dir);
+    return -999.0f;
+}
+
+int check_connectivity() {
+    int wifi = system("ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1") == 0 ? 1 : 0;
+    int aws = 0;
+    struct stat st;
+    if (stat("/greengrass/v2/ipc.socket", &st) == 0) aws = 1;
+    return (wifi << 1) | aws;
+}
 
 int main() {
     signal(SIGINT, signal_handler);

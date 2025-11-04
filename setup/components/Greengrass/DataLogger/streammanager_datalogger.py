@@ -59,8 +59,8 @@ def setup_stream(client):
         client.create_message_stream(stream_definition)
         logger.info(f"[ok] Stream '{STREAM_NAME}' created/updated successfully")
         
-    except StreamManagerException as e:
-        if "ResourceAlreadyExistsException" in str(e):
+    except Exception as e:
+        if "already exists" in str(e).lower():
             logger.info(f"[info] Stream '{STREAM_NAME}' already exists")
         else:
             raise
@@ -87,8 +87,10 @@ def publish_to_iot_core(ipc_client_instance, topic, qos, payload):
             qos=qos,
             payload=payload
         )
-        future = ipc_client_instance.publish_to_iot_core(request=request)
-        future.result(timeout=5) # Wait for the publish operation to complete
+        operation = ipc_client_instance.new_publish_to_iot_core()
+        operation.activate(request)
+        future = operation.get_response()
+        future.result(timeout=5)
         logger.info(f"[ipc] Published to IoT Core topic '{topic}' with QoS {qos.name}")
         return True
     except Exception as e:
@@ -153,7 +155,7 @@ def main():
                 logger.error(f"[stream-failed] Failed to append to StreamManager: {line}")
             
             # Publish to IoT Core via IPC
-            iot_topic = f"sensor/data/{json_data.get('device_id', 'unknown')}"
+            iot_topic = "iot/data"
             if ipc_client_instance and publish_to_iot_core(ipc_client_instance, iot_topic, QOS.AT_LEAST_ONCE, line.encode('utf-8')):
                 logger.info(f"[ipc] Published to IoT Core: {line}")
             else:
@@ -178,3 +180,6 @@ def main():
                 logger.warning(f"[warn] Failed to close Greengrass IPC client: {e}")
     
     logger.info("[stop] StreamManager Datalogger stopped")
+
+if __name__ == "__main__":
+    main()

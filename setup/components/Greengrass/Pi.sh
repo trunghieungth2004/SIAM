@@ -71,9 +71,23 @@ sudo systemctl enable docker
 sudo systemctl start docker
 
 # Enable hardware interfaces
-echo "[setup] Enabling I2C and SPI interfaces..."
+echo "[setup] Enabling I2C, SPI and 1-Wire interfaces..."
 sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_spi 0
+sudo raspi-config nonint do_onewire 0
+
+# Configure active cooling
+echo "[setup] Configuring active cooling..."
+if grep -q "dtparam=fan" /boot/firmware/config.txt; then
+    echo "[skip] Active cooling already configured."
+else
+    echo "[setup] Adding active cooling configuration..."
+    echo "" | sudo tee -a /boot/firmware/config.txt > /dev/null
+    echo "# Active cooling fan settings" | sudo tee -a /boot/firmware/config.txt > /dev/null
+    echo "dtparam=fan_temp1=25000" | sudo tee -a /boot/firmware/config.txt > /dev/null
+    echo "dtparam=fan_temp1_hyst=2500" | sudo tee -a /boot/firmware/config.txt > /dev/null
+    echo "dtparam=fan_temp1_speed=250" | sudo tee -a /boot/firmware/config.txt > /dev/null
+fi
 
 # Clean up any existing Greengrass - COMMENTED OUT TO PREVENT DELETION AFTER INSTALLATION
 # echo "[cleanup] Cleaning up any existing Greengrass..."
