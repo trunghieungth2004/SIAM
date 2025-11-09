@@ -63,15 +63,15 @@ discover_s3_bucket() {
         fi
     fi
     
-    # Find latest model (like SageMaker does)
-    LATEST_TRAINING_JOB=$(aws sagemaker list-training-jobs --name-contains "${PROJECT_NAME}-maintenance" --sort-by CreationTime --sort-order Descending --max-results 1 --query "TrainingJobSummaries[0].TrainingJobName" --output text 2>/dev/null)
-    
-    if [ ! -z "$LATEST_TRAINING_JOB" ] && [ "$LATEST_TRAINING_JOB" != "None" ]; then
-        MODEL_S3_URI="s3://${S3_DATA_BUCKET}/sagemaker/output/${LATEST_TRAINING_JOB}/output/model.tar.gz"
-        print_log -g "[model] " "Found trained model: ${MODEL_S3_URI}"
+    # Check for compiled Edge TPU model
+    COMPILED_MODEL_URI="s3://${S3_DATA_BUCKET}/models/model_edgetpu_latest.tar.gz"
+    if aws s3 ls "${COMPILED_MODEL_URI}" > /dev/null 2>&1; then
+        print_log -g "[model] " "Found compiled Edge TPU model: ${COMPILED_MODEL_URI}"
     else
-        MODEL_S3_URI="s3://${S3_DATA_BUCKET}/models/maintenance-model-latest.tar.gz"
-        print_log -y "[fallback] " "No training jobs found, using fallback model path: ${MODEL_S3_URI}"
+        print_log -r "[error] " "Compiled Edge TPU model not found at: ${COMPILED_MODEL_URI}"
+        print_log -y "[info] " "Please run EdgeTPUCompiler.sh to compile the model first"
+        print_log -y "[info] " "Run: bash scripts/EdgeTPUCompiler.sh setup"
+        return 1
     fi
 }
 
@@ -165,24 +165,27 @@ DATALOGGER_EOF
       "Lifecycle": {
         "Install": {
           "RequiresPrivilege": true,
-          "Script": "mkdir -p /tmp/greengrass_ml; if [ -f {artifacts:path}/model.tar.gz ]; then tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully'; else echo 'No model.tar.gz found, using existing model'; fi; echo 'Testing TPU availability...'; docker run --rm --device=/dev/bus/usb -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages coral-tpu:latest python3 -c 'from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\")' && docker run --rm -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple || echo 'Model conversion completed'"
+          "Script": "python3 -m pip install --break-system-packages git+https://github.com/aws-greengrass/aws-greengrass-stream-manager-sdk-python && mkdir -p /tmp/greengrass_ml && echo '[1/4] Extracting model archive...' && tar -xzf {artifacts:path}/model_edgetpu_latest.tar.gz -C /tmp/greengrass_ml/ && echo '[2/4] Validating model artifacts...' && for file in model.tflite scaler.pkl days_scaler.pkl features.txt; do if [ ! -f /tmp/greengrass_ml/\$file ]; then echo \"ERROR: Missing required file: \$file\" && ls -la /tmp/greengrass_ml/ && exit 1; fi; done && echo 'All required artifacts found' && echo '[3/4] Checking Docker image...' && if ! docker images | grep -q coral-tpu; then echo 'Building coral-tpu Docker image...' && mkdir -p /tmp/coral-docker && cp {artifacts:path}/Dockerfile.tpu {artifacts:path}/tpu_inference_service.py /tmp/coral-docker/ && cd /tmp/coral-docker && docker build -f Dockerfile.tpu -t coral-tpu:latest . && echo 'Docker image built'; else echo 'Docker image already exists'; fi && echo '[4/4] Install complete'",
+          "Timeout": 900
         },
-
         "Run": {
           "RequiresPrivilege": true,
-          "Script": "docker run --rm --device=/dev/bus/usb --privileged -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/inference_service.py"
+          "Script": "docker run --rm --network host --device=/dev/bus/usb --privileged -e AWS_GG_NUCLEUS_DOMAIN_SOCKET_FILEPATH_FOR_COMPONENT=/greengrass/ipc.socket -e SVCUID -e AWS_CONTAINER_AUTHORIZATION_TOKEN -e AWS_CONTAINER_CREDENTIALS_FULL_URI -v /greengrass/v2/ipc.socket:/greengrass/ipc.socket -v /greengrass/v2/work:/greengrass/v2/work:ro -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/inference_service.py"
         }
       },
       "Artifacts": [
         {
-          "Uri": "${MODEL_S3_URI}",
+          "Uri": "s3://${S3_DATA_BUCKET}/models/model_edgetpu_latest.tar.gz",
           "Unarchive": "NONE"
         },
         {
           "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/inference_service.py"
         },
         {
-          "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/convert_model_to_tflite.py"
+          "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/Dockerfile.tpu"
+        },
+        {
+          "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/tpu_inference_service.py"
         }
       ]
     }
@@ -206,14 +209,44 @@ deploy_greengrass_components() {
     print_log -c "[upload] " "Uploading component artifacts to S3..."
     
     # Upload DataLogger artifacts
-    aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/datalogger.c" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/datalogger.c" || true
-    aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/streammanager_datalogger.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/streammanager_datalogger.py" || true
+    if ! aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/datalogger.c" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/datalogger.c"; then
+        print_log -r "[error] " "Failed to upload datalogger.c"
+        return 1
+    fi
+    if ! aws s3 cp "$(dirname "$0")/Greengrass/DataLogger/streammanager_datalogger.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/streammanager_datalogger.py"; then
+        print_log -r "[error] " "Failed to upload streammanager_datalogger.py"
+        return 1
+    fi
     
     # Upload MLInference artifacts
-    aws s3 cp "$(dirname "$0")/Greengrass/MLInference/tpu_inference_service.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/inference_service.py" || true
-    aws s3 cp "$(dirname "$0")/Greengrass/MLInference/convert_model_to_tflite.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/" || true
+    if ! aws s3 cp "$(dirname "$0")/Greengrass/MLInference/tpu_inference_service.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/inference_service.py"; then
+        print_log -r "[error] " "Failed to upload inference_service.py"
+        return 1
+    fi
+    if ! aws s3 cp "$(dirname "$0")/Greengrass/MLInference/Dockerfile.tpu" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/Dockerfile.tpu"; then
+        print_log -r "[error] " "Failed to upload Dockerfile.tpu"
+        return 1
+    fi
+    if ! aws s3 cp "$(dirname "$0")/Greengrass/MLInference/tpu_inference_service.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/tpu_inference_service.py"; then
+        print_log -r "[error] " "Failed to upload tpu_inference_service.py"
+        return 1
+    fi
     
-    print_log -g "[ok] " "Artifacts uploaded to S3"
+    # Verify all artifacts were uploaded
+    print_log -c "[verify] " "Verifying artifact uploads..."
+    MISSING_ARTIFACTS=""
+    for artifact in "datalogger.c" "streammanager_datalogger.py" "inference_service.py" "Dockerfile.tpu" "tpu_inference_service.py"; do
+        if ! aws s3 ls "s3://${S3_DATA_BUCKET}/greengrass/artifacts/${artifact}" > /dev/null 2>&1; then
+            MISSING_ARTIFACTS="${MISSING_ARTIFACTS} ${artifact}"
+        fi
+    done
+    
+    if [ -n "$MISSING_ARTIFACTS" ]; then
+        print_log -r "[error] " "Missing artifacts in S3:${MISSING_ARTIFACTS}"
+        return 1
+    fi
+    
+    print_log -g "[ok] " "All artifacts uploaded and verified in S3"
     
     # Create and deploy DataLogger component
     print_log -c "[create] " "Creating DataLogger component..."
@@ -232,11 +265,18 @@ deploy_greengrass_components() {
     
     # Create and deploy MLInference component
     print_log -c "[create] " "Creating MLInference component..."
-    if aws greengrassv2 create-component-version --inline-recipe fileb://"$(dirname "$0")/Greengrass/MLInference/component_recipe.json" > /dev/null 2>&1; then
-        print_log -g "[ok] " "MLInference component created"
+    MLINFERENCE_VERSION=$(grep -o '"ComponentVersion": "[^"]*"' "$(dirname "$0")/Greengrass/MLInference/component_recipe.json" | cut -d'"' -f4)
+    if aws greengrassv2 create-component-version --inline-recipe fileb://"$(dirname "$0")/Greengrass/MLInference/component_recipe.json" 2>&1 | tee /tmp/component_create_ml.log; then
+        print_log -g "[ok] " "MLInference component v${MLINFERENCE_VERSION} created"
     else
-        print_log -y "[skip] " "MLInference component may already exist"
+        if grep -q "already exists" /tmp/component_create_ml.log; then
+            print_log -y "[skip] " "MLInference component v${MLINFERENCE_VERSION} already exists"
+        else
+            print_log -r "[error] " "Failed to create MLInference component"
+            cat /tmp/component_create_ml.log
+        fi
     fi
+    rm -f /tmp/component_create_ml.log
     
     # Get component versions
     MLINFERENCE_VERSION=$(grep -o '"ComponentVersion": "[^"]*"' "$(dirname "$0")/Greengrass/MLInference/component_recipe.json" | cut -d'"' -f4 2>/dev/null || echo "1.0.3")
@@ -248,14 +288,17 @@ deploy_greengrass_components() {
   "targetArn": "arn:aws:iot:${AWS_REGION}:${ACCOUNT_ID}:thing/${GG_THING_NAME}",
   "deploymentName": "${PROJECT_NAME}-deployment-$(date +%s)",
   "components": {
-    "com.test.DataLogger": {
+    "com.${PROJECT_NAME}.DataLogger": {
       "componentVersion": "${DATALOGGER_VERSION}",
       "configurationUpdate": {
-        "merge": "{\"accessControl\":{\"aws.greengrass.ipc.mqttproxy\":{\"com.test.DataLogger:mqttproxy:1\":{\"policyDescription\":\"Allow publishing to IoT Core\",\"operations\":[\"aws.greengrass#PublishToIoTCore\"],\"resources\":[\"iot/data\"]}}}}"
+        "merge": "{\"accessControl\":{\"aws.greengrass.ipc.mqttproxy\":{\"com.${PROJECT_NAME}.DataLogger:mqttproxy:1\":{\"policyDescription\":\"Allow publishing to IoT Core\",\"operations\":[\"aws.greengrass#PublishToIoTCore\"],\"resources\":[\"iot/data\"]}}}}"
       }
     },
-    "com.test.MLInference": {
-      "componentVersion": "${MLINFERENCE_VERSION}"
+    "com.${PROJECT_NAME}.MLInference": {
+      "componentVersion": "${MLINFERENCE_VERSION}",
+      "configurationUpdate": {
+        "merge": "{\"accessControl\":{\"aws.greengrass.ipc.mqttproxy\":{\"com.${PROJECT_NAME}.MLInference:mqttproxy:1\":{\"policyDescription\":\"Allow publishing ML predictions to IoT Core\",\"operations\":[\"aws.greengrass#PublishToIoTCore\"],\"resources\":[\"ml/predictions\"]}},\"aws.greengrass.StreamManager\":{\"com.${PROJECT_NAME}.MLInference:streammanager:1\":{\"policyDescription\":\"Allow full access to StreamManager\",\"operations\":[\"aws.greengrass#CreateMessageStream\",\"aws.greengrass#AppendMessage\",\"aws.greengrass#ReadFromStream\"],\"resources\":[\"*\"]}}}}"
+      }
     }
   }
 }
@@ -263,13 +306,14 @@ DEPLOYMENT_EOF
     
     if DEPLOYMENT_ID=$(aws greengrassv2 create-deployment --cli-input-json file:///tmp/deployment.json --query "deploymentId" --output text 2>/dev/null); then
         print_log -g "[ok] " "Deployment created: ${DEPLOYMENT_ID}"
+        print_log -m "[Target] " "GreengrassCore_${PROJECT_NAME}"
+        print_log -m "[Components] " "DataLogger v${DATALOGGER_VERSION}, MLInference v${MLINFERENCE_VERSION}"
         print_log -c "[wait] " "Waiting for deployment to complete..."
         
-        # Wait for deployment to complete
+        # Wait for deployment to complete (infinite loop until completed or failed)
         local retry_count=0
-        local max_retries=20
         
-        while [ $retry_count -lt $max_retries ]; do
+        while true; do
             DEPLOYMENT_STATUS=$(aws greengrassv2 get-deployment --deployment-id "$DEPLOYMENT_ID" --query "deploymentStatus" --output text 2>/dev/null)
             
             case "$DEPLOYMENT_STATUS" in
@@ -279,7 +323,6 @@ DEPLOYMENT_EOF
                     ;;
                 "FAILED")
                     print_log -r "[error] " "Deployment failed"
-                    # Get detailed error from effective deployments
                     FAILURE_REASON=$(aws greengrassv2 list-effective-deployments --core-device-thing-name "$GG_THING_NAME" --query "effectiveDeployments[0].reason" --output text 2>/dev/null || echo "Unknown")
                     if [ "$FAILURE_REASON" != "None" ] && [ ! -z "$FAILURE_REASON" ]; then
                         print_log -r "[reason] " "$FAILURE_REASON"
@@ -287,20 +330,16 @@ DEPLOYMENT_EOF
                     break
                     ;;
                 "ACTIVE"|"IN_PROGRESS")
-                    print_log -y "[wait] " "Deployment in progress... (attempt $((retry_count + 1))/$max_retries)"
+                    print_log -y "[wait] " "Status: $DEPLOYMENT_STATUS | Elapsed: $((retry_count * 10))s | ID: ${DEPLOYMENT_ID:0:8}..."
                     ;;
                 *)
-                    print_log -y "[wait] " "Deployment status: $DEPLOYMENT_STATUS (attempt $((retry_count + 1))/$max_retries)"
+                    print_log -y "[wait] " "Status: $DEPLOYMENT_STATUS | Elapsed: $((retry_count * 10))s | ID: ${DEPLOYMENT_ID:0:8}..."
                     ;;
             esac
             
             retry_count=$((retry_count + 1))
-            sleep 15
+            sleep 10
         done
-        
-        if [ $retry_count -ge $max_retries ]; then
-            print_log -y "[timeout] " "Deployment status check timed out. Check AWS console for status."
-        fi
     else
         print_log -r "[error] " "Failed to create deployment"
         return 1
@@ -308,6 +347,38 @@ DEPLOYMENT_EOF
     
     # Cleanup
     rm -f /tmp/deployment.json
+    
+    # Check component status after deployment
+    print_log -c "[verify] " "Checking component status on device..."
+    sleep 5
+    
+    # Get component status for DataLogger
+    DATALOGGER_STATUS=$(aws greengrassv2 list-installed-components --core-device-thing-name "$GG_THING_NAME" --query "installedComponents[?componentName=='com.${PROJECT_NAME}.DataLogger'].lifecycleState" --output text 2>/dev/null || echo "UNKNOWN")
+    if [ "$DATALOGGER_STATUS" = "RUNNING" ]; then
+        print_log -g "[ok] " "DataLogger component: RUNNING"
+    else
+        print_log -y "[status] " "DataLogger component: $DATALOGGER_STATUS"
+    fi
+    
+    # Get component status for MLInference
+    MLINFERENCE_STATUS=$(aws greengrassv2 list-installed-components --core-device-thing-name "$GG_THING_NAME" --query "installedComponents[?componentName=='com.${PROJECT_NAME}.MLInference'].lifecycleState" --output text 2>/dev/null || echo "UNKNOWN")
+    if [ "$MLINFERENCE_STATUS" = "RUNNING" ]; then
+        print_log -g "[ok] " "MLInference component: RUNNING"
+    else
+        print_log -y "[status] " "MLInference component: $MLINFERENCE_STATUS"
+    fi
+    
+    # If any component is not running, show recent logs
+    if [ "$DATALOGGER_STATUS" != "RUNNING" ] || [ "$MLINFERENCE_STATUS" != "RUNNING" ]; then
+        print_log -y "[info] " "Checking component logs on Pi..."
+        ssh "${PI_SSH_TARGET}" 'bash -s' << 'COMPONENT_LOG_EOF'
+echo "[DataLogger logs - last 10 lines]:"
+sudo tail -10 /greengrass/v2/logs/com.test.DataLogger.log 2>/dev/null || echo "No DataLogger logs found"
+echo ""
+echo "[MLInference logs - last 10 lines]:"
+sudo tail -10 /greengrass/v2/logs/com.test.MLInference.log 2>/dev/null || echo "No MLInference logs found"
+COMPONENT_LOG_EOF
+    fi
     
     print_log -g "[ok] " "Component deployment completed"
 }
@@ -387,7 +458,7 @@ setup_pi_for_greengrass() {
         
         # Test TPU detection
         print_log -c "[test] " "Testing TPU detection..."
-        if ssh "${PI_SSH_TARGET}" 'docker run --rm --privileged --device=/dev/bus/usb coral-tpu:latest python3 -c "from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\" if devices else \"No TPU detected - may need USB replug or reboot\")"' 2>/dev/null; then
+        if ssh "${PI_SSH_TARGET}" "docker run --rm --privileged --device=/dev/bus/usb coral-tpu:latest python3 -c 'from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\" if devices else \"No TPU detected\")' 2>/dev/null"; then
             print_log -g "[ok] " "TPU detection successful"
         else
             print_log -y "[info] " "TPU test completed - device may need initialization"
@@ -486,13 +557,13 @@ fi
 # Check hardware interfaces
 echo "[verify] Checking hardware interfaces..."
 if [ -e /dev/i2c-1 ]; then
-    echo "[ok] I2C interface: Available (/dev/i2c-1)"
+    echo "[ok] I2C interface: Available"
 else
     echo "[error] I2C interface: Missing"
 fi
 
 if [ -e /dev/gpiochip0 ]; then
-    echo "[ok] GPIO interface: Available (/dev/gpiochip0)"
+    echo "[ok] GPIO interface: Available"
 else
     echo "[error] GPIO interface: Missing"
 fi
@@ -504,16 +575,16 @@ else
     echo "[warn] SPI interface: Not available"
 fi
 
-# Check USB devices (for Coral TPU)
+# Check USB devices for Coral TPU
 echo "[verify] Checking USB devices..."
 if lsusb | grep -q "Global Unichip Corp."; then
     USB_DEVICE=$(lsusb | grep "Global Unichip Corp.")
-    echo "[ok] Coral TPU USB (pre-init): $USB_DEVICE"
+    echo "[ok] Coral TPU USB pre-init: $USB_DEVICE"
 elif lsusb | grep -q "Google Inc."; then
     USB_DEVICE=$(lsusb | grep "Google Inc.")
-    echo "[ok] Coral TPU USB (initialized): $USB_DEVICE"
+    echo "[ok] Coral TPU USB initialized: $USB_DEVICE"
 else
-    echo "[info] Coral TPU USB: Not detected (may not be connected)"
+    echo "[info] Coral TPU USB: Not detected"
 fi
 
 # Check Greengrass installation
@@ -602,7 +673,7 @@ VERIFY_EOF
 troubleshoot_greengrass() {
     print_log -c "[troubleshoot] " "Running comprehensive Greengrass troubleshooting diagnostics..."
     
-    ssh "${PI_SSH_TARGET}" 'bash -s' << 'TROUBLESHOOT_EOF'
+    ssh "${PI_SSH_TARGET}" 'bash -s' << TROUBLESHOOT_EOF
 echo "=================================="
 echo "GREENGRASS TROUBLESHOOTING REPORT"
 echo "=================================="
@@ -613,7 +684,7 @@ echo "  OS: $(lsb_release -d 2>/dev/null | cut -f2 || cat /etc/os-release | grep
 echo "  Kernel: $(uname -r)"
 echo "  Architecture: $(uname -m)"
 echo "  Memory: $(free -h | grep '^Mem:' | awk '{print $2 " total, " $7 " available"}')"
-echo "  Disk Space: $(df -h / | tail -1 | awk '{print $4 " available on /"}')"
+echo "  Disk Space: $(df -h / | tail -1 | awk '{print $4 " available on /"}')" 
 echo "  Uptime: $(uptime | cut -d',' -f1)"
 
 echo ""
@@ -625,9 +696,9 @@ if command -v java >/dev/null 2>&1; then
     # Check if Java is the correct version for Greengrass
     JAVA_MAJOR=$(java -version 2>&1 | grep -oP 'version "([0-9]+)' | grep -oP '[0-9]+' 2>/dev/null || echo "unknown")
     if [ "$JAVA_MAJOR" -ge 8 ] 2>/dev/null; then
-        echo "  Java Version: ✓ OK (>= 8 required)"
+        echo "  Java Version: OK - greater than or equal to 8 required"
     else
-        echo "  Java Version: ✗ ERROR (need >= 8, found: $JAVA_MAJOR)"
+        echo "  Java Version: ERROR - need greater than or equal to 8, found: $JAVA_MAJOR"
     fi
     
     # Check Java heap settings
@@ -653,9 +724,9 @@ if [ -d "/greengrass" ]; then
     for dir in v2 v2/config v2/logs v2/work v2/packages; do
         if [ -d "/greengrass/$dir" ]; then
             SIZE=$(du -sh "/greengrass/$dir" 2>/dev/null | cut -f1)
-            echo "    ✓ /greengrass/$dir ($SIZE)"
+            echo "    OK /greengrass/$dir - $SIZE"
         else
-            echo "    ✗ /greengrass/$dir (missing)"
+            echo "    MISSING /greengrass/$dir"
         fi
     done
     
@@ -680,7 +751,7 @@ if [ -d "/greengrass" ]; then
             echo "    IoT Endpoint: $IOT_ENDPOINT"
         fi
     else
-        echo "    ✗ Config file missing (effectiveConfig.yaml)"
+        echo "    MISSING Config file effectiveConfig.yaml"
     fi
     
     # Check log files
@@ -688,7 +759,7 @@ if [ -d "/greengrass" ]; then
     if [ -f "/greengrass/v2/logs/greengrass.log" ]; then
         LOG_SIZE=$(ls -lh /greengrass/v2/logs/greengrass.log | awk '{print $5}')
         LAST_MODIFIED=$(stat -c '%y' /greengrass/v2/logs/greengrass.log | cut -d'.' -f1)
-        echo "    ✓ Main log: $LOG_SIZE (modified: $LAST_MODIFIED)"
+        echo "    Main log: $LOG_SIZE modified: $LAST_MODIFIED"
         
         # Look for recent errors
         RECENT_ERRORS=$(sudo tail -100 /greengrass/v2/logs/greengrass.log 2>/dev/null | grep -i "error\|exception\|fail" | wc -l)
@@ -714,7 +785,7 @@ if [ -f "/etc/systemd/system/greengrass.service" ]; then
     if systemctl is-enabled --quiet greengrass.service 2>/dev/null; then
         echo "  Service Enabled: ✓ yes"
     else
-        echo "  Service Enabled: ✗ no (will not start on boot)"
+        echo "  Service Enabled: no will not start on boot"
     fi
     
     # Get detailed service status
@@ -732,8 +803,8 @@ if [ -f "/etc/systemd/system/greengrass.service" ]; then
             case "$EXIT_CODE" in
                 "1") echo "    Meaning: General error" ;;
                 "2") echo "    Meaning: Misuse of shell command" ;;
-                "143") echo "    Meaning: Terminated by SIGTERM (graceful shutdown requested)" ;;
-                "137") echo "    Meaning: Killed by SIGKILL (force terminated)" ;;
+                "143") echo "    Meaning: Terminated by SIGTERM graceful shutdown requested" ;;
+                "137") echo "    Meaning: Killed by SIGKILL force terminated" ;;
                 *) echo "    Meaning: Unknown exit code" ;;
             esac
         fi
@@ -801,7 +872,7 @@ if [ -d "$CERT_BASE/certs" ]; then
         CERT_PATH="$CERT_BASE/certs/$certfile"
         if [ -f "$CERT_PATH" ]; then
             SIZE=$(ls -lh "$CERT_PATH" | awk '{print $5}')
-            echo "  $certfile: ✓ exists ($SIZE)"
+            echo "  $certfile: exists - $SIZE"
             
             # For the thing certificate, check expiration
             if [ "$certfile" = "thingCert.crt" ]; then
@@ -978,6 +1049,21 @@ setup_greengrass() {
         print_log -r "[error] " "Raspberry Pi setup failed"
         return 1
     fi
+    
+    # Build Coral TPU Docker image
+    print_log -c "[docker] " "Building Coral TPU Docker image on Pi..."
+    DOCKER_DIR="$(dirname "$0")/Greengrass/MLInference"
+    if scp "${DOCKER_DIR}/Dockerfile.tpu" "${DOCKER_DIR}/tpu_inference_service.py" "${PI_SSH_TARGET}:~/coral-docker/"; then
+        if ssh "${PI_SSH_TARGET}" "cd ~/coral-docker && docker build -f Dockerfile.tpu -t coral-tpu:latest ."; then
+            print_log -g "[ok] " "Coral TPU Docker image built successfully"
+        else
+            print_log -r "[error] " "Failed to build Docker image"
+            return 1
+        fi
+    else
+        print_log -r "[error] " "Failed to upload Docker files"
+        return 1
+    fi
 
     # Setup AWS Roles on the local machine
     if ! setup_aws_roles; then
@@ -1128,11 +1214,13 @@ REMOTE_EOF
         print_log -g "[ok] " "Greengrass setup completed successfully."
     else
         print_log -r "[error] " "Greengrass installation failed"
+        rm -f "${REMOTE_SCRIPT_LOCAL}"
         return 1
     fi
 
-    # Cleanup - don't delete the local script for debugging purposes
-    print_log -c "[saved] " "Greengrass installation script saved to: ${REMOTE_SCRIPT_LOCAL}"
+    # Cleanup local script (contains credentials)
+    rm -f "${REMOTE_SCRIPT_LOCAL}"
+    print_log -c "[cleanup] " "Removed temporary installation script"
 
     print_log -m "[Greengrass Thing] " "${GG_THING_NAME}"
     print_log -m "[Thing] " "${THING_NAME}"
@@ -1163,7 +1251,7 @@ REMOTE_EOF
             # Extract exit code and reason
             EXIT_CODE=$(echo "$SERVICE_STATUS" | grep -o 'status=[0-9]*' | cut -d'=' -f2)
             if [ "$EXIT_CODE" = "143" ]; then
-                print_log -y "[info] " "Exit code 143 indicates service was terminated (SIGTERM)"
+                print_log -y "[info] " "Exit code 143 indicates service was terminated SIGTERM"
                 print_log -y "[info] " "This usually means a configuration or permission issue"
             elif [ ! -z "$EXIT_CODE" ]; then
                 print_log -y "[info] " "Service exited with code: $EXIT_CODE"

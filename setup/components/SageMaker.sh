@@ -191,76 +191,106 @@ def main():
             (df['power_indicator'] / 2) * 20
         ).clip(0, 100)
         
+        # Calculate days to failure based on degradation physics
+        # Simulate device age and degradation rate
+        df['device_age_days'] = np.arange(len(df)) * 0.1  # Simulate aging over time
+        df['degradation_rate'] = np.where(
+            df['maintenance_score'] < 30, 0.1,
+            np.where(df['maintenance_score'] < 60, 0.3, 0.8)
+        )
+        df['days_to_failure'] = ((100 - df['maintenance_score']) / df['degradation_rate']).clip(1, 1825)
+        
         # Prepare features
         features = ['temp_c', 'vibration_magnitude', 'gyro_magnitude', 'temp_deviation', 'power_indicator', 'current_a']
         X = df[features].values.astype(np.float32)
-        y = df['maintenance_score'].values.astype(np.float32)
+        y_score = df['maintenance_score'].values.astype(np.float32)
+        y_days = df['days_to_failure'].values.astype(np.float32)
         
         # Train/test split
         split_idx = int(0.8 * len(df))
         X_train, X_test = X[:split_idx], X[split_idx:]
-        y_train, y_test = y[:split_idx], y[split_idx:]
+        y_score_train, y_score_test = y_score[:split_idx], y_score[split_idx:]
+        y_days_train, y_days_test = y_days[:split_idx], y_days[split_idx:]
         
-        # Scale features
+        # Scale features and targets
         scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train).astype(np.float32)
         X_test_scaled = scaler.transform(X_test).astype(np.float32)
         
-        # Train sklearn model
-        print("Training sklearn model...")
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
-        model.fit(X_train_scaled, y_train)
+        # Scale days_to_failure for better training (normalize to 0-1 range)
+        days_scaler = StandardScaler()
+        y_days_train_scaled = days_scaler.fit_transform(y_days_train.reshape(-1, 1)).astype(np.float32)
+        y_days_test_scaled = days_scaler.transform(y_days_test.reshape(-1, 1)).astype(np.float32)
+        
+        # Train multi-output TensorFlow model for Edge TPU
+        print("Training multi-output TensorFlow model for Edge TPU...")
+        import tensorflow as tf
+        
+        # Shared layers
+        inputs = tf.keras.Input(shape=(len(features),))
+        x = tf.keras.layers.Dense(32, activation='relu')(inputs)
+        x = tf.keras.layers.Dense(16, activation='relu')(x)
+        
+        # Output 1: Maintenance score (0-100)
+        score_output = tf.keras.layers.Dense(1, activation='linear', name='maintenance_score')(x)
+        
+        # Output 2: Days to failure (scaled)
+        days_output = tf.keras.layers.Dense(1, activation='linear', name='days_to_failure')(x)
+        
+        tf_model = tf.keras.Model(inputs=inputs, outputs=[score_output, days_output])
+        
+        tf_model.compile(
+            optimizer='adam',
+            loss={'maintenance_score': 'mse', 'days_to_failure': 'mse'},
+            loss_weights={'maintenance_score': 1.0, 'days_to_failure': 0.5},
+            metrics={'maintenance_score': 'mae', 'days_to_failure': 'mae'}
+        )
+        
+        tf_model.fit(
+            X_train_scaled,
+            {'maintenance_score': y_score_train, 'days_to_failure': y_days_train_scaled.flatten()},
+            epochs=50,
+            batch_size=32,
+            validation_split=0.2,
+            verbose=1
+        )
         
         # Evaluate
-        y_pred = model.predict(X_test_scaled)
-        mse = mean_squared_error(y_test, y_pred)
-        print(f"Model MSE: {mse:.2f}")
+        y_pred = tf_model.predict(X_test_scaled)
+        mse_score = mean_squared_error(y_score_test, y_pred[0])
+        mse_days = mean_squared_error(y_days_test_scaled, y_pred[1])
+        print(f"Model MSE - Score: {mse_score:.2f}, Days: {mse_days:.4f}")
         
-        # Save sklearn model
-        print("Saving sklearn model...")
-        joblib.dump(model, os.path.join(args.model_dir, 'model.joblib'))
+        # Convert to TFLite with INT8 quantization for Edge TPU
+        print("Converting to TFLite with INT8 quantization for Edge TPU...")
         
-        # Also save in pickle format
-        with open(os.path.join(args.model_dir, 'model.pkl'), 'wb') as f:
-            pickle.dump(model, f)
+        def representative_dataset():
+            for i in range(100):
+                yield [X_train_scaled[i:i+1].astype(np.float32)]
         
-        # Create simple TFLite model for TPU (demo purposes)
-        print("Creating simple TFLite model...")
-        try:
-            import tensorflow as tf
-            
-            # Create a simple neural network that mimics the sklearn model behavior
-            tf_model = tf.keras.Sequential([
-                tf.keras.layers.Dense(32, activation='relu', input_shape=(len(features),)),
-                tf.keras.layers.Dense(16, activation='relu'),
-                tf.keras.layers.Dense(1, activation='linear')
-            ])
-            
-            tf_model.compile(optimizer='adam', loss='mse')
-            
-            # Train briefly to create a working model
-            tf_model.fit(X_train_scaled, y_train, epochs=20, batch_size=32, verbose=0)
-            
-            # Convert to TFLite
-            converter = tf.lite.TFLiteConverter.from_keras_model(tf_model)
-            converter.optimizations = [tf.lite.Optimize.DEFAULT]
-            tflite_model = converter.convert()
-            
-            # Save TFLite model
-            with open(os.path.join(args.model_dir, 'model.tflite'), 'wb') as f:
-                f.write(tflite_model)
-            print(f"TFLite model created: {len(tflite_model)} bytes")
-            
-        except Exception as e:
-            print(f"TFLite creation failed: {e} - continuing without TFLite model")
+        converter = tf.lite.TFLiteConverter.from_keras_model(tf_model)
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        converter.representative_dataset = representative_dataset
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+        converter.inference_input_type = tf.uint8
+        converter.inference_output_type = tf.uint8
+        tflite_model = converter.convert()
         
-        # Save scaler for preprocessing
+        with open(os.path.join(args.model_dir, 'model.tflite'), 'wb') as f:
+            f.write(tflite_model)
+        print(f"TFLite model created: {len(tflite_model)} bytes")
+        
+        # Save scalers
         with open(os.path.join(args.model_dir, 'scaler.pkl'), 'wb') as f:
             pickle.dump(scaler, f)
         
-        # Save feature names
+        with open(os.path.join(args.model_dir, 'days_scaler.pkl'), 'wb') as f:
+            pickle.dump(days_scaler, f)
+        
         with open(os.path.join(args.model_dir, 'features.txt'), 'w') as f:
             f.write(','.join(features))
+        
+        print("Training completed successfully")
             
         print("Training completed successfully!")
         
@@ -276,21 +306,27 @@ TRAIN_EOF
 
     # Create inference script
     cat > inference.py << 'INFERENCE_EOF'
-import joblib
 import json
 import numpy as np
 import os
 import pickle
+import tflite_runtime.interpreter as tflite
 
 def model_fn(model_dir):
-    model = joblib.load(os.path.join(model_dir, 'model.joblib'))
+    """Loads the TFLite model and scalers."""
+    interpreter = tflite.Interpreter(model_path=os.path.join(model_dir, 'model.tflite'))
+    interpreter.allocate_tensors()
     with open(os.path.join(model_dir, 'scaler.pkl'), 'rb') as f:
         scaler = pickle.load(f)
-    return {'model': model, 'scaler': scaler}
+    with open(os.path.join(model_dir, 'days_scaler.pkl'), 'rb') as f:
+        days_scaler = pickle.load(f)
+    return {'interpreter': interpreter, 'scaler': scaler, 'days_scaler': days_scaler}
 
 def predict_fn(input_data, model_dict):
-    model = model_dict['model']
+    """Runs prediction on the input data."""
+    interpreter = model_dict['interpreter']
     scaler = model_dict['scaler']
+    days_scaler = model_dict['days_scaler']
     
     # Calculate derived features
     vibration_magnitude = np.sqrt(input_data['ax']**2 + input_data['ay']**2 + input_data['az']**2)
@@ -298,7 +334,7 @@ def predict_fn(input_data, model_dict):
     temp_deviation = abs(input_data['temp_c'] - 25.0)
     power_indicator = input_data['current_a'] * 12.0
     
-    # Prepare features
+    # Prepare features in exact training order
     features = np.array([[
         input_data['temp_c'],
         vibration_magnitude,
@@ -310,23 +346,39 @@ def predict_fn(input_data, model_dict):
     
     # Scale and predict
     features_scaled = scaler.transform(features)
-    prediction = model.predict(features_scaled)[0]
     
-    # Convert to maintenance recommendation
-    if prediction < 30:
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    
+    interpreter.set_tensor(input_details[0]['index'], features_scaled)
+    interpreter.invoke()
+    
+    # Multi-output: [maintenance_score, days_to_failure]
+    maintenance_score = float(interpreter.get_tensor(output_details[0]['index'])[0][0])
+    days_scaled = float(interpreter.get_tensor(output_details[1]['index'])[0][0])
+    days_to_failure = float(days_scaler.inverse_transform([[days_scaled]])[0][0])
+    days_to_failure = max(1, int(days_to_failure))
+    
+    # Convert to maintenance recommendation with confidence
+    if maintenance_score < 30:
         status = "Good"
-        days_until_maintenance = 90
-    elif prediction < 60:
+        confidence = min(0.95, (30 - maintenance_score) / 30)
+        days_until_maintenance = min(90, days_to_failure)
+    elif maintenance_score < 60:
         status = "Monitor"
-        days_until_maintenance = 30
+        confidence = 0.75
+        days_until_maintenance = min(30, days_to_failure)
     else:
         status = "Maintenance Required"
-        days_until_maintenance = 7
+        confidence = min(0.95, (maintenance_score - 60) / 40)
+        days_until_maintenance = max(0, int((80 - maintenance_score) / 0.5)) if maintenance_score < 80 else 0
     
     return {
-        'maintenance_score': float(prediction),
+        'maintenance_score': float(maintenance_score),
         'status': status,
+        'confidence': float(confidence),
         'days_until_maintenance': days_until_maintenance,
+        'estimated_days_to_failure': days_to_failure,
         'vibration_magnitude': float(vibration_magnitude),
         'power_indicator': float(power_indicator)
     }
@@ -364,7 +416,7 @@ INFERENCE_EOF
     "TrainingJobName": "${TRAINING_JOB_NAME}",
     "RoleArn": "${SAGEMAKER_ROLE_ARN}",
     "AlgorithmSpecification": {
-        "TrainingImage": "$(get_sagemaker_ecr_uri ${AWS_REGION})/sagemaker-scikit-learn:0.23-1-cpu-py3",
+        "TrainingImage": "763104351884.dkr.ecr.${AWS_REGION}.amazonaws.com/tensorflow-training:2.13-cpu-py310",
         "TrainingInputMode": "File"
     },
     "InputDataConfig": [
@@ -434,7 +486,7 @@ EOL
     print_log -c "[model] " "Creating SageMaker model..."
     if ! aws sagemaker create-model \
         --model-name $MODEL_NAME \
-        --primary-container Image=$(get_sagemaker_ecr_uri ${AWS_REGION})/sagemaker-scikit-learn:0.23-1-cpu-py3,ModelDataUrl=$MODEL_ARTIFACT_PATH,Environment="{\"SAGEMAKER_PROGRAM\":\"inference.py\",\"SAGEMAKER_SUBMIT_DIRECTORY\":\"${S3_CODE_PATH}sourcedir.tar.gz\"}" \
+        --primary-container Image=763104351884.dkr.ecr.${AWS_REGION}.amazonaws.com/tensorflow-inference:2.13-cpu,ModelDataUrl=$MODEL_ARTIFACT_PATH,Environment="{\"SAGEMAKER_PROGRAM\":\"inference.py\",\"SAGEMAKER_SUBMIT_DIRECTORY\":\"${S3_CODE_PATH}sourcedir.tar.gz\"}" \
         --execution-role-arn $SAGEMAKER_ROLE_ARN > /dev/null 2>&1; then
         print_log -y "[skip] " "Model may already exist, continuing..."
     fi
@@ -446,7 +498,7 @@ EOL
     COMPONENT_NAME="com.${PROJECT_NAME}.MLInference"
     COMPONENT_VERSION="1.0.0"
     
-    cat > inference_service.py << 'SERVICE_EOF'
+    cat > inference_service.py << SERVICE_EOF
 import json
 import time
 import boto3
@@ -479,31 +531,47 @@ class MLInferenceService:
         }
     
     def predict_maintenance(self, sensor_data):
-        """Run inference using trained model"""
+        """Run inference using trained TFLite model"""
         try:
-            import joblib
             import numpy as np
-            
+            import pickle
+            import tflite_runtime.interpreter as tflite
+
             # Calculate derived features
             vibration_magnitude = np.sqrt(sensor_data['ax']**2 + sensor_data['ay']**2 + sensor_data['az']**2)
             gyro_magnitude = np.sqrt(sensor_data['gx']**2 + sensor_data['gy']**2 + sensor_data['gz']**2)
             temp_deviation = abs(sensor_data['temp_c'] - 25.0)
             power_indicator = sensor_data['current_a'] * 12.0
+
+            # Get artifact path from environment
+            artifact_dir = os.environ.get('AWS_GG_COMPONENT_ARTIFACT_DIR')
+            if not artifact_dir:
+                # Fallback for local testing or older Greengrass versions
+                artifact_dir = "/greengrass/v2/packages/artifacts-unarchived/${COMPONENT_NAME}/${COMPONENT_VERSION}/"
+
+            # Load model and scaler
+            with open(os.path.join(artifact_dir, 'scaler.pkl'), 'rb') as f:
+                scaler = pickle.load(f)
             
-            # Load model artifacts
-            model = joblib.load('/greengrass/v2/packages/artifacts/com.${PROJECT_NAME}.MLInference/1.0.0/model.joblib')
-            scaler = joblib.load('/greengrass/v2/packages/artifacts/com.${PROJECT_NAME}.MLInference/1.0.0/scaler.joblib')
+            interpreter = tflite.Interpreter(model_path=os.path.join(artifact_dir, 'model.tflite'))
+            interpreter.allocate_tensors()
             
+            input_details = interpreter.get_input_details()
+            output_details = interpreter.get_output_details()
+
             # Prepare features
             features = np.array([[
                 sensor_data['temp_c'], vibration_magnitude, gyro_magnitude,
                 temp_deviation, power_indicator, sensor_data['current_a']
-            ]])
-            
+            ]], dtype=np.float32)
+
             # Scale and predict
             features_scaled = scaler.transform(features)
-            prediction = model.predict(features_scaled)[0]
             
+            interpreter.set_tensor(input_details[0]['index'], features_scaled)
+            interpreter.invoke()
+            prediction = interpreter.get_tensor(output_details[0]['index'])[0][0]
+
             # Convert to maintenance recommendation
             if prediction < 30:
                 status = "Good"
@@ -601,6 +669,14 @@ SERVICE_EOF
     export SAGEMAKER_ROLE_ARN
     export TRAINING_JOB_NAME
     
+    # Trigger Edge TPU compilation
+    print_log -c "[compile] " "Triggering Edge TPU model compilation..."
+    if bash "$(dirname "$0")/../scripts/EdgeTPUCompiler.sh" setup; then
+        print_log -g "[ok] " "Edge TPU compilation started"
+    else
+        print_log -y "[warn] " "Edge TPU compilation failed"
+    fi
+    
     # Cleanup temporary files
     rm -f train.py inference.py sourcedir.tar.gz training-job.json sagemaker-trust-policy.json
     print_log -g "[cleanup] " "Temporary files cleaned up"
@@ -642,6 +718,10 @@ cleanup_sagemaker() {
         print_log -c "[cleanup] " "Cleaning up S3 training artifacts..."
         aws s3 rm s3://${S3_DATA_BUCKET}/sagemaker/ --recursive 2>/dev/null || true
     fi
+    
+    # Trigger Edge TPU compiler cleanup
+    print_log -c "[cleanup] " "Cleaning up Edge TPU compiler resources..."
+    bash "$(dirname "$0")/../scripts/EdgeTPUCompiler.sh" cleanup 2>/dev/null || true
     
     print_log -g "[ok] " "SageMaker cleanup completed."
 }

@@ -28,6 +28,101 @@ export const handler = async (event) => {
             // String payload
             payload = JSON.parse(event);
         }
+        
+        // Check if this is an ML prediction or sensor data
+        if (payload.prediction && payload.inference_type) {
+            return await handleMLPrediction(payload);
+        } else {
+            return await handleSensorData(payload);
+        }
+    } catch (error) {
+        console.error("Error processing data:", error);
+        console.error("Error stack:", error.stack);
+        
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                error: error.message,
+                event: event
+            }),
+        };
+    }
+};
+
+async function handleMLPrediction(payload) {
+    console.log(`Processing ML prediction: ${payload.prediction}`);
+    
+    const device_id = payload.device_id || 'unknown';
+    const timestamp = payload.timestamp || Math.floor(Date.now() / 1000);
+    
+    // Store prediction in DynamoDB
+    const predictionTable = TABLE_NAME.replace('sensor-readings', 'ml-predictions');
+    console.log(`Writing prediction to DynamoDB table: ${predictionTable}`);
+    
+    const dynamoParams = {
+        TableName: predictionTable,
+        Item: {
+            device_id: device_id,
+            timestamp: timestamp,
+            prediction: payload.prediction,
+            confidence: Number(payload.confidence || 0.5),
+            score: Number(payload.score || 0),
+            inference_type: payload.inference_type,
+            inference_time_ms: Number(payload.inference_time_ms || 0),
+            days_until_maintenance: Number(payload.days_until_maintenance || 0),
+            estimated_days_to_failure: Number(payload.estimated_days_to_failure || 0),
+            ttl: timestamp + (86400 * 90) // 90 days retention
+        }
+    };
+    
+    await docClient.send(new PutCommand(dynamoParams));
+    console.log("Successfully wrote ML prediction to DynamoDB.");
+    
+    // Store in S3 for analysis
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const s3Key = `ml-predictions/${year}/${month}/${day}/${device_id}-${timestamp}.json`;
+    
+    const s3Params = {
+        Bucket: BUCKET_NAME,
+        Key: s3Key,
+        Body: JSON.stringify(payload, null, 2),
+        ContentType: "application/json"
+    };
+    await s3Client.send(new PutObjectCommand(s3Params));
+    console.log("Successfully wrote ML prediction to S3.");
+    
+    // Send alert if maintenance required
+    if (payload.prediction === 'Maintenance Required') {
+        const alertMessage = `MAINTENANCE ALERT for Device ${device_id}:\n` +
+            `Prediction: ${payload.prediction}\n` +
+            `Confidence: ${(payload.confidence * 100).toFixed(1)}%\n` +
+            `Score: ${payload.score.toFixed(1)}\n` +
+            `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
+        
+        const snsParams = {
+            TopicArn: SNS_TOPIC_ARN,
+            Message: alertMessage,
+            Subject: `Maintenance Required: ${device_id}`
+        };
+        await snsClient.send(new PublishCommand(snsParams));
+        console.log("Sent maintenance alert to SNS.");
+    }
+    
+    return {
+        statusCode: 200,
+        body: JSON.stringify({
+            message: 'ML prediction processed successfully',
+            device_id: device_id,
+            prediction: payload.prediction
+        })
+    };
+}
+
+async function handleSensorData(payload) {
+    console.log(`Processing sensor data`);
 
         // 1. Get data from the event payload - handle both deviceId and device_id
         const device_id = payload.deviceId || payload.device_id || 'esp32-device';
@@ -125,24 +220,10 @@ export const handler = async (event) => {
         return {
             statusCode: 200,
             body: JSON.stringify({
-                message: 'Data processed successfully!',
+                message: 'Sensor data processed successfully',
                 device_id: device_id,
                 timestamp: timestamp,
                 alerts_triggered: tempAlert || vibAlert || currentAlert
             }),
         };
-
-    } catch (error) {
-        console.error("Error processing data:", error);
-        console.error("Error stack:", error.stack);
-        
-        // Return error response for better debugging
-        return {
-            statusCode: 500,
-            body: JSON.stringify({
-                error: error.message,
-                event: event
-            }),
-        };
-    }
-};
+}

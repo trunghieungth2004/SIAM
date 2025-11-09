@@ -111,40 +111,17 @@ echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="9302", MODE=
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
+# Clean up all Docker images and containers
+echo "[docker] Cleaning up all Docker images and containers..."
+docker stop $(docker ps -aq) 2>/dev/null || true
+docker rm $(docker ps -aq) 2>/dev/null || true
+docker rmi $(docker images -q) 2>/dev/null || true
+docker system prune -af 2>/dev/null || true
+
 # Build Coral TPU Docker image
 echo "[docker] Building Coral TPU Docker image..."
-mkdir -p ~/coral-docker
-cat > ~/coral-docker/Dockerfile << 'DOCKERFILE_EOF'
-FROM debian:11-slim
-
-WORKDIR /app
-ENV HOME /app
-
-RUN apt-get update && apt-get install -y \
-    git nano python3-pip python3-dev pkg-config wget usbutils curl gnupg ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/coral-edgetpu.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/coral-edgetpu.gpg] https://packages.cloud.google.com/apt coral-edgetpu-stable main" > /etc/apt/sources.list.d/coral-edgetpu.list
-
-RUN apt-get update && apt-get install -y \
-    libedgetpu1-std python3-pycoral python3-tflite-runtime \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install compatible NumPy version and other packages
-RUN pip3 install --no-cache-dir "numpy>=1.21,<2.0" boto3 awsiotsdk pillow pandas scikit-learn joblib "tensorflow>=2.13,<2.16"
-
-ENV PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH
-
-WORKDIR /app
-DOCKERFILE_EOF
-
-if docker build -t coral-tpu:latest ~/coral-docker/; then
-    echo "[ok] Coral TPU Docker image built successfully"
-else
-    echo "[error] Failed to build Coral TPU Docker image"
-    exit 1
-fi
+echo "[info] Dockerfile will be uploaded from host machine"
+echo "[wait] Waiting for Dockerfile upload..."
 
 # Test TPU detection
 echo "[test] Testing Coral TPU detection..."

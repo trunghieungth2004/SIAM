@@ -1,35 +1,44 @@
 FROM python:3.9-slim
 
+# Create virtual environment first
+RUN python3 -m venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
-    libgpiod-dev \
-    i2c-tools \
+    gcc \
+    g++ \
+    python3-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Coral repository
-RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/coral-edgetpu.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/coral-edgetpu.gpg] https://packages.cloud.google.com/apt coral-edgetpu-stable main" > /etc/apt/sources.list.d/coral-edgetpu.list
+# Add Coral repository with ASCII key
+RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | tee /usr/share/keyrings/coral-edgetpu.asc
+RUN echo "deb [signed-by=/usr/share/keyrings/coral-edgetpu.asc] https://packages.cloud.google.com/apt coral-edgetpu-stable main" > /etc/apt/sources.list.d/coral-edgetpu.list
 
-# Install Coral TPU runtime
+# Install Coral TPU runtime (library only, not Python package)
 RUN apt-get update && apt-get install -y \
     libedgetpu1-std \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-RUN pip install --no-cache-dir \
-    tflite-runtime \
-    pycoral \
-    numpy \
-    tensorflow==2.13.0
+# Install Python dependencies in venv
+RUN /opt/venv/bin/pip install --no-cache-dir \
+    numpy==1.23.5 \
+    scipy==1.10.1 \
+    scikit-learn==1.2.2 \
+    https://github.com/google-coral/pycoral/releases/download/v2.0.0/tflite_runtime-2.5.0.post1-cp39-cp39-linux_aarch64.whl \
+    https://github.com/google-coral/pycoral/releases/download/v2.0.0/pycoral-2.0.0-cp39-cp39-linux_aarch64.whl \
+    awsiotsdk \
+    git+https://github.com/aws-greengrass/aws-greengrass-stream-manager-sdk-python.git
 
 WORKDIR /app
 COPY tpu_inference_service.py /app/
-COPY convert_model_to_tflite.py /app/
 
 # Create model directory
 RUN mkdir -p /tmp/greengrass_ml
 
-# Model will be provided by Greengrass as artifact
-CMD ["python3", "/app/tpu_inference_service.py"]
+# Use venv python for all commands
+CMD ["/opt/venv/bin/python3", "/app/tpu_inference_service.py"]

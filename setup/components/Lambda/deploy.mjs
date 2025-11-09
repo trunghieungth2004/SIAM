@@ -1,10 +1,14 @@
 import { SageMakerClient, DescribeTrainingJobCommand } from "@aws-sdk/client-sagemaker";
 import { GreengrassV2Client, CreateComponentVersionCommand, CreateDeploymentCommand } from "@aws-sdk/client-greengrassv2";
 import { IoTClient, DescribeThingCommand } from "@aws-sdk/client-iot";
+import { EC2Client, RunInstancesCommand } from "@aws-sdk/client-ec2";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 
 const sagemaker = new SageMakerClient({});
 const greengrass = new GreengrassV2Client({});
 const iot = new IoTClient({});
+const ec2 = new EC2Client({});
+const s3 = new S3Client({});
 
 export const handler = async (event, context) => {
     console.log('Deploy Lambda triggered:', JSON.stringify(event, null, 2));
@@ -31,6 +35,11 @@ export const handler = async (event, context) => {
         
         console.log(`Model artifacts location: ${modelS3Uri}`);
         
+         // Trigger Edge TPU compilation and wait for completion
+        console.log('Triggering Edge TPU compilation...');
+        const compiledModelUri = await triggerEdgeTPUCompilation(modelS3Uri, projectName, region);
+        console.log(`Edge TPU compilation complete: ${compiledModelUri}`);
+        
         const componentName = `com.${projectName}.MLInference`;
         const componentVersion = generateVersion();
         
@@ -38,7 +47,7 @@ export const handler = async (event, context) => {
             RecipeFormatVersion: "2020-01-25",
             ComponentName: componentName,
             ComponentVersion: componentVersion,
-            ComponentDescription: "ML inference with updated model from SageMaker",
+            ComponentDescription: "ML inference with Edge TPU compiled model",
             ComponentPublisher: projectName,
             ComponentDependencies: {
                 "aws.greengrass.StreamManager": {
@@ -50,7 +59,7 @@ export const handler = async (event, context) => {
                 Lifecycle: {
                     Install: {
                         RequiresPrivilege: true,
-                        Script: `mkdir -p /tmp/greengrass_ml; tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'Updated model extracted successfully'`
+                        Script: `mkdir -p /tmp/greengrass_ml && aws s3 cp ${compiledModelUri} /tmp/model.tar.gz && tar -xzf /tmp/model.tar.gz -C /tmp/greengrass_ml/ && echo 'Edge TPU model extracted'`
                     },
                     Run: {
                         RequiresPrivilege: true,
@@ -58,12 +67,7 @@ export const handler = async (event, context) => {
                     }
                 },
                 Artifacts: [{
-                    Uri: modelS3Uri,
-                    Unarchive: "NONE"
-                }, {
                     Uri: `s3://${process.env.S3_DATA_BUCKET}/greengrass/artifacts/inference_service.py`
-                }, {
-                    Uri: `s3://${process.env.S3_DATA_BUCKET}/greengrass/artifacts/convert_model_to_tflite.py`
                 }]
             }]
         };
@@ -126,4 +130,82 @@ function generateVersion() {
     const now = new Date();
     const timestamp = now.toISOString().replace(/[-:]/g, '').replace(/\..+/, '');
     return `1.0.${timestamp.slice(-8)}`;
+}
+
+async function triggerEdgeTPUCompilation(modelS3Uri, projectName, region) {
+    const bucket = process.env.S3_DATA_BUCKET;
+    const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').slice(0, 15);
+    const compiledModelKey = `models/model_edgetpu_${timestamp}.tar.gz`;
+    const latestModelKey = 'models/model_edgetpu_latest.tar.gz';
+    const compiledModelUri = `s3://${bucket}/${latestModelKey}`;
+    
+    const ec2Client = new EC2Client({ region });
+    
+    try {
+        const { DescribeSubnetsCommand, DescribeSecurityGroupsCommand } = await import('@aws-sdk/client-ec2');
+        const describeSubnetsCmd = new DescribeSubnetsCommand({
+            Filters: [{ Name: 'tag:Project', Values: [projectName] }, { Name: 'tag:Name', Values: [`public-subnet-${projectName}`] }]
+        });
+        const subnets = await ec2Client.send(describeSubnetsCmd);
+        const subnetId = subnets.Subnets[0]?.SubnetId;
+        
+        const describeSGCmd = new DescribeSecurityGroupsCommand({
+            Filters: [{ Name: 'tag:Project', Values: [projectName] }, { Name: 'tag:Name', Values: [`sg-edgetpu-compiler-${projectName}`] }]
+        });
+        const sgs = await ec2Client.send(describeSGCmd);
+        const sgId = sgs.SecurityGroups[0]?.GroupId;
+        
+        const iamRole = `EdgeTPUCompilerRole-${projectName}`;
+        
+        if (!subnetId || !sgId) {
+            throw new Error('Missing EC2 resources for Edge TPU compilation');
+        }
+    
+    const userData = Buffer.from(`#!/bin/bash
+set -e
+export MODEL_S3_URI="${modelS3Uri}"
+export S3_BUCKET="${bucket}"
+export PROJECT_NAME="${projectName}"
+export TIMESTAMP="${timestamp}"
+curl -s https://raw.githubusercontent.com/google-coral/edgetpu/master/scripts/runtime/install.sh | bash
+apt-get update && apt-get install -y edgetpu-compiler
+aws s3 cp \${MODEL_S3_URI} /tmp/model.tar.gz
+tar -xzf /tmp/model.tar.gz -C /tmp/
+if [ -f /tmp/model.tflite ]; then
+  edgetpu_compiler /tmp/model.tflite -o /tmp/
+  cp /tmp/model_edgetpu.tflite /tmp/model.tflite
+  tar -czf /tmp/model_compiled.tar.gz -C /tmp model.tflite scaler.pkl features.txt
+  aws s3 cp /tmp/model_compiled.tar.gz s3://\${S3_BUCKET}/${compiledModelKey}
+  aws s3 cp /tmp/model_compiled.tar.gz s3://\${S3_BUCKET}/${latestModelKey}
+  echo "Edge TPU compilation complete"
+fi
+INSTANCE_ID=$(ec2-metadata --instance-id | cut -d' ' -f2)
+aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region ${region}
+`).toString('base64');
+    
+        const runInstancesCmd = new RunInstancesCommand({
+            ImageId: 'ami-0c55b159cbfafe1f0',
+            InstanceType: 't3.micro',
+            MinCount: 1,
+            MaxCount: 1,
+            SubnetId: subnetId,
+            SecurityGroupIds: [sgId],
+            IamInstanceProfile: { Name: iamRole },
+            UserData: userData,
+            TagSpecifications: [{
+                ResourceType: 'instance',
+                Tags: [{ Key: 'Name', Value: `edgetpu-compiler-${projectName}` }, { Key: 'Project', Value: projectName }]
+            }]
+        });
+        
+        await ec2Client.send(runInstancesCmd);
+        console.log('Edge TPU compiler EC2 instance launched - compilation will complete asynchronously');
+        
+        // Return immediately - don't wait for compilation
+        return compiledModelUri;
+        
+    } catch (error) {
+        console.error('Edge TPU compilation trigger failed:', error);
+        throw new Error(`Edge TPU compilation failed: ${error.message}`);
+    }
 }

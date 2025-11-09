@@ -269,7 +269,7 @@ run_cleanup() {
     echo ""
     
     # Run cleanup in reverse dependency order
-    local cleanup_order=("CloudWatch" "IoT" "Greengrass" "SageMaker" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
+    local cleanup_order=("EventBridge" "CloudWatch" "IoT" "Greengrass" "SageMaker" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
     local failed_components=()
     
     for component in "${cleanup_order[@]}"; do

@@ -204,35 +204,7 @@ EOL
         fi
         
         cat > deploy-permissions.json << EOL
-{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["sagemaker:DescribeTrainingJob", "greengrassv2:CreateComponentVersion", "greengrassv2:CreateDeployment", "greengrassv2:GetCoreDevice", "iot:DescribeThing", "s3:GetObject"], "Resource": "*" }] }
-EOL
-        if ! aws iam put-role-policy --role-name $DEPLOY_ROLE_NAME --policy-name "DeployLambdaPermissions" --policy-document file://deploy-permissions.json; then
-            print_log -r "[error] " "Failed to attach custom permissions policy to Deploy Lambda role"
-            return 1
-        fi
-        
-        print_log -y "[wait] " "Waiting for Deploy IAM role to propagate..."
-        sleep 15
-    else
-        print_log -y "[skip] " "IAM Role '${DEPLOY_ROLE_NAME}' already exists."
-    fi
-
-    # IAM Role for Deploy Lambda
-    DEPLOY_ROLE_NAME="role-lambda-deploy-${PROJECT_NAME}"
-    if ! DEPLOY_ROLE_ARN=$(aws iam get-role --role-name $DEPLOY_ROLE_NAME --query Role.Arn --output text 2>/dev/null); then
-        print_log -c "[iam] " "Creating IAM Role for Deploy Lambda..."
-        if ! DEPLOY_ROLE_ARN=$(aws iam create-role --role-name $DEPLOY_ROLE_NAME --assume-role-policy-document file://lambda-trust-policy.json --query Role.Arn --output text); then
-            print_log -r "[error] " "Failed to create Deploy Lambda IAM role"
-            return 1
-        fi
-        
-        if ! aws iam attach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole; then
-            print_log -r "[error] " "Failed to attach VPC execution policy to Deploy Lambda role"
-            return 1
-        fi
-        
-        cat > deploy-permissions.json << EOL
-{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["sagemaker:DescribeTrainingJob", "greengrassv2:CreateComponentVersion", "greengrassv2:CreateDeployment", "greengrassv2:GetCoreDevice", "iot:DescribeThing", "s3:GetObject"], "Resource": "*" }] }
+{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["sagemaker:DescribeTrainingJob", "greengrassv2:CreateComponentVersion", "greengrassv2:CreateDeployment", "greengrassv2:GetCoreDevice", "iot:DescribeThing", "s3:GetObject", "ec2:RunInstances", "ec2:DescribeSubnets", "ec2:DescribeSecurityGroups", "iam:PassRole"], "Resource": "*" }] }
 EOL
         if ! aws iam put-role-policy --role-name $DEPLOY_ROLE_NAME --policy-name "DeployLambdaPermissions" --policy-document file://deploy-permissions.json; then
             print_log -r "[error] " "Failed to attach custom permissions policy to Deploy Lambda role"
@@ -294,6 +266,26 @@ EOL
             return 1
         fi
     fi
+
+    # Add permission for IoT to invoke Lambda
+    print_log -c "[iot] " "Adding IoT permission to invoke Lambda..."
+    aws lambda add-permission \
+        --function-name $LAMBDA_FUNCTION_NAME \
+        --statement-id iot-invoke-lambda \
+        --action lambda:InvokeFunction \
+        --principal iot.amazonaws.com 2>/dev/null || print_log -y "[skip] " "IoT permission already exists"
+    
+    # Create IoT rule for ml/predictions topic
+    print_log -c "[iot] " "Creating IoT rule for ML predictions..."
+    ML_RULE_NAME="${PROJECT_NAME}_ml_predictions_rule"
+    aws iot create-topic-rule --rule-name "$ML_RULE_NAME" --topic-rule-payload "{\"sql\":\"SELECT * FROM 'ml/predictions'\",\"actions\":[{\"lambda\":{\"functionArn\":\"$LAMBDA_FUNCTION_ARN\"}}],\"ruleDisabled\":false}" 2>/dev/null || print_log -y "[skip] " "ML predictions rule already exists"
+    
+    aws lambda add-permission \
+        --function-name $LAMBDA_FUNCTION_NAME \
+        --statement-id iot-ml-predictions \
+        --action lambda:InvokeFunction \
+        --principal iot.amazonaws.com \
+        --source-arn "arn:aws:iot:$AWS_REGION:$ACCOUNT_ID:rule/$ML_RULE_NAME" 2>/dev/null || print_log -y "[skip] " "ML predictions permission already exists"
 
     # Query Handler Lambda Function
     QUERY_LAMBDA_NAME="func-query-${PROJECT_NAME}"

@@ -1,7 +1,7 @@
 {
   "RecipeFormatVersion": "2020-01-25",
   "ComponentName": "com.test.MLInference",
-  "ComponentVersion": "1.0.6",
+  "ComponentVersion": "1.0.2",
   "ComponentDescription": "TPU-accelerated ML inference with Coral USB Accelerator",
   "ComponentPublisher": "test",
   "ComponentDependencies": {
@@ -17,24 +17,27 @@
       "Lifecycle": {
         "Install": {
           "RequiresPrivilege": true,
-          "Script": "mkdir -p /tmp/greengrass_ml; if [ -f {artifacts:path}/model.tar.gz ]; then tar -xzf {artifacts:path}/model.tar.gz -C /tmp/greengrass_ml/ && echo 'SageMaker model extracted successfully'; else echo 'No model.tar.gz found, using existing model'; fi; echo 'Testing TPU availability...'; docker run --rm --device=/dev/bus/usb -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages coral-tpu:latest python3 -c 'from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\")' && docker run --rm -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/convert_model_to_tflite.py /app/models --simple || echo 'Model conversion completed'"
+          "Script": "python3 -m pip install --break-system-packages git+https://github.com/aws-greengrass/aws-greengrass-stream-manager-sdk-python && mkdir -p /tmp/greengrass_ml && echo '[1/4] Extracting model archive...' && tar -xzf {artifacts:path}/model_edgetpu_latest.tar.gz -C /tmp/greengrass_ml/ && echo '[2/4] Validating model artifacts...' && for file in model.tflite scaler.pkl days_scaler.pkl features.txt; do if [ ! -f /tmp/greengrass_ml/$file ]; then echo \"ERROR: Missing required file: $file\" && ls -la /tmp/greengrass_ml/ && exit 1; fi; done && echo 'All required artifacts found' && echo '[3/4] Checking Docker image...' && if ! docker images | grep -q coral-tpu; then echo 'Building coral-tpu Docker image...' && mkdir -p /tmp/coral-docker && cp {artifacts:path}/Dockerfile.tpu {artifacts:path}/tpu_inference_service.py /tmp/coral-docker/ && cd /tmp/coral-docker && docker build -f Dockerfile.tpu -t coral-tpu:latest . && echo 'Docker image built'; else echo 'Docker image already exists'; fi && echo '[4/4] Install complete'",
+          "Timeout": 900
         },
-
         "Run": {
           "RequiresPrivilege": true,
-          "Script": "docker run --rm --device=/dev/bus/usb --privileged -e PYTHONPATH=/usr/local/lib/python3.9/dist-packages -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/inference_service.py"
+          "Script": "docker run --rm --network host --device=/dev/bus/usb --privileged -e AWS_GG_NUCLEUS_DOMAIN_SOCKET_FILEPATH_FOR_COMPONENT=/greengrass/ipc.socket -e SVCUID -e AWS_CONTAINER_AUTHORIZATION_TOKEN -e AWS_CONTAINER_CREDENTIALS_FULL_URI -v /greengrass/v2/ipc.socket:/greengrass/ipc.socket -v /greengrass/v2/work:/greengrass/v2/work:ro -v /tmp/greengrass_ml:/app/models -v {artifacts:path}:/app/artifacts coral-tpu:latest python3 /app/artifacts/inference_service.py"
         }
       },
       "Artifacts": [
         {
-          "Uri": "s3://test-iot-data-f175adc0/sagemaker/output/test-maintenance-20251103-152851/output/model.tar.gz",
+          "Uri": "s3://test-iot-data-4c6588c3/models/model_edgetpu_latest.tar.gz",
           "Unarchive": "NONE"
         },
         {
-          "Uri": "s3://test-iot-data-f175adc0/greengrass/artifacts/inference_service.py"
+          "Uri": "s3://test-iot-data-4c6588c3/greengrass/artifacts/inference_service.py"
         },
         {
-          "Uri": "s3://test-iot-data-f175adc0/greengrass/artifacts/convert_model_to_tflite.py"
+          "Uri": "s3://test-iot-data-4c6588c3/greengrass/artifacts/Dockerfile.tpu"
+        },
+        {
+          "Uri": "s3://test-iot-data-4c6588c3/greengrass/artifacts/tpu_inference_service.py"
         }
       ]
     }

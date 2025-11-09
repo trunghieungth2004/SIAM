@@ -11,6 +11,8 @@ import time
 import logging
 import numpy as np
 from pathlib import Path
+import awsiot.greengrasscoreipc
+from awsiot.greengrasscoreipc.model import QOS, PublishToIoTCoreRequest
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -71,14 +73,24 @@ class TPUInferenceService:
             self.input_details = self.tpu_interpreter.get_input_details()
             self.output_details = self.tpu_interpreter.get_output_details()
             
-            # Load scaler (required from SageMaker)
+            # Load scalers (required from SageMaker)
             scaler_file = self.model_path / "scaler.pkl"
+            days_scaler_file = self.model_path / "days_scaler.pkl"
+            
             if scaler_file.exists():
                 with open(scaler_file, 'rb') as f:
                     self.scaler = pickle.load(f)
-                logger.info("Loaded scaler for TPU model")
+                logger.info("Loaded feature scaler for TPU model")
             else:
                 logger.error("No scaler.pkl found - SageMaker scaler required")
+                return False
+            
+            if days_scaler_file.exists():
+                with open(days_scaler_file, 'rb') as f:
+                    self.days_scaler = pickle.load(f)
+                logger.info("Loaded days scaler for TPU model")
+            else:
+                logger.error("No days_scaler.pkl found - SageMaker scaler required")
                 return False
             
             logger.info("TPU model loaded successfully")
@@ -145,34 +157,64 @@ class TPUInferenceService:
             # Scale features with SageMaker scaler
             features_scaled = self.scaler.transform(features).astype(np.float32)
             
-            # Set input tensor
-            self.tpu_interpreter.set_tensor(
-                self.input_details[0]['index'], 
-                features_scaled
-            )
+            # Quantize input if model uses INT8
+            if self.input_details[0]['dtype'] == np.uint8:
+                input_scale, input_zero_point = self.input_details[0]['quantization']
+                features_quantized = (features_scaled / input_scale + input_zero_point).astype(np.uint8)
+                self.tpu_interpreter.set_tensor(self.input_details[0]['index'], features_quantized)
+            else:
+                self.tpu_interpreter.set_tensor(self.input_details[0]['index'], features_scaled)
             
             # Run inference
             self.tpu_interpreter.invoke()
             
-            # Get output
-            output = self.tpu_interpreter.get_tensor(self.output_details[0]['index'])
-            prediction = float(output[0][0])
+            # Multi-output model: [maintenance_score, days_to_failure]
+            # Output 0: Maintenance score
+            score_data = self.tpu_interpreter.get_tensor(self.output_details[0]['index'])
+            if self.output_details[0]['dtype'] == np.uint8:
+                output_scale, output_zero_point = self.output_details[0]['quantization']
+                maintenance_score = float((score_data[0][0].astype(np.float32) - output_zero_point) * output_scale)
+            else:
+                maintenance_score = float(score_data[0][0])
             
-            # Convert SageMaker maintenance score to status
-            if prediction < 30:
+            # Output 1: Days to failure (scaled)
+            days_data = self.tpu_interpreter.get_tensor(self.output_details[1]['index'])
+            if self.output_details[1]['dtype'] == np.uint8:
+                output_scale, output_zero_point = self.output_details[1]['quantization']
+                days_scaled = float((days_data[0][0].astype(np.float32) - output_zero_point) * output_scale)
+            else:
+                days_scaled = float(days_data[0][0])
+            
+            # Denormalize days prediction
+            days_to_failure = float(self.days_scaler.inverse_transform([[days_scaled]])[0][0])
+            days_to_failure = max(1, int(days_to_failure))  # Ensure positive
+            
+            # Convert maintenance score to status
+            if maintenance_score < 30:
                 status = "Good"
                 confidence = 0.9
-            elif prediction < 60:
+                days_until_maintenance = min(90, days_to_failure)
+            elif maintenance_score < 60:
                 status = "Monitor" 
                 confidence = 0.7
+                days_until_maintenance = min(30, days_to_failure)
             else:
                 status = "Maintenance Required"
                 confidence = 0.8
+                # Maintenance threshold at score 80
+                maintenance_threshold = 80.0
+                if maintenance_score < maintenance_threshold:
+                    degradation_rate = (100 - maintenance_score) / days_to_failure if days_to_failure > 0 else 0.8
+                    days_until_maintenance = int((maintenance_threshold - maintenance_score) / degradation_rate) if degradation_rate > 0 else 0
+                else:
+                    days_until_maintenance = 0
             
             return {
                 'prediction': status,
                 'confidence': confidence,
-                'score': prediction,
+                'score': maintenance_score,
+                'days_until_maintenance': days_until_maintenance,
+                'estimated_days_to_failure': days_to_failure,
                 'inference_type': 'tpu'
             }
             
@@ -230,45 +272,118 @@ def main():
         logger.error("TPU model not loaded - cannot continue")
         sys.exit(1)
     
-    logger.info("Inference service ready, waiting for sensor data...")
-    
-    # Process sensor data from stdin
+    # Connect to Greengrass IPC
     try:
-        for line in sys.stdin:
-            line = line.strip()
-            if not line:
-                continue
-            
+        ipc_client = awsiot.greengrasscoreipc.connect()
+        logger.info("Connected to Greengrass IPC")
+    except Exception as e:
+        logger.error(f"Failed to connect to IPC: {e}")
+        sys.exit(1)
+    
+    # Connect to StreamManager
+    try:
+        from stream_manager import (
+            StreamManagerClient,
+            ReadMessagesOptions,
+            MessageStreamDefinition,
+            StrategyOnFull,
+            Persistence
+        )
+        sm_client = StreamManagerClient()
+        logger.info("Connected to StreamManager")
+        
+        # Create predictions stream for caching
+        try:
+            predictions_stream = MessageStreamDefinition(
+                name="ml-predictions-stream",
+                strategy_on_full=StrategyOnFull.OverwriteOldestData,
+                persistence=Persistence.File,
+                max_size=268435456,  # 256 MB
+                stream_segment_size=16777216,  # 16 MB
+                time_to_live_millis=604800000  # 7 days
+            )
+            sm_client.create_message_stream(predictions_stream)
+            logger.info("Created ml-predictions-stream for caching")
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                logger.warning(f"Failed to create predictions stream: {e}")
+            else:
+                logger.info("ml-predictions-stream already exists")
+    except Exception as e:
+        logger.error(f"Failed to connect to StreamManager: {e}")
+        sys.exit(1)
+    
+    logger.info("Inference service ready, reading from StreamManager...")
+    
+    STREAM_NAME = "sensor-data-stream"
+    PREDICTIONS_STREAM = "ml-predictions-stream"
+    sequence_number = 0
+    
+    try:
+        while True:
             try:
-                # Parse sensor data
-                sensor_data = json.loads(line)
+                # Read from StreamManager
+                messages = sm_client.read_messages(
+                    STREAM_NAME,
+                    ReadMessagesOptions(desired_start_sequence_number=sequence_number, min_message_count=1, read_timeout_millis=5000)
+                )
                 
-                # Run inference
-                start_time = time.time()
-                result = inference_service.predict(sensor_data)
-                inference_time = (time.time() - start_time) * 1000  # ms
+                for message in messages:
+                    try:
+                        # Parse sensor data
+                        sensor_data = json.loads(message.payload.decode('utf-8'))
+                        
+                        # Run inference
+                        start_time = time.time()
+                        result = inference_service.predict(sensor_data)
+                        inference_time = (time.time() - start_time) * 1000  # ms
+                        
+                        # Add metadata
+                        result.update({
+                            'timestamp': sensor_data.get('timestamp', int(time.time())),
+                            'device_id': sensor_data.get('device_id', 'unknown'),
+                            'inference_time_ms': round(inference_time, 2)
+                        })
+                        
+                        # Cache prediction in StreamManager
+                        try:
+                            sm_client.append_message(PREDICTIONS_STREAM, json.dumps(result).encode('utf-8'))
+                            logger.info(f"Cached prediction in StreamManager")
+                        except Exception as e:
+                            logger.warning(f"Failed to cache prediction: {e}")
+                        
+                        # Publish to IoT Core
+                        try:
+                            request = PublishToIoTCoreRequest(
+                                topic_name="ml/predictions",
+                                qos=QOS.AT_LEAST_ONCE,
+                                payload=json.dumps(result).encode('utf-8')
+                            )
+                            operation = ipc_client.new_publish_to_iot_core()
+                            operation.activate(request)
+                            future = operation.get_response()
+                            future.result(timeout=5)
+                            logger.info(f"Published prediction: {result['prediction']} (score: {result['score']:.1f})")
+                        except Exception as e:
+                            logger.error(f"Failed to publish to IoT Core: {e}")
+                        
+                        sequence_number = message.sequence_number + 1
+                        
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"Invalid JSON in message: {e}")
+                    except Exception as e:
+                        logger.error(f"Processing error: {e}")
                 
-                # Add metadata
-                result.update({
-                    'timestamp': sensor_data.get('timestamp', int(time.time())),
-                    'device_id': sensor_data.get('device_id', 'unknown'),
-                    'inference_time_ms': round(inference_time, 2)
-                })
+                time.sleep(3)
                 
-                # Output prediction
-                print(json.dumps(result))
-                sys.stdout.flush()
-                
-            except json.JSONDecodeError:
-                logger.warning(f"Invalid JSON: {line}")
             except Exception as e:
-                logger.error(f"Processing error: {e}")
+                logger.error(f"StreamManager read error: {e}")
+                time.sleep(5)
                 
     except KeyboardInterrupt:
         logger.info("Inference service stopped")
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        sys.exit(1)
+    finally:
+        sm_client.close()
 
 if __name__ == "__main__":
     main()

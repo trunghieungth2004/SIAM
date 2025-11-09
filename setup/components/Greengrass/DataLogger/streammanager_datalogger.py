@@ -91,7 +91,7 @@ def publish_to_iot_core(ipc_client_instance, topic, qos, payload):
         operation.activate(request)
         future = operation.get_response()
         future.result(timeout=5)
-        logger.info(f"[ipc] Published to IoT Core topic '{topic}' with QoS {qos.name}")
+        logger.info(f"[ipc] Published to IoT Core topic '{topic}'")
         return True
     except Exception as e:
         logger.error(f"[ipc-error] Failed to publish to IoT Core: {e}")
