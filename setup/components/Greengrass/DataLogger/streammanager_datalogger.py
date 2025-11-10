@@ -42,8 +42,20 @@ def create_stream_manager_client():
 def setup_stream(client):
     """Setup the sensor data stream with IoT Core destination"""
     try:
-        # Define the stream with IoT Core export
-        exports = ExportDefinition()
+        from stream_manager import (
+            IoTCoreExportDefinition,
+            ExportDefinition
+        )
+        
+        # Define IoT Core export
+        iot_export = IoTCoreExportDefinition(
+            identifier="iot-export",
+            mqtt_topic="iot/data"
+        )
+        
+        exports = ExportDefinition(
+            iot_core=[iot_export]
+        )
         
         stream_definition = MessageStreamDefinition(
             name=STREAM_NAME,
@@ -148,18 +160,11 @@ def main():
                 logger.warning(f"[warn] Invalid JSON: {line}")
                 continue
             
-            # Append to StreamManager
+            # Append to StreamManager (will auto-export to IoT Core)
             if sm_client and sm_client.append_message(STREAM_NAME, line.encode('utf-8')):
-                logger.info(f"[stream] Appended to StreamManager: {line}")
+                logger.info(f"[stream] Appended to StreamManager (auto-export to iot/data): {line}")
             else:
                 logger.error(f"[stream-failed] Failed to append to StreamManager: {line}")
-            
-            # Publish to IoT Core via IPC
-            iot_topic = "iot/data"
-            if ipc_client_instance and publish_to_iot_core(ipc_client_instance, iot_topic, QOS.AT_LEAST_ONCE, line.encode('utf-8')):
-                logger.info(f"[ipc] Published to IoT Core: {line}")
-            else:
-                logger.error(f"[ipc-failed] Failed to publish to IoT Core: {line}")
                 
     except KeyboardInterrupt:
         logger.info("[info] Shutting down...")

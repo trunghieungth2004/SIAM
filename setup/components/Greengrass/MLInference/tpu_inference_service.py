@@ -292,15 +292,31 @@ def main():
         sm_client = StreamManagerClient()
         logger.info("Connected to StreamManager")
         
-        # Create predictions stream for caching
+        # Create predictions stream with IoT Core export
         try:
+            from stream_manager import (
+                IoTCoreExportDefinition,
+                ExportDefinition
+            )
+            
+            # Define IoT Core export for predictions
+            iot_export = IoTCoreExportDefinition(
+                identifier="ml-predictions-export",
+                mqtt_topic="ml/predictions"
+            )
+            
+            exports = ExportDefinition(
+                iot_core=[iot_export]
+            )
+            
             predictions_stream = MessageStreamDefinition(
                 name="ml-predictions-stream",
                 strategy_on_full=StrategyOnFull.OverwriteOldestData,
                 persistence=Persistence.File,
                 max_size=268435456,  # 256 MB
                 stream_segment_size=16777216,  # 16 MB
-                time_to_live_millis=604800000  # 7 days
+                time_to_live_millis=604800000,  # 7 days
+                export_definition=exports
             )
             sm_client.create_message_stream(predictions_stream)
             logger.info("Created ml-predictions-stream for caching")
@@ -345,27 +361,12 @@ def main():
                             'inference_time_ms': round(inference_time, 2)
                         })
                         
-                        # Cache prediction in StreamManager
+                        # Cache prediction in StreamManager (will auto-export to IoT Core)
                         try:
                             sm_client.append_message(PREDICTIONS_STREAM, json.dumps(result).encode('utf-8'))
-                            logger.info(f"Cached prediction in StreamManager")
+                            logger.info(f"Prediction cached and exported: {result['prediction']} (score: {result['score']:.1f})")
                         except Exception as e:
                             logger.warning(f"Failed to cache prediction: {e}")
-                        
-                        # Publish to IoT Core
-                        try:
-                            request = PublishToIoTCoreRequest(
-                                topic_name="ml/predictions",
-                                qos=QOS.AT_LEAST_ONCE,
-                                payload=json.dumps(result).encode('utf-8')
-                            )
-                            operation = ipc_client.new_publish_to_iot_core()
-                            operation.activate(request)
-                            future = operation.get_response()
-                            future.result(timeout=5)
-                            logger.info(f"Published prediction: {result['prediction']} (score: {result['score']:.1f})")
-                        except Exception as e:
-                            logger.error(f"Failed to publish to IoT Core: {e}")
                         
                         sequence_number = message.sequence_number + 1
                         
