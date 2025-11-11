@@ -65,6 +65,7 @@ jobs:
           echo "Node.js: $(node --version)"
       - name: Install Node.js dependencies
         run: |
+          cd website
           [[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true
       - name: Configure Git
         run: |
@@ -79,6 +80,7 @@ jobs:
             hugo-
       - name: Build the site
         run: |
+          cd website
           hugo \
             --gc \
             --minify \
@@ -93,7 +95,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public
+          path: ./website/public
   deploy:
     environment:
       name: github-pages
