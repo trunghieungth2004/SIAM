@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Proposal</h1>
+    <div class="content">
+        <h1 id="project-proposal-siam-smart-industrial-assets-longevity-monitor">Project Proposal: SIAM (Smart Industrial Asset&rsquo;s longevity Monitor)</h1>
+<h2 id="a-hybrid-edge-cloud-platform-for-predictive-maintenance">A Hybrid Edge-Cloud Platform for Predictive Maintenance</h2>
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+<p>This proposal outlines the development of a high-performance, resilient predictive maintenance platform, SIAM (Smart Industrial Asset&rsquo;s longevity Monitor). The system is designed to monitor industrial equipment (represented by a demo fan machine) in real-time, detect anomalous behavior, and predict equipment health.</p>
+<p>This solution leverages a hybrid architecture, combining a powerful edge device (Raspberry Pi 5 with a Coral TPU) with a secure, serverless AWS backend. The edge device runs AWS IoT Greengrass to manage two distinct applications:</p>
+<ol>
+<li>A native C-based datalogger that reads directly from hardware sensors (MPU-6050, INA219, DS18B20) and writes data to Greengrass Stream Manager.</li>
+<li>A Docker-containerized Python ML inference application that reads from Stream Manager, performs real-time anomaly detection using the Coral TPU, and publishes predictions back to the cloud.</li>
+</ol>
+<p>The cloud backend, built on a secure AWS VPC, uses AWS IoT Core to ingest data, which is then processed by an AWS Lambda function and stored in DynamoDB and an S3 Data Lake. The system is fully automated with an MLOps pipeline using Amazon EventBridge and Amazon SageMaker to retrain and redeploy new models weekly. A public web-based dashboard, hosted on S3, provides real-time monitoring and alert status.</p>
+<h2 id="2-problem-statement">2. Problem Statement</h2>
+<h3 id="whats-the-problem">What&rsquo;s the Problem?</h3>
+<p>Traditional equipment maintenance is reactive; operators fix machines after they break, leading to costly unplanned downtime. Existing monitoring systems often lack offline capability (causing data loss) and fail to adapt to changing equipment behavior (&ldquo;model drift&rdquo;).</p>
+<h3 id="the-solution">The Solution</h3>
+<p>This platform provides an end-to-end solution for intelligent, proactive maintenance.</p>
+<ol>
+<li><strong>Edge-First Data Collection</strong>: A native C application on the Raspberry Pi collects high-resolution data from sensors (MPU-6050, INA219, DS18B20).</li>
+<li><strong>Offline Resilience &amp; Local Pub/Sub</strong>: The C datalogger publishes sensor data to Greengrass Stream Manager. This stream acts as a local, persistent buffer, ensuring zero data loss during network outages and decoupling the data collection from its consumption.</li>
+<li><strong>Cloud Ingestion</strong>: Stream Manager automatically syncs this data to AWS IoT Core, which triggers an Ingestion Lambda. This function logs data to DynamoDB and S3. A SQS Dead-Letter Queue (DLQ) captures any failed ingestion.</li>
+<li><strong>Automated ML Pipeline</strong>: An EventBridge rule schedules a weekly Retrain Lambda, which starts a SageMaker Training Job on the latest data from the S3 data lake.</li>
+<li><strong>Intelligent Edge Deployment</strong>: The newly trained model is automatically deployed back to the Raspberry Pi as a Greengrass component.</li>
+<li><strong>Decoupled Edge Inference</strong>: A separate Docker container running a Python application reads the sensor data from the local Stream Manager, loads the deployed model, and performs TPU-accelerated inference. This containerized approach is a key design choice, solving the &ldquo;dependency hell&rdquo; that often occurs when edge ML hardware (like the Coral TPU) has its software support abandoned by the manufacturer, which normally prevents host OS upgrades.</li>
+<li><strong>Real-Time Monitoring</strong>: A web application, hosted on S3, queries live data from DynamoDB via an API Gateway to display real-time sensor graphs and alert status.</li>
+</ol>
+<h3 id="benefits-and-return-on-investment">Benefits and Return on Investment</h3>
+<ul>
+<li><strong>Reduced Downtime</strong>: Proactively identifies equipment faults before they cause a catastrophic failure.</li>
+<li><strong>High Reliability</strong>: Guarantees zero data loss, even during network outages.</li>
+<li><strong>Adaptive Intelligence</strong>: The automated MLOps pipeline ensures the model never becomes &ldquo;stale.&rdquo;</li>
+<li><strong>Solves Obsolescence</strong>: The containerized inference engine allows the host Pi OS to be upgraded for security patches while the legacy Coral TPU libraries continue to function in their isolated Docker environment.</li>
+</ul>
+<h2 id="3-solution-architecture">3. Solution Architecture</h2>
+<p>The platform is a hybrid edge-cloud system. The edge is responsible for data collection and real-time inference, while the cloud is responsible for data storage, aggregation, and model training.</p>
+<iframe frameborder="0" style="width:100%;height:600px;" src="https://viewer.diagrams.net/?tags=%7B%7D&lightbox=1&highlight=0000ff&layers=1&nav=1&title=SIAM.drawio&dark=0#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1oSuNWL722zBMHkhSlheuezGVoR6sTiq3%26export%3Ddownload"></iframe>
+<h3 id="aws-services-used">AWS Services Used</h3>
+<ul>
+<li><strong>Edge</strong>: AWS IoT Greengrass (Core, Stream Manager, Component Deployments)</li>
+<li><strong>Ingestion</strong>: AWS IoT Core (MQTT Broker, Rules)</li>
+<li><strong>Compute</strong>: AWS Lambda (Ingestion, Query, Retrain-Trigger, Deploy)</li>
+<li><strong>Storage</strong>: Amazon DynamoDB, Amazon S3 (Data Lake, Model Artifacts, Web Hosting)</li>
+<li><strong>Networking</strong>: AWS VPC (Private/Public Subnets), NAT Gateway, VPC Endpoints, API Gateway</li>
+<li><strong>Machine Learning</strong>: Amazon SageMaker (Training Jobs), Amazon EventBridge (Scheduler)</li>
+<li><strong>Security</strong>: AWS Secrets Manager, IAM</li>
+<li><strong>Reliability &amp; Monitoring</strong>: Amazon SQS (Dead-Letter Queue), Amazon CloudWatch, Amazon SNS</li>
+</ul>
+<h3 id="component-design">Component Design</h3>
+<ul>
+<li>
+<p><strong>Edge Device</strong>: A Raspberry Pi 5 running Raspberry Pi OS Lite. AWS Greengrass Core runs as the main agent. Two primary applications are deployed as components:</p>
+<ol>
+<li><strong>datalogger</strong>: A native C application that reads from I2C/1-Wire sensors and publishes data to a local Stream Manager stream.</li>
+<li><strong>inference</strong>: A Docker container running Python, which subscribes to the local Stream Manager stream, loads the ML model, performs inference on the Coral TPU.</li>
+</ol>
+</li>
+<li>
+<p><strong>Cloud Pipeline</strong>: Greengrass Stream Manager -&gt; IoT Core -&gt; IoT Rule -&gt; Ingestion Lambda. The Lambda (in a private subnet) writes to DynamoDB and S3.</p>
+</li>
+<li>
+<p><strong>Web Application</strong>: A React app on S3 Static Website. The app fetches data from API Gateway, which triggers the Query Lambda (in a private subnet) to read from DynamoDB. The endpoint can be secured via IP restrictions or an API key.</p>
+</li>
+<li>
+<p><strong>MLOps Pipeline</strong>: An EventBridge rule runs weekly, triggering the Retrain Lambda (which runs outside the VPC). This Lambda starts the SageMaker Training Job. Upon the job&rsquo;s completion, it triggers a separate Deploy Lambda (in the VPC) which creates a new Greengrass Deployment. This deployment is triggered to send the new, updated model to the Pi.</p>
+</li>
+</ul>
+<h2 id="4-technical-implementation">4. Technical Implementation</h2>
+<h3 id="implementation-phases">Implementation Phases</h3>
+<ol>
+<li>
+<p><strong>Phase 0: Prototyping &amp; Design (Weeks 1-2)</strong></p>
+<ul>
+<li>Set up an ESP32 with sensors to learn the basics of AWS IoT Core, MQTT, and Lambda.</li>
+<li>Design the full system architecture, culminating in the SIAM.drawio diagram.</li>
+<li>Prototype individual components (local C datalogger, Python inference scripts, shell script structures).</li>
+</ul>
+</li>
+<li>
+<p><strong>Phase 1: Cloud Foundation (Week 3)</strong></p>
+<ul>
+<li>Deploy the entire AWS backend infrastructure using automated scripts.</li>
+<li>Test and validate cloud resources, cleaning up after each session to prevent cost accumulation during development.</li>
+</ul>
+</li>
+<li>
+<p><strong>Phase 2: Edge Device Setup (Week 4)</strong></p>
+<ul>
+<li>Provision the Raspberry Pi with Greengrass Core software.</li>
+<li>Develop and compile the standalone C datalogger application.</li>
+<li>Run the C datalogger as a local systemd service for 24-72 hours to collect a high-quality &ldquo;normal&rdquo; dataset.</li>
+</ul>
+</li>
+<li>
+<p><strong>Phase 4: Initial Model Training (Week 6)</strong></p>
+<ul>
+<li>Prepare the collected sensor data for training.</li>
+<li>Train the first version of the anomaly detection model using SageMaker.</li>
+</ul>
+</li>
+<li>
+<p><strong>Phase 5: Full Integration (Weeks 7-8)</strong></p>
+<ul>
+<li>Convert the C datalogger into a native Greengrass component.</li>
+<li>Build the Docker-based Python inference component (with Coral TPU libraries).</li>
+<li>Deploy Stream Manager, the datalogger component, and the inference component via Greengrass.</li>
+<li><strong>Final Goal</strong>: Demonstrate the full, end-to-end pipeline: sensor data is collected locally, read by the inference container, and real-time predictions are made on the edge device.</li>
+</ul>
+</li>
+</ol>
+<h3 id="technical-requirements">Technical Requirements</h3>
+<ul>
+<li><strong>Edge Hardware</strong>: Raspberry Pi 5, Coral TPU, MPU-6050, INA219, DS18B20, 4.7kΩ resistor, OLED display, RGB LED, breadboard, wires.</li>
+<li><strong>Edge Software</strong>: Raspberry Pi OS Lite (64-bit), Docker, GCC/G++, Python, AWS IoT Greengrass Core.</li>
+<li><strong>Cloud Software</strong>: AWS CLI (for management), Python (for SageMaker scripts), Node.js (for Lambda functions).</li>
+</ul>
+<h3 id="setup-implementation">Setup Implementation</h3>
+<p>All infrastructure is deployed through the <code>AWS.sh</code> orchestration script, which provisions VPC, IoT Core, Greengrass, Lambda functions, DynamoDB, S3, SageMaker, and EventBridge. Two Greengrass components are deployed to the edge: a native C DataLogger and a Dockerized Python ML inference service with Coral TPU support.</p>
+<h3 id="hardware-considerations">Hardware Considerations</h3>
+<p>This proposal is based on a high-performance edge device. The following tiers are possible:</p>
+<ol>
+<li><strong>Prototyping</strong>: A breadboard and jumper wires will be used for the initial prototype, with a long-term goal of designing a dedicated PCB (Printed Circuit Board) for a more robust and compact final device.</li>
+</ol>
+<ul>
+<li>
+<p><strong>High-End (As-Designed)</strong>: Pi 5 + Coral TPU.</p>
+<ul>
+<li>Pros: Extremely fast, real-time inference on the edge. High-throughput data logging.</li>
+<li>Cons: Highest cost, library complexity for TPU (solved by our Docker approach).</li>
+</ul>
+</li>
+<li>
+<p><strong>Mid-Range</strong>: Pi 5 (no TPU).</p>
+<ul>
+<li>Pros: All-in-one solution with a powerful CPU and integrated GPU for high-performance ML inference. No need for a separate TPU.</li>
+<li>Cons: Significantly higher cost and power consumption. Greengrass setup is different.</li>
+</ul>
+</li>
+<li>
+<p><strong>Low-End</strong>: Pi 4 / Pi Zero 2W.</p>
+<ul>
+<li>Pros: Very low cost.</li>
+<li>Cons: Slower C datalogging. On-device inference would be too slow to be practical. This architecture would likely need to be modified to send data to a cloud-hosted SageMaker endpoint for inference, losing offline capabilities.</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-timeline--milestones-3-months">5. Timeline &amp; Milestones (3 Months)</h2>
+<ul>
+<li>
+<p><strong>Month 1: Foundation &amp; Single-Device Prototype (Weeks 1-4)</strong></p>
+<ul>
+<li>Milestone 1 (Wk 2): Complete Phase 0 (ESP32 prototyping and final architecture design).</li>
+<li>Milestone 2 (Wk 3): Complete Phase 1 &amp; 2 (Cloud and Edge setup scripts run successfully).</li>
+<li>Milestone 3 (Wk 4): Complete Phase 3 (Local C datalogger is built and collecting data).</li>
+</ul>
+</li>
+<li>
+<p><strong>Month 2: Full Pipeline Integration (Weeks 5-8)</strong></p>
+<ul>
+<li>Milestone 4 (Wk 6): Complete Phase 4 (Initial ML model is trained in SageMaker).</li>
+<li>Milestone 5 (Wk 8): Complete Phase 5 (Full Greengrass integration is working). The Pi is performing local, real-time inference using the trained model.</li>
+</ul>
+</li>
+<li>
+<p><strong>Month 3: Automation, Dashboard &amp; Validation (Weeks 9-12)</strong></p>
+<ul>
+<li>Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge -&gt; Retrain Lambda -&gt; SageMaker).</li>
+<li>Milestone 7 (Wk 10): Build the S3/API Gateway web application for monitoring.</li>
+<li>Milestone 8 (Wk 11): Perform system-wide stress testing and model validation using a second &ldquo;failure&rdquo; device (a fan with an imbalance) to prove the anomaly detection loop.</li>
+<li>Milestone 9 (Wk 12): Final documentation, code cleanup, and project handover.</li>
+</ul>
+</li>
+</ul>
+<h2 id="6-budget-estimation">6. Budget Estimation</h2>
+<h3 id="infrastructure-costs-monthly-single-device-prototype">Infrastructure Costs (Monthly, Single-Device Prototype):</h3>
+<ul>
+<li><strong>AWS Lambda</strong>: ~$0.00 (All 3 functions will fall within the 1 million free requests/month).</li>
+<li><strong>AWS IoT Greengrass</strong>: $0.00 (Free for up to 10 devices).</li>
+<li><strong>AWS IoT Core</strong>: ~$0.00 (1 device sending 1 msg/min is ~43,200 msgs/month, well under the 500,000 free tier).</li>
+<li><strong>Amazon DynamoDB</strong>: ~$0.00 (Will fall within the 25 GB / 25 WCU free tier).</li>
+<li><strong>Amazon S3</strong>: ~$0.10 (Negligible cost for data lake storage and hosting).</li>
+<li><strong>API Gateway, SQS, EventBridge</strong>: ~$0.00 (All covered by generous free tiers).</li>
+<li><strong>Total Monthly Cloud Cost</strong>: Effectively $0.00 - $0.20 (for the first 12 months).</li>
+</ul>
+<h3 id="on-demand--hardware-costs">On-Demand &amp; Hardware Costs:</h3>
+<ul>
+<li><strong>Amazon SageMaker</strong>: ~$0.20/month (for four 10-minute training jobs on an ml.m5.large). This is the primary on-demand cost.</li>
+<li><strong>Hardware (One-Time Cost)</strong>:
+<ul>
+<li>Raspberry Pi 5 (8GB): ~$80</li>
+<li>Official 27W Power Supply: ~$12</li>
+<li>Google Coral TPU (USB): ~$60</li>
+<li>Sensors (MPU, INA, DS18B20), OLED, etc.: ~$25</li>
+<li><strong>Estimated Total Hardware Cost</strong>: ~$177 per device</li>
+</ul>
+</li>
+</ul>
+<h2 id="7-risk-assessment--mitigation">7. Risk Assessment &amp; Mitigation</h2>
+<ul>
+<li>
+<p><strong>Risk 1: Network Outage at the Edge (Medium)</strong></p>
+<ul>
+<li>Impact: Loss of real-time monitoring.</li>
+<li>Mitigation: Greengrass Stream Manager. Buffers all sensor data to the Pi&rsquo;s local disk and syncs when reconnected, ensuring zero data loss.</li>
+</ul>
+</li>
+<li>
+<p><strong>Risk 2: ML Model Becomes &ldquo;Stale&rdquo; (High)</strong></p>
+<ul>
+<li>Impact: Model accuracy degrades as the machine ages.</li>
+<li>Mitigation: The automated MLOps pipeline. Retraining the model weekly on fresh data ensures the system adapts.</li>
+</ul>
+</li>
+<li>
+<p><strong>Risk 3: Coral TPU Library Obsolescence (High)</strong></p>
+<ul>
+<li>Impact: Future Pi OS updates break the libedgetpu library, halting inference.</li>
+<li>Mitigation: Docker Containerization. The inference application and its specific, legacy libraries are packaged in a Docker container. This isolates it from the host OS, allowing the host OS to be patched and upgraded independently.</li>
+</ul>
+</li>
+<li>
+<p><strong>Risk 4: Ingestion Failure (Low)</strong></p>
+<ul>
+<li>Impact: A malformed data packet or transient error causes data loss.</li>
+<li>Mitigation: The SQS Dead-Letter Queue (DLQ). Failed messages are captured for inspection and reprocessing.</li>
+</ul>
+</li>
+</ul>
+<h2 id="8-expected-outcomes">8. Expected Outcomes</h2>
+<ol>
+<li>A fully functional, end-to-end predictive maintenance platform prototype.</li>
+<li>A resilient edge device that reliably logs data and performs local inference, even when offline.</li>
+<li>A working, real-time dashboard for visualizing sensor data and predictions.</li>
+<li>A &ldquo;hands-off&rdquo; automated MLOps pipeline that continuously improves the system&rsquo;s intelligence without human intervention.</li>
+</ol>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

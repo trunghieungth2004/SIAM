@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SIAM</title>
+    <link>//localhost:1313/</link>
+    <description>Recent content on SIAM</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 11 Nov 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Proposal</title>
+      <link>//localhost:1313/proposal/</link>
+      <pubDate>Tue, 11 Nov 2025 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/proposal/</guid>
+      <description>&lt;h1 id=&#34;project-proposal-siam-smart-industrial-assets-longevity-monitor&#34;&gt;Project Proposal: SIAM (Smart Industrial Asset&amp;rsquo;s longevity Monitor)&lt;/h1&gt;&#xA;&lt;h2 id=&#34;a-hybrid-edge-cloud-platform-for-predictive-maintenance&#34;&gt;A Hybrid Edge-Cloud Platform for Predictive Maintenance&lt;/h2&gt;&#xA;&lt;h2 id=&#34;1-executive-summary&#34;&gt;1. Executive Summary&lt;/h2&gt;&#xA;&lt;p&gt;This proposal outlines the development of a high-performance, resilient predictive maintenance platform, SIAM (Smart Industrial Asset&amp;rsquo;s longevity Monitor). The system is designed to monitor industrial equipment (represented by a demo fan machine) in real-time, detect anomalous behavior, and predict equipment health.&lt;/p&gt;&#xA;&lt;p&gt;This solution leverages a hybrid architecture, combining a powerful edge device (Raspberry Pi 5 with a Coral TPU) with a secure, serverless AWS backend. The edge device runs AWS IoT Greengrass to manage two distinct applications:&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

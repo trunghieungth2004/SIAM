@@ -3,6 +3,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+.cache
 
 AWS_KEY.h
 WiFi_KEY.h
