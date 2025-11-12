@@ -8,7 +8,7 @@ draft: false
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
   <h2 style="margin: 0;">A Hybrid Edge-Cloud Platform for Predictive Maintenance</h2>
-  <a href="/documentation/SIAM_Proposal.docx" download style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 2px solid #0078d4; text-decoration: none; border-radius: 5px; font-size: 24px;" title="Download Proposal (Word Document)">📄</a>
+  <a href="/doc/SIAM_Proposal.docx" download style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 2px solid #0078d4; text-decoration: none; border-radius: 5px; font-size: 24px;" title="Download Proposal (Word Document)">📄</a>
 </div>
 
 ## 1. Executive Summary
