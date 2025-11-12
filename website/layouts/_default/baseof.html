@@ -17,7 +17,7 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="/">Home</a></li>
+                    <li><a href="{{ .Site.BaseURL }}">Home</a></li>
                     {{ range .Site.RegularPages }}
                     <li><a href="{{ .Permalink }}">{{ .Title }}</a></li>
                     {{ end }}

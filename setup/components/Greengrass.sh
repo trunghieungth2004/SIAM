@@ -1480,6 +1480,9 @@ sudo systemctl disable greengrass.service 2>/dev/null || true
 sudo rm -f /etc/systemd/system/greengrass.service
 sudo systemctl daemon-reload
 sudo rm -rf /greengrass
+sudo rm -rf /tmp/greengrass_ml
+sudo rm -rf /tmp/coral-docker
+rm -f ~/greengrass_remote_install.sh
 if id "ggc_user" &>/dev/null; then sudo userdel ggc_user 2>/dev/null || true; fi
 if getent group "ggc_group" &>/dev/null; then sudo groupdel ggc_group 2>/dev/null || true; fi
 echo "Rebooting Pi to ensure clean state..."

@@ -27,6 +27,22 @@ declare -A COMPONENTS=(
     ["12"]="EventBridge"
 )
 
+# Component categories
+declare -A CATEGORIES=(
+    ["VPC"]="Cloud"
+    ["S3"]="Cloud"
+    ["DynamoDB"]="Cloud"
+    ["SNS"]="Cloud"
+    ["SQS"]="Cloud"
+    ["Secrets"]="Cloud"
+    ["Lambda"]="Cloud"
+    ["IoT"]="Cloud"
+    ["Greengrass"]="Cloud"
+    ["SageMaker"]="Cloud"
+    ["CloudWatch"]="Cloud"
+    ["EventBridge"]="Cloud"
+)
+
 # Component descriptions
 declare -A DESCRIPTIONS=(
     ["VPC"]="VPC, Subnets, Gateways, and Endpoints"
@@ -52,7 +68,8 @@ show_component_menu() {
     for i in {1..12}; do
         local component="${COMPONENTS[$i]}"
         local desc="${DESCRIPTIONS[$component]}"
-        printf "%2s  %-12s %s\n" "$i" "$component" "$desc"
+        local category="${CATEGORIES[$component]}"
+        printf "%2s  %-12s [%-5s] %s\n" "$i" "$component" "$category" "$desc"
     done
     
     echo ""
@@ -298,11 +315,13 @@ run_cleanup() {
 # Main Execution Logic           #
 #--------------------------------#
 usage() {
-    echo "Usage: $0 [command]"
+    echo "Usage: $0 [command] [options]"
     echo ""
     echo "Commands:"
-    echo "  setup      : Deploys AWS IoT backend components (interactive selection)."
-    echo "  cleanup    : Deletes AWS resources (interactive selection)."
+    echo "  setup         : Deploys AWS IoT backend components (interactive selection)."
+    echo "  cleanup       : Deletes AWS resources (interactive selection)."
+    echo "  local         : Set up local data collection on Raspberry Pi."
+    echo "  local cleanup : Remove local data collection service from Raspberry Pi."
     echo ""
     echo "Example component selection:"
     echo "  1 2 3      : Setup/cleanup components 1, 2, and 3"
@@ -328,6 +347,14 @@ case "$1" in
         ;;
     cleanup)
         run_cleanup
+        ;;
+    local)
+        source "${COMPONENTS_DIR}/Local.sh"
+        if [ "$2" = "cleanup" ]; then
+            run_local_cleanup
+        else
+            run_local_collection
+        fi
         ;;
     *)
         print_log -r "[error] " "Invalid command: $1"
