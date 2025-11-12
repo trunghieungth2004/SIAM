@@ -37,7 +37,7 @@ The platform uses a hybrid edge-cloud architecture:
   - S3 for data lake and hosting
   - SageMaker for model training
 
-![Architecture Diagram](diagram/SIAM.drawio)
+![Architecture Diagram](./documentation/SIAM_Architecture.drawio)
 
 ## Quick Start
 
@@ -68,31 +68,24 @@ The platform uses a hybrid edge-cloud architecture:
 3. **Set up the project**
    ```bash
    cd setup
-   export PROJECT_NAME="MyProject"
-   export AWS_REGION="us-east-1"
-   export PI_SSH_TARGET="pi@192.168.1.100"
-   export THING_NAME="MyIoTDevice"
    ```
 
 4. **Deploy AWS infrastructure**
+   
+   The `AWS.sh` script provides interactive component selection:
+   
    ```bash
-   # Deploy all cloud components
+   # Interactive setup - select components to deploy
    ./AWS.sh setup
    
-   # Or deploy specific components
-   ./AWS.sh vpc setup
-   ./AWS.sh iot setup
-   ./AWS.sh lambda setup
-   ./AWS.sh sagemaker setup
-   ```
-
-5. **Set up edge device**
-   ```bash
-   # Install Greengrass on Raspberry Pi
-   ./AWS.sh greengrass setup
+   # Interactive cleanup - select components to remove
+   ./AWS.sh cleanup
    
-   # Or collect local data without cloud
+   # Local data collection (no cloud required)
    ./AWS.sh local
+   
+   # Remove local data collection
+   ./AWS.sh local cleanup
    ```
 
 ## Project Structure
@@ -126,9 +119,59 @@ SIAM/
 
 ## Usage
 
+The `AWS.sh` script provides an interactive menu for component selection:
+
+```bash
+./AWS.sh setup    # Deploy AWS infrastructure
+./AWS.sh cleanup  # Remove AWS resources
+./AWS.sh local    # Set up local data collection
+```
+
+### Component Selection
+
+When running setup or cleanup, you'll see an interactive menu:
+
+```
+AWS Infrastructure Components
+:: Choose which components to setup:
+
+ 1  VPC          [Cloud] VPC, Subnets, Gateways, and Endpoints
+ 2  S3           [Cloud] S3 Buckets for data storage and web hosting
+ 3  DynamoDB     [Cloud] DynamoDB tables for sensor data
+ 4  SNS          [Cloud] SNS topics for notifications
+ 5  SQS          [Cloud] SQS queues for message handling
+ 6  Secrets      [Cloud] Secrets Manager for secure key storage
+ 7  Lambda       [Cloud] Lambda functions and IAM roles
+ 8  SageMaker    [Cloud] ML model training for predictive maintenance
+ 9  Greengrass   [Cloud] IoT Greengrass Core for edge computing
+10  IoT          [Cloud] IoT Core - Things, certificates, and rules
+11  CloudWatch   [Cloud] Monitoring, alarms, and dashboards
+12  EventBridge  [Cloud] Automated ML pipeline and edge deployment
+
+==> Components to setup: (eg: "1 2 3", "1-3", "^4" to exclude, or "all")
+```
+
+**Selection Examples:**
+- `1 2 3` - Deploy components 1, 2, and 3
+- `1-5` - Deploy components 1 through 5
+- `^4` - Deploy all components except 4
+- `all` or `<enter>` - Deploy all components (default)
+
 ### Cloud Deployment
 
-Deploy specific AWS components:
+```bash
+cd setup
+./AWS.sh setup
+# Follow interactive prompts to:
+# 1. Enter project name
+# 2. Enter IoT device (Thing) name
+# 3. Select components to deploy
+# 4. Enter Raspberry Pi SSH target (if Greengrass selected)
+```
+
+### Local Data Collection
+
+Run standalone data collection on Raspberry Pi without cloud infrastructure:
 
 ```bash
 # Deploy VPC infrastructure
@@ -149,12 +192,13 @@ Deploy specific AWS components:
 
 ### Local Data Collection
 
-Run standalone data collection on Raspberry Pi:
+Run standalone data collection on Raspberry Pi without cloud infrastructure:
 
 ```bash
 ./AWS.sh local
-# Enter Pi SSH target (e.g., pi@192.168.1.100)
-# Enter collection duration in days
+# Follow prompts:
+# 1. Enter Pi SSH target (e.g., pi@192.168.1.100)
+# 2. Enter collection duration in days
 # Service will run automatically and stop after duration
 ```
 
@@ -163,9 +207,16 @@ View real-time sensor data:
 ssh pi@192.168.1.100 'sudo journalctl -u local-datalogger -f'
 ```
 
+Download collected data:
+```bash
+# Data is automatically downloaded after the service stops
+# Or manually cleanup and download:
+./AWS.sh local cleanup
+```
+
 ### Cleanup
 
-Remove all deployed resources:
+Remove deployed AWS resources:
 
 ```bash
 # Clean up specific components
@@ -175,6 +226,17 @@ Remove all deployed resources:
 
 # Clean up everything
 ./AWS.sh cleanup
+```
+
+```bash
+cd setup
+./AWS.sh cleanup
+# Follow interactive prompts to:
+# 1. Enter project name
+# 2. Enter IoT device (Thing) name
+# 3. Confirm deletion
+# 4. Select components to remove
+# 5. Enter Raspberry Pi SSH target (if Greengrass selected)
 ```
 
 ## Components
@@ -211,22 +273,6 @@ Real-time anomaly detection:
 - TensorFlow model with multi-output prediction
 - Edge TPU compiler for model optimization
 - Located in: `setup/components/SageMaker.sh`
-
-## Web Dashboard
-
-The project includes a Hugo-based static website for documentation and monitoring:
-
-```bash
-cd website
-hugo server
-# Visit http://localhost:1313
-```
-
-Deploy to GitHub Pages:
-```bash
-# Automatic deployment via GitHub Actions
-# Push to master branch triggers deployment
-```
 
 ## Cost Estimation
 
@@ -270,18 +316,6 @@ npm install
 node ingestion.js
 ```
 
-## Configuration
-
-Environment variables for `AWS.sh`:
-
-```bash
-export PROJECT_NAME="YourProjectName"      # Required
-export AWS_REGION="us-east-1"              # Required
-export PI_SSH_TARGET="pi@192.168.1.100"   # Required for Greengrass/Local
-export THING_NAME="YourIoTThing"           # Required for IoT setup
-export VPC_CIDR="10.0.0.0/16"             # Optional, default shown
-```
-
 ## Security
 
 - AWS credentials stored in Secrets Manager
@@ -314,8 +348,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Additional Resources
 
 - [Project Proposal](https://trunghieungth2004.github.io/SIAM/)
-- [AWS IoT Greengrass Documentation](https://docs.aws.amazon.com/greengrass/)
+- [AWS Documentation](https://docs.aws.amazon.com/)
 - [Coral Edge TPU Documentation](https://coral.ai/docs/)
-- [Amazon SageMaker Documentation](https://docs.aws.amazon.com/sagemaker/)
 
 ---
