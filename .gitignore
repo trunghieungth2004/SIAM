@@ -9,3 +9,4 @@ AWS_KEY.h
 WiFi_KEY.h
 certificates
 node_modules
+greengrass_remote_install.sh
