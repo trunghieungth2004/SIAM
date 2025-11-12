@@ -2,7 +2,7 @@
 
 [![Hugo](https://img.shields.io/badge/Hugo-0.152.2-blue.svg)](https://gohugo.io/)
 [![AWS](https://img.shields.io/badge/AWS-IoT%20%7C%20Greengrass%20%7C%20SageMaker-orange.svg)](https://aws.amazon.com/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
 A hybrid edge-cloud platform for predictive maintenance using AWS IoT Greengrass, Coral TPU, and Amazon SageMaker.
 
@@ -37,7 +37,7 @@ The platform uses a hybrid edge-cloud architecture:
   - S3 for data lake and hosting
   - SageMaker for model training
 
-![Architecture Diagram](./documentation/SIAM_Architecture.drawio)
+![Architecture Diagram](https://drive.google.com/file/d/1oSuNWL722zBMHkhSlheuezGVoR6sTiq3/view?usp=sharing)
 
 ## Quick Start
 
@@ -68,24 +68,7 @@ The platform uses a hybrid edge-cloud architecture:
 3. **Set up the project**
    ```bash
    cd setup
-   ```
-
-4. **Deploy AWS infrastructure**
-   
-   The `AWS.sh` script provides interactive component selection:
-   
-   ```bash
-   # Interactive setup - select components to deploy
    ./AWS.sh setup
-   
-   # Interactive cleanup - select components to remove
-   ./AWS.sh cleanup
-   
-   # Local data collection (no cloud required)
-   ./AWS.sh local
-   
-   # Remove local data collection
-   ./AWS.sh local cleanup
    ```
 
 ## Project Structure
@@ -127,106 +110,11 @@ The `AWS.sh` script provides an interactive menu for component selection:
 ./AWS.sh local    # Set up local data collection
 ```
 
-### Component Selection
 
-When running setup or cleanup, you'll see an interactive menu:
-
-```
-AWS Infrastructure Components
-:: Choose which components to setup:
-
- 1  VPC          [Cloud] VPC, Subnets, Gateways, and Endpoints
- 2  S3           [Cloud] S3 Buckets for data storage and web hosting
- 3  DynamoDB     [Cloud] DynamoDB tables for sensor data
- 4  SNS          [Cloud] SNS topics for notifications
- 5  SQS          [Cloud] SQS queues for message handling
- 6  Secrets      [Cloud] Secrets Manager for secure key storage
- 7  Lambda       [Cloud] Lambda functions and IAM roles
- 8  SageMaker    [Cloud] ML model training for predictive maintenance
- 9  Greengrass   [Cloud] IoT Greengrass Core for edge computing
-10  IoT          [Cloud] IoT Core - Things, certificates, and rules
-11  CloudWatch   [Cloud] Monitoring, alarms, and dashboards
-12  EventBridge  [Cloud] Automated ML pipeline and edge deployment
-
-==> Components to setup: (eg: "1 2 3", "1-3", "^4" to exclude, or "all")
-```
-
-**Selection Examples:**
-- `1 2 3` - Deploy components 1, 2, and 3
-- `1-5` - Deploy components 1 through 5
-- `^4` - Deploy all components except 4
-- `all` or `<enter>` - Deploy all components (default)
-
-### Cloud Deployment
-
-```bash
-cd setup
-./AWS.sh setup
-# Follow interactive prompts to:
-# 1. Enter project name
-# 2. Enter IoT device (Thing) name
-# 3. Select components to deploy
-# 4. Enter Raspberry Pi SSH target (if Greengrass selected)
-```
-
-### Local Data Collection
-
-Run standalone data collection on Raspberry Pi without cloud infrastructure:
-
-```bash
-# Deploy VPC infrastructure
-./AWS.sh vpc setup
-
-# Deploy IoT Core resources
-./AWS.sh iot setup
-
-# Deploy Lambda functions
-./AWS.sh lambda setup
-
-# Deploy SageMaker training pipeline
-./AWS.sh sagemaker setup
-
-# Deploy complete Greengrass system
-./AWS.sh greengrass setup
-```
-
-### Local Data Collection
-
-Run standalone data collection on Raspberry Pi without cloud infrastructure:
-
-```bash
-./AWS.sh local
-# Follow prompts:
-# 1. Enter Pi SSH target (e.g., pi@192.168.1.100)
-# 2. Enter collection duration in days
-# Service will run automatically and stop after duration
-```
-
-View real-time sensor data:
-```bash
-ssh pi@192.168.1.100 'sudo journalctl -u local-datalogger -f'
-```
-
-Download collected data:
-```bash
-# Data is automatically downloaded after the service stops
-# Or manually cleanup and download:
-./AWS.sh local cleanup
-```
 
 ### Cleanup
 
 Remove deployed AWS resources:
-
-```bash
-# Clean up specific components
-./AWS.sh vpc cleanup
-./AWS.sh iot cleanup
-./AWS.sh greengrass cleanup
-
-# Clean up everything
-./AWS.sh cleanup
-```
 
 ```bash
 cd setup
@@ -274,33 +162,30 @@ Real-time anomaly detection:
 - Edge TPU compiler for model optimization
 - Located in: `setup/components/SageMaker.sh`
 
-## Cost Estimation
-
-**Monthly AWS Costs (Single Device):**
-- IoT Core: $0.00 (free tier)
-- Lambda: $0.00 (free tier)
-- DynamoDB: $0.00 (free tier)
-- S3: ~$0.10
-- SageMaker: ~$0.20 (4 training jobs/month)
-- **Total: ~$0.30/month**
-
-**Hardware Costs (One-Time):**
-- Raspberry Pi 5 (8GB): ~$80
-- Coral TPU USB: ~$60
-- Sensors + Components: ~$25
-- Power Supply: ~$12
-- **Total: ~$177/device**
-
 ## Development
 
 ### Prerequisites for Development
 
 - GCC/G++ (for C compilation)
-- Python 3.8+
+- Python 3.9+ (for ML inference)
 - Node.js 18+ (for Lambda development)
 - Hugo 0.152.2+ (for website)
 - Docker (for containerization)
 - AWS CLI v2
+
+#### Coral TPU Dependencies (for Raspberry Pi)
+
+- **System packages**: `libedgetpu1-std`, `libgpiod-dev`, `i2c-tools`
+- **Python packages**:
+  - `numpy==1.23.5`
+  - `scipy==1.10.1`
+  - `scikit-learn==1.2.2`
+  - `tflite_runtime==2.5.0.post1` (aarch64)
+  - `pycoral==2.0.0` (aarch64)
+  - `awsiotsdk`
+  - `aws-greengrass-stream-manager-sdk-python`
+- **Docker base**: `python:3.9-slim` with virtual environment
+- **Hardware**: Coral USB Accelerator with udev rules configured
 
 ### Testing
 
@@ -325,18 +210,9 @@ node ingestion.js
 - IoT certificates for device authentication
 - API Gateway with IP restrictions/API keys
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Author
-
-**Trung Hieu Nguyễn**
-- GitHub: [@trunghieungth2004](https://github.com/trunghieungth2004)
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
