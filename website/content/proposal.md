@@ -59,7 +59,7 @@ The platform is a hybrid edge-cloud system. The edge is responsible for data col
 - **Ingestion**: AWS IoT Core (MQTT Broker, Rules)
 - **Compute**: AWS Lambda (Ingestion, Query, Retrain-Trigger, Deploy)
 - **Storage**: Amazon DynamoDB, Amazon S3 (Data Lake, Model Artifacts, Web Hosting)
-- **Networking**: AWS VPC (Private/Public Subnets), NAT Gateway, VPC Endpoints, API Gateway
+- **Networking**: AWS VPC (Private/Public Subnets), NAT Instance (EC2), VPC Endpoints, API Gateway
 - **Machine Learning**: Amazon SageMaker (Training Jobs), Amazon EventBridge (Scheduler)
 - **Security**: AWS Secrets Manager, IAM
 - **Reliability & Monitoring**: Amazon SQS (Dead-Letter Queue), Amazon CloudWatch, Amazon SNS

@@ -205,7 +205,7 @@ node ingestion.js
 
 - AWS credentials stored in Secrets Manager
 - VPC with private/public subnet isolation
-- NAT Gateway for secure internet access
+- NAT Instance (EC2) for cost-effective internet access
 - VPC Endpoints for AWS services
 - IoT certificates for device authentication
 - API Gateway with IP restrictions/API keys

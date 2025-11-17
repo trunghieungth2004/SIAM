@@ -63,18 +63,44 @@ setup_vpc() {
         print_log -y "[skip] " "Internet Gateway already exists: ${IGW_ID}"
     fi
 
-    NAT_GW_ID=$(aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=${VPC_ID}" "Name=state,Values=available,pending" --query "NatGateways[0].NatGatewayId" --output text)
-    if [ "$NAT_GW_ID" == "None" ] || [ -z "$NAT_GW_ID" ]; then
-        print_log -c "[create] " "Creating NAT Gateway..."
-        EIP_ALLOC_ID=$(aws ec2 allocate-address --domain vpc --query AllocationId --output text)
-        NAT_GW_ID=$(aws ec2 create-nat-gateway --subnet-id $PUBLIC_SUBNET_ID --allocation-id $EIP_ALLOC_ID --query NatGateway.NatGatewayId --output text)
-        print_log -y "[wait] " "Waiting for NAT Gateway ($NAT_GW_ID) to become available..."
-        aws ec2 wait nat-gateway-available --nat-gateway-ids $NAT_GW_ID
-        print_log -g "[ready] " "NAT Gateway is now available."
+    # Create key pair for NAT instance if it doesn't exist
+    KEY_NAME="${PROJECT_NAME}-key"
+    if ! aws ec2 describe-key-pairs --key-names $KEY_NAME >/dev/null 2>&1; then
+        print_log -c "[create] " "Creating key pair: $KEY_NAME"
+        aws ec2 create-key-pair --key-name $KEY_NAME --query 'KeyMaterial' --output text > ~/.ssh/${KEY_NAME}.pem
+        chmod 400 ~/.ssh/${KEY_NAME}.pem
     else
-        print_log -y "[skip] " "NAT Gateway already exists: ${NAT_GW_ID}"
-        print_log -y "[verify] " "Ensuring NAT Gateway is available..."
-        aws ec2 wait nat-gateway-available --nat-gateway-ids $NAT_GW_ID
+        print_log -y "[skip] " "Key pair already exists: $KEY_NAME"
+    fi
+
+    # Create NAT instance instead of NAT Gateway for cost optimization
+    NAT_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=nat-${PROJECT_NAME}" "Name=instance-state-name,Values=running,pending" --query "Reservations[0].Instances[0].InstanceId" --output text)
+    if [ "$NAT_INSTANCE_ID" == "None" ] || [ -z "$NAT_INSTANCE_ID" ]; then
+        print_log -c "[create] " "Creating NAT EC2 instance..."
+        # Get latest Amazon Linux 2 AMI with NAT support
+        AMI_ID=$(aws ec2 describe-images --owners amazon --filters "Name=name,Values=amzn2-ami-hvm-*" "Name=description,Values=*NAT*" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text)
+        if [ "$AMI_ID" == "None" ] || [ -z "$AMI_ID" ]; then
+            # Fallback to regular Amazon Linux 2 AMI
+            AMI_ID=$(aws ec2 describe-images --owners amazon --filters "Name=name,Values=amzn2-ami-hvm-*" "Name=state,Values=available" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text)
+        fi
+        
+        # Create NAT instance
+        NAT_INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --instance-type t3.nano --key-name $KEY_NAME --security-group-ids $GG_SG_ID --subnet-id $PUBLIC_SUBNET_ID --associate-public-ip-address --user-data "#!/bin/bash
+yum update -y
+echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf
+sysctl -p
+/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+/sbin/iptables -F FORWARD
+service iptables save" --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=nat-${PROJECT_NAME}},{Key=Project,Value=${PROJECT_NAME}}]" --query "Instances[0].InstanceId" --output text)
+        
+        # Disable source/destination check
+        aws ec2 modify-instance-attribute --instance-id $NAT_INSTANCE_ID --no-source-dest-check
+        
+        print_log -y "[wait] " "Waiting for NAT instance ($NAT_INSTANCE_ID) to be running..."
+        aws ec2 wait instance-running --instance-ids $NAT_INSTANCE_ID
+        print_log -g "[ready] " "NAT instance is now running."
+    else
+        print_log -y "[skip] " "NAT instance already exists: ${NAT_INSTANCE_ID}"
     fi
 
     PUBLIC_RT_ID=$(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=${VPC_ID}" "Name=association.subnet-id,Values=${PUBLIC_SUBNET_ID}" --query "RouteTables[0].RouteTableId" --output text)
@@ -91,7 +117,7 @@ setup_vpc() {
     if [ "$PRIVATE_RT_ID" == "None" ] || [ -z "$PRIVATE_RT_ID" ]; then
         print_log -c "[create] " "Creating and configuring Private Route Table..."
         PRIVATE_RT_ID=$(aws ec2 create-route-table --vpc-id $VPC_ID --query RouteTable.RouteTableId --output text)
-        aws ec2 create-route --route-table-id $PRIVATE_RT_ID --destination-cidr-block 0.0.0.0/0 --nat-gateway-id $NAT_GW_ID
+        aws ec2 create-route --route-table-id $PRIVATE_RT_ID --destination-cidr-block 0.0.0.0/0 --instance-id $NAT_INSTANCE_ID
         aws ec2 associate-route-table --subnet-id $PRIVATE_SUBNET_ID --route-table-id $PRIVATE_RT_ID
     else
         print_log -y "[skip] " "Private Route Table already exists: ${PRIVATE_RT_ID}"
@@ -174,8 +200,26 @@ cleanup_vpc() {
         done
     fi
 
-    # Step 2: Delete NAT Gateway and release EIP
-    print_log -c "[network] " "Deleting NAT Gateway and releasing EIP..."
+    # Step 2: Delete NAT instance and key pair
+    print_log -c "[network] " "Deleting NAT instance..."
+    NAT_INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=nat-${PROJECT_NAME}" "Name=instance-state-name,Values=running,pending,stopping,stopped" --query "Reservations[0].Instances[0].InstanceId" --output text)
+    if [ ! -z "$NAT_INSTANCE_ID" ] && [ "$NAT_INSTANCE_ID" != "None" ]; then
+        print_log -c "[delete] " "Terminating NAT instance: $NAT_INSTANCE_ID"
+        aws ec2 terminate-instances --instance-ids $NAT_INSTANCE_ID
+        print_log -y "[wait] " "Waiting for NAT instance to be terminated..."
+        aws ec2 wait instance-terminated --instance-ids $NAT_INSTANCE_ID
+        print_log -g "[ready] " "NAT instance has been terminated."
+    fi
+    
+    # Delete key pair
+    KEY_NAME="${PROJECT_NAME}-key"
+    if aws ec2 describe-key-pairs --key-names $KEY_NAME >/dev/null 2>&1; then
+        print_log -c "[delete] " "Deleting key pair: $KEY_NAME"
+        aws ec2 delete-key-pair --key-name $KEY_NAME
+        rm -f ~/.ssh/${KEY_NAME}.pem
+    fi
+    
+    # Also clean up any NAT Gateways if they exist (backward compatibility)
     NAT_GW_ID=$(aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=${VPC_ID}" --query "NatGateways[?State!='deleted'].NatGatewayId" --output text)
     if [ ! -z "$NAT_GW_ID" ] && [ "$NAT_GW_ID" != "None" ]; then
         EIP_ALLOC_ID=$(aws ec2 describe-nat-gateways --nat-gateway-ids $NAT_GW_ID --query "NatGateways[0].NatGatewayAddresses[0].AllocationId" --output text 2>/dev/null)
