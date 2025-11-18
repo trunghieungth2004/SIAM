@@ -292,34 +292,18 @@ def main():
         sm_client = StreamManagerClient()
         logger.info("Connected to StreamManager")
         
-        # Create predictions stream with IoT Core export
+        # Create predictions stream for local buffering
         try:
-            from stream_manager import (
-                IoTCoreExportDefinition,
-                ExportDefinition
-            )
-            
-            # Define IoT Core export for predictions
-            iot_export = IoTCoreExportDefinition(
-                identifier="ml-predictions-export",
-                mqtt_topic="ml/predictions"
-            )
-            
-            exports = ExportDefinition(
-                iot_core=[iot_export]
-            )
-            
             predictions_stream = MessageStreamDefinition(
                 name="ml-predictions-stream",
                 strategy_on_full=StrategyOnFull.OverwriteOldestData,
                 persistence=Persistence.File,
                 max_size=268435456,  # 256 MB
                 stream_segment_size=16777216,  # 16 MB
-                time_to_live_millis=604800000,  # 7 days
-                export_definition=exports
+                time_to_live_millis=604800000  # 7 days
             )
             sm_client.create_message_stream(predictions_stream)
-            logger.info("Created ml-predictions-stream for caching")
+            logger.info("Created ml-predictions-stream for local buffering")
         except Exception as e:
             if "already exists" not in str(e).lower():
                 logger.warning(f"Failed to create predictions stream: {e}")
@@ -361,12 +345,27 @@ def main():
                             'inference_time_ms': round(inference_time, 2)
                         })
                         
-                        # Cache prediction in StreamManager (will auto-export to IoT Core)
+                        # Cache prediction in StreamManager
                         try:
                             sm_client.append_message(PREDICTIONS_STREAM, json.dumps(result).encode('utf-8'))
-                            logger.info(f"Prediction cached and exported: {result['prediction']} (score: {result['score']:.1f})")
+                            logger.info(f"Prediction cached: {result['prediction']} (score: {result['score']:.1f})")
                         except Exception as e:
                             logger.warning(f"Failed to cache prediction: {e}")
+                        
+                        # Publish to IoT Core via IPC
+                        try:
+                            request = PublishToIoTCoreRequest(
+                                topic_name="ml/predictions",
+                                qos=QOS.AT_LEAST_ONCE,
+                                payload=json.dumps(result).encode('utf-8')
+                            )
+                            operation = ipc_client.new_publish_to_iot_core()
+                            operation.activate(request)
+                            future = operation.get_response()
+                            future.result(timeout=5)
+                            logger.info(f"Published prediction: {result['prediction']} (score: {result['score']:.1f})")
+                        except Exception as e:
+                            logger.error(f"Failed to publish to IoT Core: {e}")
                         
                         sequence_number = message.sequence_number + 1
                         

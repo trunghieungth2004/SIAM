@@ -56,20 +56,53 @@ setup_sagemaker() {
     validate_inputs
     setup_aws_environment
 
-    # Check for training data file
-    DATA_FILE="../data/sensor_log_$(date +%Y%m%d)_*.csv"
-    FOUND_DATA_FILE=$(ls $DATA_FILE 2>/dev/null | head -1)
+    # Get absolute path to data directory
+    SETUP_DIR="$(dirname "$(dirname "$0")")"
+    DATA_DIR="${SETUP_DIR}/data"
     
-    if [ -z "$FOUND_DATA_FILE" ]; then
-        # Try alternative patterns
-        DATA_FILE="../data/sensor_log_*.csv"
-        FOUND_DATA_FILE=$(ls $DATA_FILE 2>/dev/null | head -1)
+    # Create data directory if it doesn't exist
+    mkdir -p "$DATA_DIR"
+    
+    # Check if PI_SSH_TARGET is set, if so fetch data from Pi
+    if [ ! -z "$PI_SSH_TARGET" ]; then
+        print_log -c "[fetch] " "Checking for training data on Raspberry Pi..."
+        
+        # Check if CSV files exist on Pi
+        PI_CSV_COUNT=$(ssh "$PI_SSH_TARGET" "ls -1 ~/local_datalogger/sensor_log_*.csv 2>/dev/null | wc -l" 2>/dev/null || echo "0")
+        
+        if [ "$PI_CSV_COUNT" -gt 0 ]; then
+            print_log -g "[found] " "Found $PI_CSV_COUNT CSV file(s) on Pi"
+            
+            # Get the most recent CSV file
+            PI_LATEST_CSV=$(ssh "$PI_SSH_TARGET" "ls -t ~/local_datalogger/sensor_log_*.csv 2>/dev/null | head -1" 2>/dev/null)
+            
+            if [ ! -z "$PI_LATEST_CSV" ]; then
+                print_log -c "[scp] " "Copying training data from Pi: $PI_LATEST_CSV"
+                
+                # SCP the file to local data directory
+                if scp "${PI_SSH_TARGET}:${PI_LATEST_CSV}" "${DATA_DIR}/"; then
+                    print_log -g "[ok] " "Training data copied successfully"
+                else
+                    print_log -r "[error] " "Failed to copy training data from Pi"
+                    return 1
+                fi
+            fi
+        else
+            print_log -y "[info] " "No CSV files found on Pi at ~/local_datalogger/"
+        fi
     fi
     
+    # Check for training data file in local data directory
+    FOUND_DATA_FILE=$(ls -t "${DATA_DIR}"/sensor_log_*.csv 2>/dev/null | head -1)
+    
     if [ -z "$FOUND_DATA_FILE" ]; then
-        print_log -r "[error] " "Training data file not found in ../data/"
+        print_log -r "[error] " "Training data file not found in ${DATA_DIR}/"
         print_log -y "[info] " "Expected format: sensor_log_YYYYMMDD_HHMMSS.csv"
-        print_log -y "[info] " "Please copy your sensor data CSV file to the data directory first."
+        if [ -z "$PI_SSH_TARGET" ]; then
+            print_log -y "[info] " "Set PI_SSH_TARGET or copy your sensor data CSV file to the data directory first."
+        else
+            print_log -y "[info] " "No sensor data found on Pi. Please collect data first using local datalogger."
+        fi
         return 1
     fi
     
@@ -81,8 +114,18 @@ setup_sagemaker() {
         return 1
     fi
     
+    # Count rows for validation
+    ROW_COUNT=$(wc -l < "$FOUND_DATA_FILE")
+    ROW_COUNT=$((ROW_COUNT - 1)) # Subtract header row
+    
+    if [ "$ROW_COUNT" -lt 100 ]; then
+        print_log -y "[warn] " "Training data has only $ROW_COUNT rows. Recommend at least 100 samples for reliable training."
+        print_log -y "[warn] " "Training will continue but model quality may be poor."
+    else
+        print_log -g "[ok] " "Training data contains $ROW_COUNT samples"
+    fi
+    
     # Get S3 bucket for model artifacts - always discover to ensure correct bucket
-    SETUP_DIR="$(dirname "$(dirname "$0")")"
     RESOURCE_FILE="${SETUP_DIR}/${PROJECT_NAME}_resources.txt"
     
     if [ -f "$RESOURCE_FILE" ]; then
@@ -103,9 +146,23 @@ setup_sagemaker() {
 
     # Upload training data to S3
     S3_TRAINING_PATH="s3://${S3_DATA_BUCKET}/sagemaker/training-data/"
+    
+    # Create timestamped backup in S3
+    TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+    BACKUP_FILENAME="training-${TIMESTAMP}.csv"
+    
     print_log -c "[upload] " "Uploading training data to S3..."
-    if ! aws s3 cp "$FOUND_DATA_FILE" "${S3_TRAINING_PATH}training.csv"; then
+    
+    # Upload with backup (versioned)
+    if ! aws s3 cp "$FOUND_DATA_FILE" "${S3_TRAINING_PATH}${BACKUP_FILENAME}"; then
         print_log -r "[error] " "Failed to upload training data to S3"
+        return 1
+    fi
+    print_log -g "[ok] " "Training data backed up to: ${S3_TRAINING_PATH}${BACKUP_FILENAME}"
+    
+    # Also upload as training.csv for SageMaker to use
+    if ! aws s3 cp "$FOUND_DATA_FILE" "${S3_TRAINING_PATH}training.csv"; then
+        print_log -r "[error] " "Failed to upload training.csv to S3"
         return 1
     fi
     print_log -g "[ok] " "Training data uploaded to: ${S3_TRAINING_PATH}training.csv"
@@ -692,6 +749,17 @@ cleanup_sagemaker() {
     ENDPOINT_NAME="${MODEL_NAME}-endpoint"
     ENDPOINT_CONFIG_NAME="${MODEL_NAME}-config"
     COMPONENT_NAME="com.${PROJECT_NAME}.MLInference"
+    
+    # Get absolute path to data directory
+    SETUP_DIR="$(dirname "$(dirname "$0")")"
+    DATA_DIR="${SETUP_DIR}/data"
+    
+    # Delete local CSV files
+    if [ -d "$DATA_DIR" ]; then
+        print_log -c "[delete] " "Deleting local training data CSV files..."
+        rm -f "${DATA_DIR}"/sensor_log_*.csv 2>/dev/null || true
+        print_log -g "[ok] " "Local CSV files deleted"
+    fi
     
     # Delete Greengrass component
     print_log -c "[delete] " "Deleting Greengrass ML component..."

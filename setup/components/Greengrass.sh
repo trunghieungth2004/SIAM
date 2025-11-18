@@ -451,22 +451,6 @@ setup_pi_for_greengrass() {
         return 1
     fi
     
-    # Verify TPU Docker image was created
-    print_log -c "[verify] " "Verifying Coral TPU Docker image..."
-    if ssh "${PI_SSH_TARGET}" 'docker images | grep -q coral-tpu'; then
-        print_log -g "[ok] " "Coral TPU Docker image found"
-        
-        # Test TPU detection
-        print_log -c "[test] " "Testing TPU detection..."
-        if ssh "${PI_SSH_TARGET}" "docker run --rm --privileged --device=/dev/bus/usb coral-tpu:latest python3 -c 'from pycoral.utils import edgetpu; devices = edgetpu.list_edge_tpus(); print(f\"Found {len(devices)} TPU device(s)\" if devices else \"No TPU detected\")' 2>/dev/null"; then
-            print_log -g "[ok] " "TPU detection successful"
-        else
-            print_log -y "[info] " "TPU test completed - device may need initialization"
-        fi
-    else
-        print_log -y "[warn] " "Coral TPU Docker image not found - ML inference may not work"
-    fi
-    
     print_log -g "[ok] " "Pi setup for Greengrass completed"
     return 0
 }
