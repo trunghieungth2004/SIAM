@@ -27,17 +27,17 @@
       },
       "Artifacts": [
         {
-          "Uri": "s3://test-iot-data-c0d53a8e/models/model_edgetpu_latest.tar.gz",
+          "Uri": "s3://test-iot-data-58751180/models/model_edgetpu_latest.tar.gz",
           "Unarchive": "NONE"
         },
         {
-          "Uri": "s3://test-iot-data-c0d53a8e/greengrass/artifacts/inference_service.py"
+          "Uri": "s3://test-iot-data-58751180/greengrass/artifacts/inference_service.py"
         },
         {
-          "Uri": "s3://test-iot-data-c0d53a8e/greengrass/artifacts/Dockerfile.tpu"
+          "Uri": "s3://test-iot-data-58751180/greengrass/artifacts/Dockerfile.tpu"
         },
         {
-          "Uri": "s3://test-iot-data-c0d53a8e/greengrass/artifacts/tpu_inference_service.py"
+          "Uri": "s3://test-iot-data-58751180/greengrass/artifacts/tpu_inference_service.py"
         }
       ]
     }

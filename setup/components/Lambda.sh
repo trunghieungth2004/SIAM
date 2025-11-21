@@ -124,7 +124,7 @@ EOL
         fi
 
         cat > lambda-permissions-policy.json << EOL
-{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["dynamodb:PutItem", "s3:PutObject", "sns:Publish", "sqs:SendMessage", "secretsmanager:GetSecretValue"], "Resource": "*" }] }
+{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["dynamodb:PutItem", "s3:PutObject", "sns:Publish", "sqs:SendMessage"], "Resource": "*" }] }
 EOL
         if ! aws iam put-role-policy --role-name $LAMBDA_ROLE_NAME --policy-name "LambdaCustomPermissions" --policy-document file://lambda-permissions-policy.json; then
             print_log -r "[error] " "Failed to attach custom permissions policy to Lambda role"
@@ -164,7 +164,7 @@ EOL
         fi
         
         cat > query-permissions.json << EOL
-{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["dynamodb:Query", "secretsmanager:GetSecretValue"], "Resource": "*" }] }
+{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["dynamodb:Query"], "Resource": "*" }] }
 EOL
         if ! aws iam put-role-policy --role-name $QUERY_ROLE_NAME --policy-name "QueryLambdaPermissions" --policy-document file://query-permissions.json; then
             print_log -r "[error] " "Failed to attach custom permissions policy to Query Lambda role"
@@ -288,10 +288,16 @@ EOL
         --source-arn "arn:aws:iot:$AWS_REGION:$ACCOUNT_ID:rule/$ML_RULE_NAME" 2>/dev/null || print_log -y "[skip] " "ML predictions permission already exists"
 
     # Query Handler Lambda Function
-    QUERY_LAMBDA_NAME="func-query-${PROJECT_NAME}"
+    QUERY_LAMBDA_NAME="${PROJECT_NAME}-query-lambda"
     if ! aws lambda get-function --function-name $QUERY_LAMBDA_NAME > /dev/null 2>&1; then
         print_log -c "[lambda] " "Creating Query Handler Lambda function..."
-        echo 'export const handler = async (event) => { console.log(`Received event: ${JSON.stringify(event)}`); return { statusCode: 200, body: "Hello from Query Lambda!" }; };' > query.mjs
+        
+        if [ -f "components/Lambda/query.mjs" ]; then
+            cp components/Lambda/query.mjs query.mjs
+        else
+            print_log -r "[error] " "query.mjs not found in components/Lambda/"
+            return 1
+        fi
         
         if ! zip query_deployment.zip query.mjs; then
             print_log -r "[error] " "Failed to create query deployment package"
@@ -372,56 +378,12 @@ EOL
 
 
 
-    # API Gateway
-    API_GW_NAME="api-iot-${PROJECT_NAME}"
-    if ! API_ID=$(aws apigatewayv2 get-apis --query "Items[?Name=='${API_GW_NAME}'].ApiId" --output text); then
-        print_log -r "[error] " "Failed to check for existing API Gateway"
-        return 1
-    fi
-    
-    if [ -z "$API_ID" ] || [ "$API_ID" = "None" ]; then
-        print_log -c "[api] " "Creating API Gateway..."
-        if ! API_ID=$(aws apigatewayv2 create-api --name $API_GW_NAME --protocol-type HTTP --query ApiId --output text); then
-            print_log -r "[error] " "Failed to create API Gateway"
-            return 1
-        fi
-        
-        if ! INTEGRATION_ID=$(aws apigatewayv2 create-integration --api-id $API_ID --integration-type AWS_PROXY --integration-uri $QUERY_LAMBDA_ARN --payload-format-version 2.0 --query IntegrationId --output text); then
-            print_log -r "[error] " "Failed to create API Gateway integration"
-            return 1
-        fi
-        
-        if ! aws apigatewayv2 create-route --api-id $API_ID --route-key 'GET /data' --target "integrations/${INTEGRATION_ID}"; then
-            print_log -r "[error] " "Failed to create API Gateway route"
-            return 1
-        fi
-        
-        # Get account ID for permission
-        if ! ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text); then
-            print_log -r "[error] " "Failed to get AWS account ID"
-            return 1
-        fi
-        
-        if ! aws lambda add-permission --function-name $QUERY_LAMBDA_NAME --statement-id "ApiGatewayInvokePermission" --action lambda:InvokeFunction --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:$AWS_REGION:$ACCOUNT_ID:$API_ID/*/*/*"; then
-            print_log -r "[error] " "Failed to add API Gateway permission to Lambda"
-            return 1
-        fi
-        
-        print_log -g "[ok] " "API Gateway created successfully."
-    else
-        print_log -y "[skip] " "API Gateway '${API_GW_NAME}' already exists."
-    fi
-    
-    if ! API_ENDPOINT=$(aws apigatewayv2 get-api --api-id $API_ID --query ApiEndpoint --output text); then
-        print_log -r "[error] " "Failed to get API Gateway endpoint"
-        return 1
-    fi
+
 
     print_log -g "[ok] " "Lambda setup complete!"
     print_log -m "[Lambda Function ARN] " "${LAMBDA_FUNCTION_ARN}"
     print_log -m "[Query Lambda ARN] " "${QUERY_LAMBDA_ARN}"
     print_log -m "[Deploy Lambda ARN] " "${DEPLOY_LAMBDA_ARN}"
-    print_log -m "[API Gateway Endpoint] " "${API_ENDPOINT}"
     
     # Export variables for other components
     export LAMBDA_FUNCTION_ARN
@@ -433,8 +395,7 @@ EOL
     export DEPLOY_LAMBDA_ARN
     export DEPLOY_LAMBDA_NAME
     export DEPLOY_ROLE_NAME
-    export API_ID
-    export API_ENDPOINT
+
     
     # Cleanup temporary files
     rm -f lambda-trust-policy.json lambda-permissions-policy.json query-permissions.json deploy-permissions.json index.mjs deployment.zip query.mjs query_deployment.zip deploy.mjs deploy_deployment.zip 2>/dev/null || true
@@ -449,19 +410,11 @@ cleanup_lambda() {
 
     LAMBDA_FUNCTION_NAME="func-ingestion-${PROJECT_NAME}"
     LAMBDA_ROLE_NAME="role-lambda-${PROJECT_NAME}"
-    QUERY_LAMBDA_NAME="func-query-${PROJECT_NAME}"
+    QUERY_LAMBDA_NAME="${PROJECT_NAME}-query-lambda"
     QUERY_ROLE_NAME="role-lambda-query-${PROJECT_NAME}"
     DEPLOY_LAMBDA_NAME="func-deploy-${PROJECT_NAME}"
     DEPLOY_ROLE_NAME="role-lambda-deploy-${PROJECT_NAME}"
-    API_GW_NAME="api-iot-${PROJECT_NAME}"
-    
-    # Delete API Gateway
-    print_log -b "[delete] " "Deleting API Gateway..."
-    API_ID=$(aws apigatewayv2 get-apis --query "Items[?Name=='${API_GW_NAME}'].ApiId" --output text 2>/dev/null)
-    if [ ! -z "$API_ID" ] && [ "$API_ID" != "None" ]; then
-        aws apigatewayv2 delete-api --api-id $API_ID 2>/dev/null || true
-        print_log -g "[ok] " "API Gateway deleted."
-    fi
+
     
     # Delete Query Lambda Function
     print_log -b "[delete] " "Deleting Query Lambda Function..."

@@ -18,7 +18,7 @@ declare -A COMPONENTS=(
     ["3"]="DynamoDB"
     ["4"]="SNS"
     ["5"]="SQS"
-    ["6"]="Secrets"
+    ["6"]="APIGateway"
     ["7"]="Lambda"
     ["8"]="SageMaker"
     ["9"]="Greengrass"
@@ -34,7 +34,7 @@ declare -A CATEGORIES=(
     ["DynamoDB"]="Cloud"
     ["SNS"]="Cloud"
     ["SQS"]="Cloud"
-    ["Secrets"]="Cloud"
+    ["APIGateway"]="Cloud"
     ["Lambda"]="Cloud"
     ["IoT"]="Cloud"
     ["Greengrass"]="Cloud"
@@ -50,7 +50,7 @@ declare -A DESCRIPTIONS=(
     ["DynamoDB"]="DynamoDB tables for sensor data"
     ["SNS"]="SNS topics for notifications"
     ["SQS"]="SQS queues for message handling"
-    ["Secrets"]="Secrets Manager for secure key storage"
+    ["APIGateway"]="REST API for data queries and dashboard"
     ["Lambda"]="Lambda functions and IAM roles"
     ["IoT"]="IoT Core - Things, certificates, and rules"
     ["Greengrass"]="IoT Greengrass Core for edge computing"
@@ -193,7 +193,7 @@ run_setup() {
     
     # Prompt for PI SSH target if Greengrass is selected
     if [[ " ${selected_components[*]} " =~ " Greengrass " ]]; then
-        read -p "Enter the SSH target for your Raspberry Pi (e.g., user@host): " PI_SSH_TARGET
+        read -p "Enter the SSH target for your Raspberry Pi (user@host): " PI_SSH_TARGET
         if [ -z "$PI_SSH_TARGET" ] || [[ ! "$PI_SSH_TARGET" =~ "@" ]]; then
             print_log -r "[error] " "Invalid SSH target format. It must be in the format 'user@host'."
             exit 1
@@ -215,7 +215,7 @@ run_setup() {
     fi
     
     # Run components in dependency order
-    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "SageMaker" "Greengrass" "IoT" "CloudWatch" "EventBridge")
+    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Lambda" "APIGateway" "SageMaker" "Greengrass" "IoT" "CloudWatch" "EventBridge")
     
     for component in "${setup_order[@]}"; do
         if [[ " ${selected_components[*]} " =~ " ${component} " ]]; then
@@ -236,6 +236,17 @@ run_setup() {
     echo ""
     print_log -m "[Project Name] " "${PROJECT_NAME}"
     print_log -m "[Thing Name] " "${THING_NAME}"
+    
+    # Display web URL if S3 frontend was deployed
+    if [[ " ${selected_components[*]} " =~ " S3 " ]]; then
+        AWS_REGION=$(aws configure get region)
+        PROJECT_CLEAN=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+        FRONTEND_BUCKET=$(aws s3api list-buckets --query "Buckets[?contains(Name, '${PROJECT_CLEAN}') && contains(Name, 'frontend')].Name" --output text 2>/dev/null | head -1)
+        if [ -n "$FRONTEND_BUCKET" ] && [ "$FRONTEND_BUCKET" != "None" ]; then
+            WEB_URL="http://${FRONTEND_BUCKET}.s3-website-${AWS_REGION}.amazonaws.com"
+            print_log -m "[Web Dashboard] " "${WEB_URL}"
+        fi
+    fi
 }
 
 run_cleanup() {
@@ -286,7 +297,7 @@ run_cleanup() {
     echo ""
     
     # Run cleanup in reverse dependency order
-    local cleanup_order=("EventBridge" "CloudWatch" "IoT" "Greengrass" "SageMaker" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
+    local cleanup_order=("EventBridge" "CloudWatch" "IoT" "Greengrass" "SageMaker" "APIGateway" "Lambda" "SQS" "SNS" "DynamoDB" "S3" "VPC")
     local failed_components=()
     
     for component in "${cleanup_order[@]}"; do
