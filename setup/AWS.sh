@@ -13,23 +13,21 @@ COMPONENTS_DIR="$(dirname "$0")/components"
 
 # Available components
 declare -A COMPONENTS=(
-    ["1"]="VPC"
-    ["2"]="S3" 
-    ["3"]="DynamoDB"
-    ["4"]="SNS"
-    ["5"]="SQS"
-    ["6"]="Secrets"
-    ["7"]="Lambda"
-    ["8"]="SageMaker"
-    ["9"]="Greengrass"
-    ["10"]="IoT"
-    ["11"]="CloudWatch"
-    ["12"]="EventBridge"
+    ["1"]="S3" 
+    ["2"]="DynamoDB"
+    ["3"]="SNS"
+    ["4"]="SQS"
+    ["5"]="Secrets"
+    ["6"]="Lambda"
+    ["7"]="SageMaker"
+    ["8"]="Greengrass"
+    ["9"]="IoT"
+    ["10"]="CloudWatch"
+    ["11"]="EventBridge"
 )
 
 # Component categories
 declare -A CATEGORIES=(
-    ["VPC"]="Cloud"
     ["S3"]="Cloud"
     ["DynamoDB"]="Cloud"
     ["SNS"]="Cloud"
@@ -45,7 +43,6 @@ declare -A CATEGORIES=(
 
 # Component descriptions
 declare -A DESCRIPTIONS=(
-    ["VPC"]="VPC, Subnets, Gateways, and Endpoints"
     ["S3"]="S3 Buckets for data storage and web hosting"
     ["DynamoDB"]="DynamoDB tables for sensor data"
     ["SNS"]="SNS topics for notifications"
@@ -65,7 +62,7 @@ show_component_menu() {
     echo ":: Choose which components to $1:"
     echo ""
     
-    for i in {1..12}; do
+    for i in {1..11}; do
         local component="${COMPONENTS[$i]}"
         local desc="${DESCRIPTIONS[$component]}"
         local category="${CATEGORIES[$component]}"
@@ -84,7 +81,7 @@ parse_selection() {
     
     if [ -z "$selection" ] || [ "$selection" = "all" ]; then
         # Default: all components
-        for i in {1..12}; do
+        for i in {1..11}; do
             selected_components+=("${COMPONENTS[$i]}")
         done
     else
@@ -94,7 +91,7 @@ parse_selection() {
             exclude_mode=true
             selection="${selection#^}"
             # Start with all components for exclusion
-            for i in {1..12}; do
+            for i in {1..11}; do
                 selected_components+=("${COMPONENTS[$i]}")
             done
         fi
@@ -215,7 +212,7 @@ run_setup() {
     fi
     
     # Run components in dependency order
-    local setup_order=("VPC" "S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "SageMaker" "Greengrass" "IoT" "CloudWatch" "EventBridge")
+    local setup_order=("S3" "DynamoDB" "SNS" "SQS" "Secrets" "Lambda" "SageMaker" "Greengrass" "IoT" "CloudWatch" "EventBridge")
     
     for component in "${setup_order[@]}"; do
         if [[ " ${selected_components[*]} " =~ " ${component} " ]]; then
@@ -286,7 +283,7 @@ run_cleanup() {
     echo ""
     
     # Run cleanup in reverse dependency order
-    local cleanup_order=("EventBridge" "CloudWatch" "IoT" "Greengrass" "SageMaker" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3" "VPC")
+    local cleanup_order=("EventBridge" "CloudWatch" "IoT" "Greengrass" "SageMaker" "Lambda" "Secrets" "SQS" "SNS" "DynamoDB" "S3")
     local failed_components=()
     
     for component in "${cleanup_order[@]}"; do

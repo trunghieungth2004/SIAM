@@ -13,39 +13,7 @@ setup_lambda() {
     validate_inputs
     setup_aws_environment
 
-    # Get dependencies from other components
-    if [ -z "$VPC_ID" ]; then
-        if ! VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Project,Values=${PROJECT_NAME}" --query "Vpcs[0].VpcId" --output text); then
-            print_log -r "[error] " "Failed to get VPC ID"
-            return 1
-        fi
-        
-        if ! PRIVATE_SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=tag:Name,Values=private-subnet-${PROJECT_NAME}" --query "Subnets[0].SubnetId" --output text); then
-            print_log -r "[error] " "Failed to get private subnet ID"
-            return 1
-        fi
-        
-        SG_NAME="${PROJECT_NAME}-endpoints"
-        if ! SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=${SG_NAME}" --query "SecurityGroups[0].GroupId" --output text); then
-            print_log -r "[error] " "Failed to get security group ID"
-            return 1
-        fi
-        
-        # Validate that we got valid AWS resource IDs
-        if [ "$SG_ID" = "None" ] || [ -z "$SG_ID" ]; then
-            print_log -r "[error] " "Failed to find security group '${SG_NAME}'. Please ensure VPC setup completed successfully."
-            return 1
-        fi
-        if [ "$PRIVATE_SUBNET_ID" = "None" ] || [ -z "$PRIVATE_SUBNET_ID" ]; then
-            print_log -r "[error] " "Failed to find private subnet. Please ensure VPC setup completed successfully."
-            return 1
-        fi
-        if [ "$VPC_ID" = "None" ] || [ -z "$VPC_ID" ]; then
-            print_log -r "[error] " "Failed to find VPC. Please ensure VPC setup completed successfully."
-            return 1
-        fi
-    fi
-
+    # Get SQS queue ARN
     if [ -z "$SQS_QUEUE_ARN" ]; then
         SQS_QUEUE_NAME="dlq-${PROJECT_NAME}"
         if ! SQS_QUEUE_URL=$(aws sqs get-queue-url --queue-name $SQS_QUEUE_NAME --query QueueUrl --output text 2>/dev/null); then
@@ -118,8 +86,8 @@ EOL
             return 1
         fi
         
-        if ! aws iam attach-role-policy --role-name $LAMBDA_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole; then
-            print_log -r "[error] " "Failed to attach VPC execution policy to Lambda role"
+        if ! aws iam attach-role-policy --role-name $LAMBDA_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole; then
+            print_log -r "[error] " "Failed to attach basic execution policy to Lambda role"
             return 1
         fi
 
@@ -158,8 +126,8 @@ EOL
             return 1
         fi
         
-        if ! aws iam attach-role-policy --role-name $QUERY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole; then
-            print_log -r "[error] " "Failed to attach VPC execution policy to Query Lambda role"
+        if ! aws iam attach-role-policy --role-name $QUERY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole; then
+            print_log -r "[error] " "Failed to attach basic execution policy to Query Lambda role"
             return 1
         fi
         
@@ -198,8 +166,8 @@ EOL
             return 1
         fi
         
-        if ! aws iam attach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole; then
-            print_log -r "[error] " "Failed to attach VPC execution policy to Deploy Lambda role"
+        if ! aws iam attach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole; then
+            print_log -r "[error] " "Failed to attach basic execution policy to Deploy Lambda role"
             return 1
         fi
         
@@ -245,7 +213,6 @@ EOL
             --role $LAMBDA_ROLE_ARN \
             --handler index.handler \
             --zip-file fileb://deployment.zip \
-            --vpc-config SubnetIds=$PRIVATE_SUBNET_ID,SecurityGroupIds=$SG_ID \
             --dead-letter-config TargetArn=$SQS_QUEUE_ARN \
             --environment "Variables={DYNAMODB_TABLE_NAME=$DDB_TABLE_NAME,S3_BUCKET_NAME=$S3_DATA_BUCKET,SNS_TOPIC_ARN=$SNS_TOPIC_ARN}" \
             --query FunctionArn --output text); then
@@ -259,6 +226,10 @@ EOL
             return 1
         fi
         print_log -g "[ready] " "Lambda function is active."
+        
+        # Set CloudWatch log retention to 7 days for cost optimization
+        print_log -c "[logs] " "Setting CloudWatch log retention to 7 days..."
+        aws logs put-retention-policy --log-group-name "/aws/lambda/${LAMBDA_FUNCTION_NAME}" --retention-in-days 7 2>/dev/null || true
     else
         print_log -y "[skip] " "Lambda function '${LAMBDA_FUNCTION_NAME}' already exists."
         if ! LAMBDA_FUNCTION_ARN=$(aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME --query Configuration.FunctionArn --output text); then
@@ -304,7 +275,6 @@ EOL
             --role $QUERY_ROLE_ARN \
             --handler query.handler \
             --zip-file fileb://query_deployment.zip \
-            --vpc-config SubnetIds=$PRIVATE_SUBNET_ID,SecurityGroupIds=$SG_ID \
             --environment "Variables={DYNAMODB_TABLE_NAME=$DDB_TABLE_NAME}" \
             --query FunctionArn --output text); then
             print_log -r "[error] " "Failed to create Query Lambda function: ${QUERY_LAMBDA_NAME}"
@@ -317,6 +287,9 @@ EOL
             return 1
         fi
         print_log -g "[ready] " "Query Lambda function is active."
+        
+        # Set CloudWatch log retention to 7 days
+        aws logs put-retention-policy --log-group-name "/aws/lambda/${QUERY_LAMBDA_NAME}" --retention-in-days 7 2>/dev/null || true
     else
         print_log -y "[skip] " "Query Lambda function '${QUERY_LAMBDA_NAME}' already exists."
         if ! QUERY_LAMBDA_ARN=$(aws lambda get-function --function-name $QUERY_LAMBDA_NAME --query Configuration.FunctionArn --output text); then
@@ -348,7 +321,6 @@ EOL
             --role $DEPLOY_ROLE_ARN \
             --handler deploy.handler \
             --zip-file fileb://deploy_deployment.zip \
-            --vpc-config SubnetIds=$PRIVATE_SUBNET_ID,SecurityGroupIds=$SG_ID \
             --environment "Variables={PROJECT_NAME=$PROJECT_NAME,S3_DATA_BUCKET=$S3_DATA_BUCKET,ACCOUNT_ID=$ACCOUNT_ID}" \
             --timeout 300 \
             --query FunctionArn --output text); then
@@ -362,6 +334,9 @@ EOL
             return 1
         fi
         print_log -g "[ready] " "Deploy Lambda function is active."
+        
+        # Set CloudWatch log retention to 7 days
+        aws logs put-retention-policy --log-group-name "/aws/lambda/${DEPLOY_LAMBDA_NAME}" --retention-in-days 7 2>/dev/null || true
     else
         print_log -y "[skip] " "Deploy Lambda function '${DEPLOY_LAMBDA_NAME}' already exists."
         if ! DEPLOY_LAMBDA_ARN=$(aws lambda get-function --function-name $DEPLOY_LAMBDA_NAME --query Configuration.FunctionArn --output text); then
@@ -467,7 +442,7 @@ cleanup_lambda() {
     print_log -b "[delete] " "Deleting Query Lambda Function..."
     aws lambda delete-function --function-name $QUERY_LAMBDA_NAME 2>/dev/null || true
     aws iam delete-role-policy --role-name $QUERY_ROLE_NAME --policy-name "QueryLambdaPermissions" 2>/dev/null || true
-    aws iam detach-role-policy --role-name $QUERY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole 2>/dev/null || true
+    aws iam detach-role-policy --role-name $QUERY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole 2>/dev/null || true
     aws iam delete-role --role-name $QUERY_ROLE_NAME 2>/dev/null || true
     print_log -g "[ok] " "Query Lambda function and IAM Role deleted."
     
@@ -475,7 +450,7 @@ cleanup_lambda() {
     print_log -b "[delete] " "Deleting Deploy Lambda Function..."
     aws lambda delete-function --function-name $DEPLOY_LAMBDA_NAME 2>/dev/null || true
     aws iam delete-role-policy --role-name $DEPLOY_ROLE_NAME --policy-name "DeployLambdaPermissions" 2>/dev/null || true
-    aws iam detach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole 2>/dev/null || true
+    aws iam detach-role-policy --role-name $DEPLOY_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole 2>/dev/null || true
     aws iam delete-role --role-name $DEPLOY_ROLE_NAME 2>/dev/null || true
     print_log -g "[ok] " "Deploy Lambda function and IAM Role deleted."
     
@@ -483,7 +458,7 @@ cleanup_lambda() {
     print_log -b "[delete] " "Deleting Ingestion Lambda Function..."
     aws lambda delete-function --function-name $LAMBDA_FUNCTION_NAME 2>/dev/null || true
     aws iam delete-role-policy --role-name $LAMBDA_ROLE_NAME --policy-name "LambdaCustomPermissions" 2>/dev/null || true
-    aws iam detach-role-policy --role-name $LAMBDA_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole 2>/dev/null || true
+    aws iam detach-role-policy --role-name $LAMBDA_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole 2>/dev/null || true
     aws iam delete-role --role-name $LAMBDA_ROLE_NAME 2>/dev/null || true
     print_log -g "[ok] " "Ingestion Lambda function and IAM Role deleted."
     

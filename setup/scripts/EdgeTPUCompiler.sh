@@ -81,20 +81,6 @@ EOF
         rm -f /tmp/ec2-trust-policy.json /tmp/ec2-policy.json
     fi
     
-    # Get VPC and subnet
-    VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Project,Values=${PROJECT_NAME}" --query "Vpcs[0].VpcId" --output text)
-    PUBLIC_SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${VPC_ID}" "Name=tag:Name,Values=*public*" --query "Subnets[0].SubnetId" --output text)
-    
-    # Create security group
-    SG_NAME="edgetpu-compiler-${PROJECT_NAME}"
-    SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=${SG_NAME}" "Name=vpc-id,Values=${VPC_ID}" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null)
-    
-    if [ "$SG_ID" = "None" ] || [ -z "$SG_ID" ]; then
-        print_log -c "[sg] " "Creating security group..."
-        SG_ID=$(aws ec2 create-security-group --group-name "$SG_NAME" --description "Edge TPU Compiler" --vpc-id "$VPC_ID" --query GroupId --output text)
-        aws ec2 create-tags --resources "$SG_ID" --tags Key=Project,Value="${PROJECT_NAME}" Key=Name,Value="${SG_NAME}"
-    fi
-    
     # Get Ubuntu AMI
     AMI_ID=$(aws ec2 describe-images --owners 099720109477 --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" "Name=state,Values=available" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text)
     
@@ -183,8 +169,7 @@ USERDATA_EOF
         --image-id "$AMI_ID" \
         --instance-type t3.micro \
         --iam-instance-profile Name="$ROLE_NAME" \
-        --subnet-id "$PUBLIC_SUBNET_ID" \
-        --security-group-ids "$SG_ID" \
+        --associate-public-ip-address \
         --user-data file:///tmp/user-data.sh \
         --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=EdgeTPU-Compiler},{Key=Project,Value=${PROJECT_NAME}}]" \
         --query "Instances[0].InstanceId" \
@@ -207,7 +192,6 @@ cleanup_edgetpu_compiler() {
     setup_aws_environment
     
     ROLE_NAME="EdgeTPUCompilerRole-${PROJECT_NAME}"
-    SG_NAME="edgetpu-compiler-${PROJECT_NAME}"
     
     # Terminate any running compiler instances
     print_log -c "[ec2] " "Checking for running compiler instances..."
@@ -218,16 +202,6 @@ cleanup_edgetpu_compiler() {
         aws ec2 terminate-instances --instance-ids $INSTANCE_IDS
         print_log -y "[wait] " "Waiting for instances to terminate..."
         aws ec2 wait instance-terminated --instance-ids $INSTANCE_IDS
-    fi
-    
-    # Delete security group
-    VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Project,Values=${PROJECT_NAME}" --query "Vpcs[0].VpcId" --output text 2>/dev/null)
-    if [ ! -z "$VPC_ID" ] && [ "$VPC_ID" != "None" ]; then
-        SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=${SG_NAME}" "Name=vpc-id,Values=${VPC_ID}" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null)
-        if [ ! -z "$SG_ID" ] && [ "$SG_ID" != "None" ]; then
-            print_log -c "[delete] " "Deleting security group..."
-            aws ec2 delete-security-group --group-id "$SG_ID" 2>/dev/null || true
-        fi
     fi
     
     # Delete IAM role

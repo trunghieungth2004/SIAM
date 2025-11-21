@@ -142,25 +142,8 @@ async function triggerEdgeTPUCompilation(modelS3Uri, projectName, region) {
     const ec2Client = new EC2Client({ region });
     
     try {
-        const { DescribeSubnetsCommand, DescribeSecurityGroupsCommand } = await import('@aws-sdk/client-ec2');
-        const describeSubnetsCmd = new DescribeSubnetsCommand({
-            Filters: [{ Name: 'tag:Project', Values: [projectName] }, { Name: 'tag:Name', Values: [`public-subnet-${projectName}`] }]
-        });
-        const subnets = await ec2Client.send(describeSubnetsCmd);
-        const subnetId = subnets.Subnets[0]?.SubnetId;
-        
-        const describeSGCmd = new DescribeSecurityGroupsCommand({
-            Filters: [{ Name: 'tag:Project', Values: [projectName] }, { Name: 'tag:Name', Values: [`sg-edgetpu-compiler-${projectName}`] }]
-        });
-        const sgs = await ec2Client.send(describeSGCmd);
-        const sgId = sgs.SecurityGroups[0]?.GroupId;
-        
         const iamRole = `EdgeTPUCompilerRole-${projectName}`;
         
-        if (!subnetId || !sgId) {
-            throw new Error('Missing EC2 resources for Edge TPU compilation');
-        }
-    
     const userData = Buffer.from(`#!/bin/bash
 set -e
 export MODEL_S3_URI="${modelS3Uri}"
@@ -188,8 +171,6 @@ aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region ${region}
             InstanceType: 't3.micro',
             MinCount: 1,
             MaxCount: 1,
-            SubnetId: subnetId,
-            SecurityGroupIds: [sgId],
             IamInstanceProfile: { Name: iamRole },
             UserData: userData,
             TagSpecifications: [{

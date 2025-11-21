@@ -492,7 +492,7 @@ INFERENCE_EOF
         "S3OutputPath": "s3://${S3_DATA_BUCKET}/sagemaker/output/"
     },
     "ResourceConfig": {
-        "InstanceType": "ml.m5.large",
+        "InstanceType": "ml.t3.medium",
         "InstanceCount": 1,
         "VolumeSizeInGB": 10
     },

@@ -27,8 +27,8 @@ setup_eventbridge() {
         print_log -c "[create] " "Creating weekly retraining schedule..."
         aws events put-rule \
             --name $RETRAIN_RULE_NAME \
-            --schedule-expression "rate(7 days)" \
-            --description "Weekly SageMaker retraining trigger"
+            --schedule-expression "rate(14 days)" \
+            --description "Bi-weekly SageMaker retraining trigger (cost optimized)"
         
         # Create retraining Lambda if not exists
         if ! aws lambda get-function --function-name $RETRAIN_LAMBDA_NAME > /dev/null 2>&1; then
@@ -172,7 +172,7 @@ export const handler = async (event) => {
         },
         InputDataConfig: [{ChannelName: "training", DataSource: {S3DataSource: {S3DataType: "S3Prefix", S3Uri: `s3://${bucket}/sagemaker/training-data/`, S3DataDistributionType: "FullyReplicated"}}}],
         OutputDataConfig: {S3OutputPath: `s3://${bucket}/sagemaker/output/`},
-        ResourceConfig: {InstanceType: "ml.m5.large", InstanceCount: 1, VolumeSizeInGB: 10},
+        ResourceConfig: {InstanceType: "ml.t3.medium", InstanceCount: 1, VolumeSizeInGB: 10},
         StoppingCondition: {MaxRuntimeInSeconds: 3600},
         HyperParameters: {sagemaker_program: "train.py", sagemaker_submit_directory: `s3://${bucket}/sagemaker/code/sourcedir.tar.gz`}
     });
@@ -185,6 +185,10 @@ EOF
     aws lambda create-function --function-name $RETRAIN_LAMBDA_NAME --runtime nodejs20.x --role $ROLE_ARN \
         --handler retrain.handler --zip-file fileb:///tmp/retrain.zip --timeout 60 \
         --environment "Variables={PROJECT_NAME=${PROJECT_NAME},S3_BUCKET=${S3_BUCKET},SAGEMAKER_ROLE_ARN=${SAGEMAKER_ROLE_ARN}}" > /dev/null
+    
+    # Set CloudWatch log retention to 7 days
+    aws logs put-retention-policy --log-group-name "/aws/lambda/${RETRAIN_LAMBDA_NAME}" --retention-in-days 7 2>/dev/null || true
+    
     rm -f /tmp/lambda-trust.json /tmp/retrain-policy.json /tmp/retrain.mjs /tmp/retrain.zip
 }
 

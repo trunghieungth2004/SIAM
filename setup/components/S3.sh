@@ -61,7 +61,35 @@ setup_s3() {
             print_log -r "[error] " "Failed to enable versioning on S3 data bucket: ${BUCKET_NAME}"
             return 1
         fi
-        print_log -g "[ok] " "S3 Data Bucket created: ${BUCKET_NAME}"
+        
+        # Add lifecycle policy for cost optimization
+        print_log -c "[lifecycle] " "Adding lifecycle policy for cost optimization..."
+        cat > /tmp/s3-lifecycle.json << 'LIFECYCLE_EOF'
+{
+  "Rules": [
+    {
+      "Id": "DeleteOldVersions",
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 30
+      }
+    },
+    {
+      "Id": "TransitionOldData",
+      "Status": "Enabled",
+      "Transitions": [
+        {
+          "Days": 90,
+          "StorageClass": "GLACIER_IR"
+        }
+      ]
+    }
+  ]
+}
+LIFECYCLE_EOF
+        aws s3api put-bucket-lifecycle-configuration --bucket $BUCKET_NAME --lifecycle-configuration file:///tmp/s3-lifecycle.json
+        rm -f /tmp/s3-lifecycle.json
+        print_log -g "[ok] " "S3 Data Bucket created with lifecycle policy: ${BUCKET_NAME}"
     else
         print_log -y "[skip] " "S3 Data Bucket '${BUCKET_NAME}' already exists."
     fi
