@@ -63,9 +63,12 @@ setup_sagemaker() {
     # Create data directory if it doesn't exist
     mkdir -p "$DATA_DIR"
     
-    # Check if PI_SSH_TARGET is set, if so fetch data from Pi
-    if [ ! -z "$PI_SSH_TARGET" ]; then
-        print_log -c "[fetch] " "Checking for training data on Raspberry Pi..."
+    # First, check for training data file in local data directory
+    FOUND_DATA_FILE=$(ls -t "${DATA_DIR}"/sensor_log_*.csv 2>/dev/null | head -1)
+    
+    # If no local data found and PI_SSH_TARGET is set, try to fetch from Pi
+    if [ -z "$FOUND_DATA_FILE" ] && [ ! -z "$PI_SSH_TARGET" ]; then
+        print_log -c "[fetch] " "No local data found. Checking for training data on Raspberry Pi..."
         
         # Check if CSV files exist on Pi
         PI_CSV_COUNT=$(ssh "$PI_SSH_TARGET" "ls -1 ~/local_datalogger/sensor_log_*.csv 2>/dev/null | wc -l" 2>/dev/null || echo "0")
@@ -82,6 +85,8 @@ setup_sagemaker() {
                 # SCP the file to local data directory
                 if scp "${PI_SSH_TARGET}:${PI_LATEST_CSV}" "${DATA_DIR}/"; then
                     print_log -g "[ok] " "Training data copied successfully"
+                    # Re-check for the file after copy
+                    FOUND_DATA_FILE=$(ls -t "${DATA_DIR}"/sensor_log_*.csv 2>/dev/null | head -1)
                 else
                     print_log -r "[error] " "Failed to copy training data from Pi"
                     return 1
@@ -90,10 +95,9 @@ setup_sagemaker() {
         else
             print_log -y "[info] " "No CSV files found on Pi at ~/local_datalogger/"
         fi
+    elif [ ! -z "$FOUND_DATA_FILE" ]; then
+        print_log -g "[found] " "Using existing local training data: ${FOUND_DATA_FILE}"
     fi
-    
-    # Check for training data file in local data directory
-    FOUND_DATA_FILE=$(ls -t "${DATA_DIR}"/sensor_log_*.csv 2>/dev/null | head -1)
     
     if [ -z "$FOUND_DATA_FILE" ]; then
         print_log -r "[error] " "Training data file not found in ${DATA_DIR}/"

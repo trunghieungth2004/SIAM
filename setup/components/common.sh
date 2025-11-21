@@ -83,5 +83,5 @@ validate_inputs() {
 
 # --- Clean up temporary files ---
 cleanup_temp_files() {
-    rm -f query_deployment.zip query.mjs query-permissions.json test_resources.txt
+    rm -f query_deployment.zip query.mjs query-permissions.json *_resources.txt
 }

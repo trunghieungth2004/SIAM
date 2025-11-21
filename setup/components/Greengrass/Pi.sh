@@ -6,11 +6,73 @@
 #|/ /---+-------------------------------------+/ /---|#
 
 # Source common utilities
-source "$(dirname "$0")/../common.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../common.sh"
 
 is_tailscale_ip() {
     local ip=$(echo "$PI_SSH_TARGET" | cut -d'@' -f2)
     [[ "$ip" =~ ^100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\. ]]
+}
+
+check_tailscale_auth() {
+    if ! is_tailscale_ip; then
+        return 0  # Not a Tailscale IP, no check needed
+    fi
+    
+    print_log -c "[tailscale] " "Checking Tailscale authentication..."
+    
+    # Check if tailscale is installed
+    if ! command -v tailscale &> /dev/null; then
+        print_log -r "[error] " "Tailscale not installed. Please install Tailscale first."
+        return 1
+    fi
+    
+    # Check if tailscale is running and authenticated
+    if ! tailscale status &> /dev/null; then
+        print_log -r "[error] " "Tailscale is not running or authenticated."
+        print_log -y "[info] " "Run 'tailscale up' to authenticate."
+        return 1
+    fi
+    
+    # Extract the Tailscale IP from PI_SSH_TARGET
+    local pi_ip=$(echo "$PI_SSH_TARGET" | cut -d'@' -f2)
+    
+    # Check if the Pi is reachable in Tailscale network
+    if ! tailscale status | grep -q "$pi_ip"; then
+        print_log -y "[warn] " "Pi IP $pi_ip not found in Tailscale network."
+        print_log -y "[info] " "Make sure the Pi is connected to Tailscale."
+    fi
+    
+    print_log -g "[ok] " "Tailscale authentication verified"
+    return 0
+}
+
+validate_pi_ssh_target() {
+    # Validate SSH target format
+    if [ -z "$PI_SSH_TARGET" ]; then
+        print_log -r "[error] " "PI_SSH_TARGET is not set"
+        return 1
+    fi
+    
+    if [[ ! "$PI_SSH_TARGET" =~ @ ]]; then
+        print_log -r "[error] " "Invalid SSH target format. Must be 'user@host'"
+        return 1
+    fi
+    
+    # Check Tailscale authentication if using Tailscale IP
+    if ! check_tailscale_auth; then
+        return 1
+    fi
+    
+    # Test SSH connectivity
+    print_log -c "[test] " "Testing SSH connectivity to $PI_SSH_TARGET..."
+    if ssh -o BatchMode=yes -o ConnectTimeout=5 "$PI_SSH_TARGET" "echo 'SSH connection successful'" &> /dev/null; then
+        print_log -g "[ok] " "SSH connection verified"
+        return 0
+    else
+        print_log -y "[warn] " "SSH connection not yet configured (this is normal for first setup)"
+        return 0  # Don't fail here, setup_ssh_keys will handle it
+    fi
 }
 
 setup_ssh_keys() {
@@ -40,9 +102,8 @@ setup_ssh_keys() {
 setup_pi_basics() {
     print_log -b "[pi-basics] " "Setting up basic Pi configuration..."
     
-    # Validate SSH target
-    if [ -z "$PI_SSH_TARGET" ]; then
-        print_log -r "[error] " "PI_SSH_TARGET is not set"
+    # Validate SSH target and connectivity
+    if ! validate_pi_ssh_target; then
         return 1
     fi
     

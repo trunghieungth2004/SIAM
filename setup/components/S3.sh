@@ -11,6 +11,63 @@ set -e
 # Source common utilities
 source "$(dirname "$0")/common.sh"
 
+deploy_frontend() {
+    print_log -c "[deploy] " "Deploying frontend application..."
+    
+    # Get API Gateway endpoint from other components
+    local api_endpoint=""
+    if [ -n "$API_URL" ]; then
+        api_endpoint="$API_URL"
+    else
+        # Try to discover API Gateway endpoint
+        local api_name="${PROJECT_NAME}-api"
+        local api_id=$(aws apigateway get-rest-apis --query "items[?name=='${api_name}'].id" --output text 2>/dev/null)
+        if [ -n "$api_id" ] && [ "$api_id" != "None" ]; then
+            api_endpoint="https://${api_id}.execute-api.${AWS_REGION}.amazonaws.com/prod/data"
+            print_log -g "[found] " "Discovered API endpoint: $api_endpoint"
+        else
+            print_log -y "[warn] " "API Gateway not found, using placeholder"
+            api_endpoint="API_GATEWAY_ENDPOINT_PLACEHOLDER"
+        fi
+    fi
+    
+    # Check if Application directory exists
+    local app_dir="$(dirname "$(dirname "$0")")/Application"
+    if [ ! -d "$app_dir" ]; then
+        print_log -r "[error] " "Application directory not found: $app_dir"
+        return 1
+    fi
+    
+    # Create temporary directory for deployment
+    local temp_dir="/tmp/siam-frontend-$$"
+    mkdir -p "$temp_dir"
+    
+    # Copy frontend files
+    cp "$app_dir"/* "$temp_dir/" 2>/dev/null || {
+        print_log -r "[error] " "Failed to copy frontend files from $app_dir"
+        return 1
+    }
+    
+    # Inject API endpoint into app.js
+    if [ -f "$temp_dir/app.js" ]; then
+        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_endpoint|g" "$temp_dir/app.js"
+        print_log -g "[config] " "API endpoint injected: $api_endpoint"
+    fi
+    
+    # Upload to S3
+    print_log -c "[upload] " "Uploading frontend files to S3..."
+    if aws s3 sync "$temp_dir/" "s3://${FRONTEND_BUCKET_NAME}/" --delete; then
+        print_log -g "[ok] " "Frontend deployed successfully"
+    else
+        print_log -r "[error] " "Failed to upload frontend files"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+    
+    # Cleanup
+    rm -rf "$temp_dir"
+}
+
 setup_s3() {
     print_log -b "[storage] " "Setting up S3 Storage..."
     validate_inputs
@@ -151,6 +208,14 @@ EOL
     fi
     WEBSITE_URL="http://${FRONTEND_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com"
 
+    # Export variables for other components before deploying frontend
+    export S3_DATA_BUCKET="$BUCKET_NAME"
+    export S3_FRONTEND_BUCKET="$FRONTEND_BUCKET_NAME"
+    export WEBSITE_URL
+
+    # Deploy frontend application
+    deploy_frontend
+    
     print_log -g "[ok] " "S3 Storage setup complete!"
     print_log -m "[S3 Data Bucket] " "${BUCKET_NAME}"
     print_log -m "[S3 Frontend URL] " "${WEBSITE_URL}"
@@ -184,11 +249,6 @@ EOL
         print_log -r "[error] " "Failed to write resource file"
         return 1
     fi
-    
-    # Export variables for other components
-    export S3_DATA_BUCKET="$BUCKET_NAME"
-    export S3_FRONTEND_BUCKET="$FRONTEND_BUCKET_NAME"
-    export WEBSITE_URL
     
     cleanup_temp_files
 }

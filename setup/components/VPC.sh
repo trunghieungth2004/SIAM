@@ -138,12 +138,7 @@ service iptables save" --tag-specifications "ResourceType=instance,Tags=[{Key=Na
         print_log -y "[skip] " "Security Group '${SG_NAME}' already exists: ${SG_ID}"
     fi
 
-    if ! aws ec2 describe-vpc-endpoints --filters "Name=vpc-id,Values=${VPC_ID}" "Name=service-name,Values=com.amazonaws.${AWS_REGION}.secretsmanager" --query "VpcEndpoints[0].VpcEndpointId" --output text | grep -q vpce; then
-        print_log -c "[create] " "Creating Secrets Manager Interface Endpoint..."
-        aws ec2 create-vpc-endpoint --vpc-id $VPC_ID --service-name com.amazonaws.$AWS_REGION.secretsmanager --vpc-endpoint-type Interface --subnet-ids $PRIVATE_SUBNET_ID --security-group-ids $SG_ID
-    else
-        print_log -y "[skip] " "Secrets Manager Interface Endpoint already exists."
-    fi
+
 
     # Create Greengrass Security Group
     GG_SG_NAME="${PROJECT_NAME}-greengrass"
