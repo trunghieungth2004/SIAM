@@ -172,7 +172,7 @@ EOL
         fi
         
         cat > deploy-permissions.json << EOL
-{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["sagemaker:DescribeTrainingJob", "greengrassv2:CreateComponentVersion", "greengrassv2:CreateDeployment", "greengrassv2:GetCoreDevice", "iot:DescribeThing", "s3:GetObject", "ec2:RunInstances", "ec2:DescribeSubnets", "ec2:DescribeSecurityGroups", "iam:PassRole"], "Resource": "*" }] }
+{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["sagemaker:DescribeTrainingJob", "greengrassv2:CreateComponentVersion", "greengrassv2:CreateDeployment", "greengrassv2:GetCoreDevice", "iot:DescribeThing", "s3:GetObject", "s3:PutObject", "ec2:RunInstances", "ec2:DescribeInstances", "ec2:DescribeImages", "ec2:DescribeVpcs", "ec2:DescribeSubnets", "ec2:DescribeSecurityGroups", "ec2:DescribeInternetGateways", "ec2:DescribeRouteTables", "ec2:CreateVpc", "ec2:CreateSubnet", "ec2:CreateInternetGateway", "ec2:CreateRouteTable", "ec2:CreateRoute", "ec2:CreateSecurityGroup", "ec2:CreateTags", "ec2:AttachInternetGateway", "ec2:DetachInternetGateway", "ec2:AssociateRouteTable", "ec2:ModifyVpcAttribute", "ec2:ModifySubnetAttribute", "ec2:AuthorizeSecurityGroupEgress", "ec2:DeleteVpc", "ec2:DeleteSubnet", "ec2:DeleteInternetGateway", "ec2:DeleteRouteTable", "ec2:DeleteSecurityGroup", "ec2:TerminateInstances", "iam:PassRole"], "Resource": "*" }] }
 EOL
         if ! aws iam put-role-policy --role-name $DEPLOY_ROLE_NAME --policy-name "DeployLambdaPermissions" --policy-document file://deploy-permissions.json; then
             print_log -r "[error] " "Failed to attach custom permissions policy to Deploy Lambda role"

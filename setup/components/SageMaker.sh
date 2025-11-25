@@ -496,7 +496,7 @@ INFERENCE_EOF
         "S3OutputPath": "s3://${S3_DATA_BUCKET}/sagemaker/output/"
     },
     "ResourceConfig": {
-        "InstanceType": "ml.t3.medium",
+        "InstanceType": "ml.m5.large",
         "InstanceCount": 1,
         "VolumeSizeInGB": 10
     },
@@ -552,9 +552,6 @@ EOL
         print_log -y "[skip] " "Model may already exist, continuing..."
     fi
 
-    print_log -y "[info] " "Skipping expensive cloud endpoint - using edge deployment only"
-    print_log -y "[info] " "Retraining pipeline will be created by EventBridge component"
-    
     # Create inference service for Greengrass
     COMPONENT_NAME="com.${PROJECT_NAME}.MLInference"
     COMPONENT_VERSION="1.0.0"

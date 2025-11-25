@@ -212,7 +212,7 @@ run_setup() {
     fi
     
     # Run components in dependency order
-    local setup_order=("S3" "DynamoDB" "SNS" "SQS" "APIGateway" "Lambda" "SageMaker" "Greengrass" "IoT" "CloudWatch" "EventBridge")
+    local setup_order=("S3" "DynamoDB" "IoT" "SNS" "SQS" "Lambda" "APIGateway" "SageMaker" "Greengrass" "CloudWatch" "EventBridge")
     
     for component in "${setup_order[@]}"; do
         if [[ " ${selected_components[*]} " =~ " ${component} " ]]; then
@@ -294,7 +294,7 @@ run_cleanup() {
     echo ""
     
     # Run cleanup in reverse dependency order
-    local cleanup_order=("EventBridge" "CloudWatch" "IoT" "Greengrass" "SageMaker" "Lambda" "APIGateway" "SQS" "SNS" "DynamoDB" "S3")
+    local cleanup_order=("EventBridge" "CloudWatch" "Greengrass" "SageMaker" "APIGateway" "Lambda" "SQS" "SNS" "IoT" "DynamoDB" "S3")
     local failed_components=()
     
     for component in "${cleanup_order[@]}"; do

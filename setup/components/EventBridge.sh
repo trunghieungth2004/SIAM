@@ -58,10 +58,10 @@ setup_eventbridge() {
             --event-pattern "{\"source\":[\"aws.sagemaker\"],\"detail-type\":[\"SageMaker Training Job State Change\"],\"detail\":{\"TrainingJobStatus\":[\"Completed\"]}}" \
             --description "Trigger edge deployment on model completion"
         
-        # Get Deploy Lambda ARN from VPC component
+        # Get Deploy Lambda ARN (created by Lambda component)
         DEPLOY_LAMBDA_NAME="func-deploy-${PROJECT_NAME}"
         if ! DEPLOY_LAMBDA_ARN=$(aws lambda get-function --function-name $DEPLOY_LAMBDA_NAME --query Configuration.FunctionArn --output text 2>/dev/null); then
-            print_log -r "[error] " "Deploy Lambda not found. Ensure VPC component created it."
+            print_log -r "[error] " "Deploy Lambda not found. Ensure Lambda component created it."
             return 1
         fi
         
@@ -83,8 +83,10 @@ setup_eventbridge() {
     print_log -m "[Weekly Retraining] " "$RETRAIN_RULE_NAME"
     print_log -m "[Auto Deployment] " "$DEPLOY_RULE_NAME"
     print_log -y "[manual] " "Trigger retraining: aws lambda invoke --function-name $RETRAIN_LAMBDA_NAME /tmp/retrain-output.json"
-    
-    cleanup_temp_files
+}
+
+cleanup_temp_files() {
+    rm -f /tmp/lambda-trust.json /tmp/retrain-policy.json /tmp/retrain.mjs /tmp/retrain.zip 2>/dev/null || true
 }
 
 create_retrain_lambda() {
@@ -172,7 +174,7 @@ export const handler = async (event) => {
         },
         InputDataConfig: [{ChannelName: "training", DataSource: {S3DataSource: {S3DataType: "S3Prefix", S3Uri: `s3://${bucket}/sagemaker/training-data/`, S3DataDistributionType: "FullyReplicated"}}}],
         OutputDataConfig: {S3OutputPath: `s3://${bucket}/sagemaker/output/`},
-        ResourceConfig: {InstanceType: "ml.t3.medium", InstanceCount: 1, VolumeSizeInGB: 10},
+        ResourceConfig: {InstanceType: "ml.m5.large", InstanceCount: 1, VolumeSizeInGB: 10},
         StoppingCondition: {MaxRuntimeInSeconds: 3600},
         HyperParameters: {sagemaker_program: "train.py", sagemaker_submit_directory: `s3://${bucket}/sagemaker/code/sourcedir.tar.gz`}
     });

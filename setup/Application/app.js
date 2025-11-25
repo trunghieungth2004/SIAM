@@ -1,5 +1,6 @@
 // Configuration - API Gateway endpoint will be injected here
 const API_ENDPOINT = 'API_GATEWAY_ENDPOINT_PLACEHOLDER';
+const API_KEY = 'API_KEY_PLACEHOLDER';
 
 // Chart instances
 let tempChart, vibrationChart, currentChart, predictionChart;
@@ -98,7 +99,12 @@ async function loadData() {
 
     try {
         const url = `${API_ENDPOINT}?device_id=${deviceId}&hours=${hours}&type=${dataType}&limit=100`;
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: {
+                'X-Api-Key': API_KEY,
+                'Content-Type': 'application/json'
+            }
+        });
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -272,6 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if API endpoint is configured
     if (API_ENDPOINT === 'API_GATEWAY_ENDPOINT_PLACEHOLDER') {
         updateStatus('API endpoint not configured. Please deploy the infrastructure first.', 'error');
+    } else if (API_KEY === 'API_KEY_PLACEHOLDER') {
+        updateStatus('API key not configured. Please run setup script to generate API key.', 'error');
     } else {
         loadData(); // Load initial data
     }

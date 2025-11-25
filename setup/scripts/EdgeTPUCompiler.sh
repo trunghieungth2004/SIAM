@@ -81,19 +81,63 @@ EOF
         rm -f /tmp/ec2-trust-policy.json /tmp/ec2-policy.json
     fi
     
+    # Check for default VPC, create temporary one if needed
+    DEFAULT_VPC=$(aws ec2 describe-vpcs --filters "Name=is-default,Values=true" --query "Vpcs[0].VpcId" --output text)
+    TEMP_VPC_CREATED=false
+    
+    if [ -z "$DEFAULT_VPC" ] || [ "$DEFAULT_VPC" = "None" ]; then
+        print_log -y "[vpc] " "No default VPC found, creating temporary VPC..."
+        TEMP_VPC_ID=$(aws ec2 create-vpc --cidr-block 10.99.0.0/16 --query Vpc.VpcId --output text)
+        aws ec2 create-tags --resources $TEMP_VPC_ID --tags Key=Name,Value="temp-compiler-${PROJECT_NAME}" Key=Project,Value="${PROJECT_NAME}"
+        aws ec2 modify-vpc-attribute --vpc-id $TEMP_VPC_ID --enable-dns-hostnames
+        
+        TEMP_SUBNET_ID=$(aws ec2 create-subnet --vpc-id $TEMP_VPC_ID --cidr-block 10.99.0.0/24 --query Subnet.SubnetId --output text)
+        aws ec2 modify-subnet-attribute --subnet-id $TEMP_SUBNET_ID --map-public-ip-on-launch
+        
+        TEMP_IGW_ID=$(aws ec2 create-internet-gateway --query InternetGateway.InternetGatewayId --output text)
+        aws ec2 attach-internet-gateway --vpc-id $TEMP_VPC_ID --internet-gateway-id $TEMP_IGW_ID
+        
+        TEMP_RT_ID=$(aws ec2 create-route-table --vpc-id $TEMP_VPC_ID --query RouteTable.RouteTableId --output text)
+        aws ec2 create-route --route-table-id $TEMP_RT_ID --destination-cidr-block 0.0.0.0/0 --gateway-id $TEMP_IGW_ID
+        aws ec2 associate-route-table --subnet-id $TEMP_SUBNET_ID --route-table-id $TEMP_RT_ID
+        
+        TEMP_SG_ID=$(aws ec2 create-security-group --group-name "temp-compiler-sg" --description "Temp SG for compiler" --vpc-id $TEMP_VPC_ID --query GroupId --output text)
+        aws ec2 authorize-security-group-egress --group-id $TEMP_SG_ID --protocol -1 --cidr 0.0.0.0/0 2>/dev/null || true
+        
+        print_log -y "[wait] " "Waiting for VPC to be fully available..."
+        while true; do
+            VPC_STATE=$(aws ec2 describe-vpcs --vpc-ids $TEMP_VPC_ID --query "Vpcs[0].State" --output text 2>/dev/null)
+            if [ "$VPC_STATE" = "available" ]; then
+                print_log -g "[ready] " "VPC is available"
+                break
+            fi
+            sleep 2
+        done
+        
+        TEMP_VPC_CREATED=true
+        USE_SUBNET=$TEMP_SUBNET_ID
+        USE_SG=$TEMP_SG_ID
+    else
+        USE_SUBNET=""
+        USE_SG=""
+    fi
+    
     # Get Ubuntu AMI
     AMI_ID=$(aws ec2 describe-images --owners 099720109477 --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" "Name=state,Values=available" --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" --output text)
     
     # Create user-data script
     cat > /tmp/user-data.sh << 'USERDATA_EOF'
 #!/bin/bash
+exec > >(tee /var/log/user-data.log)
+exec 2>&1
 set -e
 
 MODEL_S3_URI="{{MODEL_S3_URI}}"
 S3_BUCKET="{{S3_BUCKET}}"
 TRAINING_JOB_NAME="{{TRAINING_JOB_NAME}}"
 AWS_REGION="{{AWS_REGION}}"
-INSTANCE_ID=$(ec2-metadata --instance-id | cut -d' ' -f2)
+INSTANCE_ID=$(ec2-metadata --instance-id 2>/dev/null | cut -d' ' -f2)
+[ -z "$INSTANCE_ID" ] && INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 
 echo "[1/7] Installing dependencies..."
 export DEBIAN_FRONTEND=noninteractive
@@ -165,15 +209,28 @@ USERDATA_EOF
     
     # Launch EC2 instance
     print_log -c "[ec2] " "Launching t3.micro instance for compilation..."
-    INSTANCE_ID=$(aws ec2 run-instances \
-        --image-id "$AMI_ID" \
-        --instance-type t3.micro \
-        --iam-instance-profile Name="$ROLE_NAME" \
-        --associate-public-ip-address \
-        --user-data file:///tmp/user-data.sh \
-        --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=EdgeTPU-Compiler},{Key=Project,Value=${PROJECT_NAME}}]" \
-        --query "Instances[0].InstanceId" \
-        --output text)
+    if [ -n "$USE_SUBNET" ]; then
+        INSTANCE_ID=$(aws ec2 run-instances \
+            --image-id "$AMI_ID" \
+            --instance-type t3.micro \
+            --iam-instance-profile Name="$ROLE_NAME" \
+            --subnet-id "$USE_SUBNET" \
+            --security-group-ids "$USE_SG" \
+            --user-data file:///tmp/user-data.sh \
+            --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=EdgeTPU-Compiler},{Key=Project,Value=${PROJECT_NAME}},{Key=TempVPC,Value=true}]" \
+            --query "Instances[0].InstanceId" \
+            --output text)
+    else
+        INSTANCE_ID=$(aws ec2 run-instances \
+            --image-id "$AMI_ID" \
+            --instance-type t3.micro \
+            --iam-instance-profile Name="$ROLE_NAME" \
+            --associate-public-ip-address \
+            --user-data file:///tmp/user-data.sh \
+            --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=EdgeTPU-Compiler},{Key=Project,Value=${PROJECT_NAME}}]" \
+            --query "Instances[0].InstanceId" \
+            --output text)
+    fi
     
     rm -f /tmp/user-data.sh
     
@@ -184,6 +241,58 @@ USERDATA_EOF
     # Save info
     echo "COMPILER_INSTANCE_ID=${INSTANCE_ID}" > /tmp/compiler_info.txt
     echo "COMPILED_MODEL_S3=s3://${S3_DATA_BUCKET}/models/model_edgetpu_latest.tar.gz" >> /tmp/compiler_info.txt
+    
+    # Monitor instance with system console output
+    print_log -y "[monitor] " "Monitoring compilation progress via EC2 system log..."
+    LAST_OUTPUT_HASH=""
+    
+    while true; do
+        STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].State.Name" --output text 2>/dev/null)
+        if [ "$STATE" = "terminated" ] || [ -z "$STATE" ] || [ "$STATE" = "None" ]; then
+            print_log -g "[complete] " "Instance terminated - compilation finished"
+            break
+        fi
+        
+        # Get system console output (more reliable than get-console-output)
+        CONSOLE_OUTPUT=$(aws ec2 get-console-output --instance-id $INSTANCE_ID --latest --output text 2>/dev/null || echo "")
+        
+        if [ ! -z "$CONSOLE_OUTPUT" ]; then
+            # Use hash to detect new content efficiently
+            OUTPUT_HASH=$(echo "$CONSOLE_OUTPUT" | md5sum | cut -d' ' -f1)
+            if [ "$OUTPUT_HASH" != "$LAST_OUTPUT_HASH" ]; then
+                # Extract and display user-data log entries (lines with timestamps or brackets)
+                echo "$CONSOLE_OUTPUT" | grep -E '^\[|user-data' | tail -20
+                LAST_OUTPUT_HASH="$OUTPUT_HASH"
+            fi
+        fi
+        
+        sleep 5
+    done
+    
+    # Clean up temp VPC after instance terminates
+    if [ "$TEMP_VPC_CREATED" = true ]; then
+        print_log -y "[cleanup] " "Cleaning temp VPC..."
+        
+        print_log -c "[vpc] " "Deleting temporary VPC..."
+        
+        aws ec2 delete-security-group --group-id $TEMP_SG_ID 2>/dev/null || true
+        while aws ec2 describe-security-groups --group-ids $TEMP_SG_ID 2>/dev/null | grep -q $TEMP_SG_ID; do sleep 2; done
+        
+        aws ec2 detach-internet-gateway --internet-gateway-id $TEMP_IGW_ID --vpc-id $TEMP_VPC_ID 2>/dev/null || true
+        while aws ec2 describe-internet-gateways --internet-gateway-ids $TEMP_IGW_ID --query "InternetGateways[0].Attachments[0].State" --output text 2>/dev/null | grep -q attached; do sleep 2; done
+        aws ec2 delete-internet-gateway --internet-gateway-id $TEMP_IGW_ID 2>/dev/null || true
+        
+        aws ec2 delete-subnet --subnet-id $TEMP_SUBNET_ID 2>/dev/null || true
+        while aws ec2 describe-subnets --subnet-ids $TEMP_SUBNET_ID 2>/dev/null | grep -q $TEMP_SUBNET_ID; do sleep 2; done
+        
+        aws ec2 delete-route-table --route-table-id $TEMP_RT_ID 2>/dev/null || true
+        while aws ec2 describe-route-tables --route-table-ids $TEMP_RT_ID 2>/dev/null | grep -q $TEMP_RT_ID; do sleep 2; done
+        
+        aws ec2 delete-vpc --vpc-id $TEMP_VPC_ID 2>/dev/null || true
+        while aws ec2 describe-vpcs --vpc-ids $TEMP_VPC_ID 2>/dev/null | grep -q $TEMP_VPC_ID; do sleep 2; done
+        
+        print_log -g "[ok] " "Temporary VPC cleaned up"
+    fi
 }
 
 cleanup_edgetpu_compiler() {
@@ -203,6 +312,43 @@ cleanup_edgetpu_compiler() {
         print_log -y "[wait] " "Waiting for instances to terminate..."
         aws ec2 wait instance-terminated --instance-ids $INSTANCE_IDS
     fi
+    
+    # Clean up any temp VPCs
+    print_log -c "[vpc] " "Checking for temporary VPCs..."
+    TEMP_VPCS=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=temp-compiler-${PROJECT_NAME}" --query "Vpcs[].VpcId" --output text)
+    for VPC in $TEMP_VPCS; do
+        if [ ! -z "$VPC" ] && [ "$VPC" != "None" ]; then
+            print_log -c "[delete] " "Deleting temp VPC: $VPC"
+            IGW=$(aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC" --query "InternetGateways[0].InternetGatewayId" --output text)
+            SG=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC" "Name=group-name,Values=temp-compiler-sg" --query "SecurityGroups[0].GroupId" --output text)
+            SUBNET=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC" --query "Subnets[0].SubnetId" --output text)
+            RT=$(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPC" "Name=association.main,Values=false" --query "RouteTables[0].RouteTableId" --output text)
+            
+            if [ ! -z "$SG" ] && [ "$SG" != "None" ]; then
+                aws ec2 delete-security-group --group-id $SG 2>/dev/null || true
+                while aws ec2 describe-security-groups --group-ids $SG 2>/dev/null | grep -q $SG; do sleep 2; done
+            fi
+            
+            if [ ! -z "$IGW" ] && [ "$IGW" != "None" ]; then
+                aws ec2 detach-internet-gateway --internet-gateway-id $IGW --vpc-id $VPC 2>/dev/null || true
+                while aws ec2 describe-internet-gateways --internet-gateway-ids $IGW --query "InternetGateways[0].Attachments[0].State" --output text 2>/dev/null | grep -q attached; do sleep 2; done
+                aws ec2 delete-internet-gateway --internet-gateway-id $IGW 2>/dev/null || true
+            fi
+            
+            if [ ! -z "$SUBNET" ] && [ "$SUBNET" != "None" ]; then
+                aws ec2 delete-subnet --subnet-id $SUBNET 2>/dev/null || true
+                while aws ec2 describe-subnets --subnet-ids $SUBNET 2>/dev/null | grep -q $SUBNET; do sleep 2; done
+            fi
+            
+            if [ ! -z "$RT" ] && [ "$RT" != "None" ]; then
+                aws ec2 delete-route-table --route-table-id $RT 2>/dev/null || true
+                while aws ec2 describe-route-tables --route-table-ids $RT 2>/dev/null | grep -q $RT; do sleep 2; done
+            fi
+            
+            aws ec2 delete-vpc --vpc-id $VPC 2>/dev/null || true
+            while aws ec2 describe-vpcs --vpc-ids $VPC 2>/dev/null | grep -q $VPC; do sleep 2; done
+        fi
+    done
     
     # Delete IAM role
     print_log -c "[iam] " "Deleting IAM role..."

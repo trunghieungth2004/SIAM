@@ -125,14 +125,16 @@ setup_s3() {
 {
   "Rules": [
     {
-      "Id": "DeleteOldVersions",
+      "ID": "DeleteOldVersions",
+      "Filter": {},
       "Status": "Enabled",
       "NoncurrentVersionExpiration": {
         "NoncurrentDays": 30
       }
     },
     {
-      "Id": "TransitionOldData",
+      "ID": "TransitionOldData",
+      "Filter": {},
       "Status": "Enabled",
       "Transitions": [
         {
