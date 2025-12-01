@@ -20,7 +20,7 @@ This solution leverages a hybrid architecture, combining a powerful edge device 
 1. A native C-based datalogger that reads directly from hardware sensors (MPU-6050, INA219, DS18B20) and writes data to Greengrass Stream Manager.
 2. A Docker-containerized Python ML inference application that reads from Stream Manager, performs real-time anomaly detection using the Coral TPU, and publishes predictions back to the cloud.
 
-The cloud backend, built on a secure AWS VPC, uses AWS IoT Core to ingest data, which is then processed by an AWS Lambda function and stored in DynamoDB and an S3 Data Lake. The system is fully automated with an MLOps pipeline using Amazon EventBridge and Amazon SageMaker to retrain and redeploy new models weekly. A public web-based dashboard, hosted on S3, provides real-time monitoring and alert status.
+The cloud backend uses Greengrass Stream Manager to buffer sensor data locally and publish to AWS IoT Core. Data is ingested via an IoT Rule triggering a Lambda function that stores records in DynamoDB and S3 Data Lake. The system features a REST API via API Gateway with x-api-key authentication, rate limiting, and automatic monthly key rotation. A fully automated MLOps pipeline using EventBridge and SageMaker retrains models bi-weekly and redeploys to the edge. A public web dashboard hosted on S3 provides real-time monitoring with Swagger/OpenAPI documentation for the REST API.
 
 ## 2. Problem Statement
 
@@ -34,11 +34,12 @@ This platform provides an end-to-end solution for intelligent, proactive mainten
 
 1. **Edge-First Data Collection**: A native C application on the Raspberry Pi collects high-resolution data from sensors (MPU-6050, INA219, DS18B20).
 2. **Offline Resilience & Local Pub/Sub**: The C datalogger publishes sensor data to Greengrass Stream Manager. This stream acts as a local, persistent buffer, ensuring zero data loss during network outages and decoupling the data collection from its consumption.
-3. **Cloud Ingestion**: Stream Manager automatically syncs this data to AWS IoT Core, which triggers an Ingestion Lambda. This function logs data to DynamoDB and S3. A SQS Dead-Letter Queue (DLQ) captures any failed ingestion.
-4. **Automated ML Pipeline**: An EventBridge rule schedules a weekly Retrain Lambda, which starts a SageMaker Training Job on the latest data from the S3 data lake.
-5. **Intelligent Edge Deployment**: The newly trained model is automatically deployed back to the Raspberry Pi as a Greengrass component.
-6. **Decoupled Edge Inference**: A separate Docker container running a Python application reads the sensor data from the local Stream Manager, loads the deployed model, and performs TPU-accelerated inference. This containerized approach is a key design choice, solving the "dependency hell" that often occurs when edge ML hardware (like the Coral TPU) has its software support abandoned by the manufacturer, which normally prevents host OS upgrades.
-7. **Real-Time Monitoring**: A web application, hosted on S3, queries live data from DynamoDB via an API Gateway to display real-time sensor graphs and alert status.
+3. **Cloud Ingestion**: Stream Manager automatically syncs this data to AWS IoT Core, which triggers an Ingestion Lambda. This function logs data to DynamoDB and S3.
+4. **Secure REST API**: API Gateway provides a REST endpoint with x-api-key authentication, rate limiting (10 req/s, burst 20, 10k daily quota), and CORS support. API keys are automatically rotated monthly via EventBridge Lambda for enhanced security.
+5. **Automated ML Pipeline**: An EventBridge rule schedules a bi-weekly Retrain Lambda, which starts a SageMaker Training Job on the latest data from the S3 data lake. Another rule triggers deployment when training completes.
+6. **Intelligent Edge Deployment**: The newly trained model is automatically deployed back to the Raspberry Pi as a Greengrass component.
+7. **Decoupled Edge Inference**: A separate Docker container running a Python application reads the sensor data from the local Stream Manager, loads the deployed model, and performs TPU-accelerated inference. This containerized approach is a key design choice, solving the "dependency hell" that often occurs when edge ML hardware (like the Coral TPU) has its software support abandoned by the manufacturer, which normally prevents host OS upgrades.
+8. **Real-Time Monitoring**: A web application hosted on S3 queries live data from DynamoDB via the secured API Gateway to display real-time sensor graphs and alert status. Interactive API documentation is provided via Swagger UI with built-in request testing.
 
 ### Benefits and Return on Investment
 
@@ -57,12 +58,12 @@ The platform is a hybrid edge-cloud system. The edge is responsible for data col
 
 - **Edge**: AWS IoT Greengrass (Core, Stream Manager, Component Deployments)
 - **Ingestion**: AWS IoT Core (MQTT Broker, Rules)
-- **Compute**: AWS Lambda (Ingestion, Query, Retrain-Trigger, Deploy)
+- **Compute**: AWS Lambda (Ingestion, Query, Retrain, Deploy, Rotate)
 - **Storage**: Amazon DynamoDB, Amazon S3 (Data Lake, Model Artifacts, Web Hosting)
-- **Networking**: AWS VPC (Private/Public Subnets), NAT Instance (EC2), VPC Endpoints, API Gateway
-- **Machine Learning**: Amazon SageMaker (Training Jobs), Amazon EventBridge (Scheduler)
-- **Security**: AWS Secrets Manager, IAM
-- **Reliability & Monitoring**: Amazon SQS (Dead-Letter Queue), Amazon CloudWatch, Amazon SNS
+- **API & Security**: API Gateway (REST API, x-api-key auth, rate limiting), IAM
+- **Machine Learning**: Amazon SageMaker (Training Jobs)
+- **Automation**: Amazon EventBridge (Bi-weekly retraining, Monthly key rotation, Deployment triggers)
+- **Monitoring**: Amazon CloudWatch, Amazon SNS
 
 ### Component Design
 
@@ -70,11 +71,13 @@ The platform is a hybrid edge-cloud system. The edge is responsible for data col
   1. **datalogger**: A native C application that reads from I2C/1-Wire sensors and publishes data to a local Stream Manager stream.
   2. **inference**: A Docker container running Python, which subscribes to the local Stream Manager stream, loads the ML model, performs inference on the Coral TPU.
 
-- **Cloud Pipeline**: Greengrass Stream Manager -> IoT Core -> IoT Rule -> Ingestion Lambda. The Lambda (in a private subnet) writes to DynamoDB and S3.
+- **Cloud Pipeline**: Greengrass Stream Manager -> IoT Core -> IoT Rule -> Ingestion Lambda. The Lambda writes to DynamoDB and S3.
 
-- **Web Application**: A React app on S3 Static Website. The app fetches data from API Gateway, which triggers the Query Lambda (in a private subnet) to read from DynamoDB. The endpoint can be secured via IP restrictions or an API key.
+- **Web Application**: A vanilla JavaScript app on S3 Static Website. The app fetches data from API Gateway (with x-api-key authentication), which triggers the Query Lambda to read from DynamoDB. The endpoint is secured with rate limiting and automatic monthly key rotation. Interactive API documentation is provided via Swagger UI.
 
-- **MLOps Pipeline**: An EventBridge rule runs weekly, triggering the Retrain Lambda (which runs outside the VPC). This Lambda starts the SageMaker Training Job. Upon the job's completion, it triggers a separate Deploy Lambda (in the VPC) which creates a new Greengrass Deployment. This deployment is triggered to send the new, updated model to the Pi.
+- **MLOps Pipeline**: An EventBridge rule runs bi-weekly (every 14 days), triggering the Retrain Lambda. This Lambda aggregates up to 500 samples from S3 and starts a SageMaker Training Job. Upon job completion, EventBridge triggers a Deploy Lambda which creates a new Greengrass Deployment to send the updated model to the Pi.
+
+- **Security Automation**: An EventBridge rule runs monthly (every 30 days), triggering the Rotate Lambda. This Lambda creates a new API key, updates the usage plan, deletes the old key, and updates the frontend files in S3 with the new key.
 
 ## 4. Technical Implementation
 
@@ -86,8 +89,8 @@ The platform is a hybrid edge-cloud system. The edge is responsible for data col
    - Prototype individual components (local C datalogger, Python inference scripts, shell script structures).
 
 2. **Phase 1: Cloud Foundation (Week 3)**
-   - Deploy the entire AWS backend infrastructure using automated scripts.
-   - Test and validate cloud resources, cleaning up after each session to prevent cost accumulation during development.
+   - Deploy the entire AWS backend infrastructure using automated scripts (S3, DynamoDB, SNS, SQS, Lambda, API Gateway, SageMaker, Greengrass, CloudWatch, EventBridge).
+   - Test and validate cloud resources, ensuring API Gateway authentication and rate limiting work correctly.
 
 3. **Phase 2: Edge Device Setup (Week 4)**
    - Provision the Raspberry Pi with Greengrass Core software.
@@ -112,7 +115,7 @@ The platform is a hybrid edge-cloud system. The edge is responsible for data col
 
 ### Setup Implementation
 
-All infrastructure is deployed through the `AWS.sh` orchestration script, which provisions VPC, IoT Core, Greengrass, Lambda functions, DynamoDB, S3, SageMaker, and EventBridge. Two Greengrass components are deployed to the edge: a native C DataLogger and a Dockerized Python ML inference service with Coral TPU support.
+All infrastructure is deployed through the `AWS.sh` orchestration script, which provisions 10 AWS components in the correct dependency order: S3, DynamoDB, SNS, SQS, Lambda, API Gateway, SageMaker, Greengrass, CloudWatch, and EventBridge. The setup uses AWS service discovery patterns (no resource files) and includes duration tracking. Two Greengrass components are deployed to the edge: a native C DataLogger and a Dockerized Python ML inference service with Coral TPU support.
 
 ### Hardware Considerations
 
@@ -125,8 +128,8 @@ This proposal is based on a high-performance edge device. The following tiers ar
   - Cons: Highest cost, library complexity for TPU (solved by our Docker approach).
 
 - **Mid-Range**: Pi 5 (no TPU).
-  - Pros: All-in-one solution with a powerful CPU and integrated GPU for high-performance ML inference. No need for a separate TPU.
-  - Cons: Significantly higher cost and power consumption. Greengrass setup is different.
+  - Pros: All-in-one solution with a powerful CPU for ML inference. No need for a separate TPU.
+  - Cons: Higher cost and power consumption. Inference would be slower than TPU-accelerated.
 
 - **Low-End**: Pi 4 / Pi Zero 2W.
   - Pros: Very low cost.
@@ -144,32 +147,132 @@ This proposal is based on a high-performance edge device. The following tiers ar
   - Milestone 5 (Wk 8): Complete Phase 5 (Full Greengrass integration is working). The Pi is performing local, real-time inference using the trained model.
 
 - **Month 3: Automation, Dashboard & Validation (Weeks 9-12)**
-  - Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge -> Retrain Lambda -> SageMaker).
-  - Milestone 7 (Wk 10): Build the S3/API Gateway web application for monitoring.
-  - Milestone 8 (Wk 11): Perform system-wide stress testing and model validation using a second "failure" device (a fan with an imbalance) to prove the anomaly detection loop.
+  - Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge -> Retrain Lambda -> SageMaker with bi-weekly retraining).
+  - Milestone 7 (Wk 10): Build the S3/API Gateway web application with Swagger documentation and x-api-key authentication.
+  - Milestone 8 (Wk 11): Implement monthly API key rotation automation. Perform system-wide stress testing and model validation using a second "failure" device (a fan with an imbalance) to prove the anomaly detection loop.
   - Milestone 9 (Wk 12): Final documentation, code cleanup, and project handover.
 
 ## 6. Budget Estimation
 
-### Infrastructure Costs (Monthly, Single-Device Prototype):
+### Infrastructure Costs (Monthly, Production Single-Device Deployment):
 
-- **AWS Lambda**: ~$0.00 (All 3 functions will fall within the 1 million free requests/month).
-- **AWS IoT Greengrass**: $0.00 (Free for up to 10 devices).
-- **AWS IoT Core**: ~$0.00 (1 device sending 1 msg/min is ~43,200 msgs/month, well under the 500,000 free tier).
-- **Amazon DynamoDB**: ~$0.00 (Will fall within the 25 GB / 25 WCU free tier).
-- **Amazon S3**: ~$0.10 (Negligible cost for data lake storage and hosting).
-- **API Gateway, SQS, EventBridge**: ~$0.00 (All covered by generous free tiers).
-- **Total Monthly Cloud Cost**: Effectively $0.00 - $0.20 (for the first 12 months).
+- **AWS Lambda**: ~$1.20
+  - 5 Lambda functions (Ingestion, Query, Retrain, Deploy, Rotate)
+  - Estimated 50,000 invocations/month (Ingestion: 43,200, Query: 5,000, Automation: 1,800)
+  - ~500 GB-seconds compute time
+  - Cost: $0.20 (requests) + $1.00 (compute) = $1.20
 
-### On-Demand & Hardware Costs:
+- **AWS IoT Greengrass**: $0.00 (Free for up to 10 devices)
 
-- **Amazon SageMaker**: ~$0.20/month (for four 10-minute training jobs on an ml.m5.large). This is the primary on-demand cost.
-- **Hardware (One-Time Cost)**:
-  - Raspberry Pi 5 (8GB): ~$80
-  - Official 27W Power Supply: ~$12
-  - Google Coral TPU (USB): ~$60
-  - Sensors (MPU, INA, DS18B20), OLED, etc.: ~$25
-  - **Estimated Total Hardware Cost**: ~$177 per device
+- **AWS IoT Core**: ~$2.50
+  - 1 device sending 1 msg/min = ~43,200 msgs/month
+  - Connectivity: 720 hours × $0.00225/hour = $1.62
+  - Messaging: 43,200 msgs × $1.00/million = $0.04
+  - Rules Engine: 43,200 actions × $0.15/million = $0.01
+  - Additional prediction publishes: ~$0.83
+  - Cost: ~$2.50
+
+- **Amazon DynamoDB**: ~$3.75
+  - On-demand pricing for 43,200 writes/month (1/min)
+  - ~5,000 reads/month (dashboard queries)
+  - Write Request Units: 43,200 × $1.25/million = $0.05
+  - Read Request Units: 5,000 × $0.25/million = $0.001
+  - Storage: 5 GB × $0.25/GB = $1.25
+  - Data retention and growth: ~$2.50
+  - Cost: ~$3.75
+
+- **Amazon S3**: ~$1.50
+  - Data Lake: 10 GB storage × $0.023/GB = $0.23
+  - Model artifacts: 2 GB × $0.023/GB = $0.05
+  - Static website hosting: negligible
+  - PUT requests (data ingestion): 43,200 × $0.005/1000 = $0.22
+  - GET requests (training, queries): ~$0.50
+  - Data transfer out: ~$0.50
+  - Cost: ~$1.50
+
+- **API Gateway**: ~$2.00
+  - REST API with 5,000 requests/month
+  - First 333 million requests: $3.50/million
+  - Cost: 5,000 × $3.50/million = $0.02
+  - Data transfer and overhead: ~$1.98
+  - Cost: ~$2.00
+
+- **Amazon SageMaker**: ~$4.80
+  - Bi-weekly training (2 jobs/month)
+  - ml.m5.xlarge instance: $0.269/hour
+  - Training duration: ~30 minutes per job
+  - Cost: 2 jobs × 0.5 hours × $0.269 = $0.27
+  - Data processing and storage: ~$4.50
+  - Cost: ~$4.80
+
+- **Amazon EventBridge**: ~$0.10
+  - 3 scheduled rules (retrain bi-weekly, rotate monthly, deploy on completion)
+  - ~10 invocations/month
+  - Cost: negligible, ~$0.10 overhead
+
+- **Amazon CloudWatch**: ~$2.50
+  - Log ingestion: ~5 GB/month × $0.50/GB = $2.50
+  - Metrics: covered by free tier (10 custom metrics)
+  - Cost: ~$2.50
+
+- **Amazon SNS**: ~$0.15
+  - ~100 notifications/month (alerts, automation)
+  - Cost: 100 × $0.50/million + overhead = ~$0.15
+
+- **Total Monthly Cloud Cost**: ~$18.50 - $20.00
+
+### AWS Free Tier (First 12 Months):
+
+For new AWS accounts, the first year costs are significantly reduced:
+
+- **AWS Lambda**: $0.00
+  - Free tier: 1 million requests/month + 400,000 GB-seconds compute
+  - Usage: 50,000 requests/month (~5% of free tier)
+  - Fully covered
+
+- **AWS IoT Core**: ~$0.00 - $0.50
+  - Free tier: 500,000 messages/month (first 12 months)
+  - Usage: ~86,400 msgs/month (43,200 sensor + 43,200 predictions)
+  - Connectivity still charged: 720 hours × $0.00225 = ~$1.62
+  - After free messaging: ~$1.60/month, During free tier: ~$0.50/month
+
+- **Amazon DynamoDB**: $0.00
+  - Free tier: 25 GB storage + 25 WCU + 25 RCU (always free)
+  - Usage: ~5 GB storage, low write/read units
+  - Fully covered
+
+- **Amazon S3**: ~$0.10
+  - Free tier: 5 GB storage + 20,000 GET + 2,000 PUT requests
+  - Usage: ~12 GB storage (exceeds by 7 GB × $0.023 = $0.16)
+  - Requests mostly covered
+  - Cost: ~$0.10 - $0.20/month
+
+- **API Gateway**: $0.00
+  - Free tier: 1 million API calls/month (first 12 months)
+  - Usage: 5,000 calls/month (~0.5% of free tier)
+  - Fully covered
+
+- **Amazon SageMaker**: ~$0.27
+  - Free tier: 250 hours ml.t3.medium/month (first 2 months)
+  - Usage: ml.m5.xlarge (not covered by free tier)
+  - Cost: 2 jobs × 0.5 hours × $0.269 = $0.27/month
+
+- **Amazon CloudWatch**: $0.00
+  - Free tier: 5 GB log ingestion + 10 custom metrics (always free)
+  - Usage: ~5 GB logs/month
+  - Fully covered
+
+- **EventBridge & SNS**: $0.00
+  - Free tier covers low usage volumes
+  - Fully covered
+
+- **Total Monthly Cost (First 12 Months)**: ~$1.00 - $2.00
+
+### Annual Cost Summary:
+
+- **Production Cost**: ~$20.00/month per device (~$240/year)
+- **First Year with Free Tier**: ~$1.50/month per device (~$18/year for first 12 months, then $240/year)
+- **Cost Breakdown**: IoT Core (13%), DynamoDB (19%), SageMaker (24%), CloudWatch (13%), Lambda (6%), S3 (8%), API Gateway (10%), Other (7%)
 
 ## 7. Risk Assessment & Mitigation
 
@@ -185,13 +288,14 @@ This proposal is based on a high-performance edge device. The following tiers ar
   - Impact: Future Pi OS updates break the libedgetpu library, halting inference.
   - Mitigation: Docker Containerization. The inference application and its specific, legacy libraries are packaged in a Docker container. This isolates it from the host OS, allowing the host OS to be patched and upgraded independently.
 
-- **Risk 4: Ingestion Failure (Low)**
-  - Impact: A malformed data packet or transient error causes data loss.
-  - Mitigation: The SQS Dead-Letter Queue (DLQ). Failed messages are captured for inspection and reprocessing.
+- **Risk 4: API Key Compromise (Medium)**
+  - Impact: Unauthorized access to the API could lead to data exposure or quota exhaustion.
+  - Mitigation: Automated monthly key rotation via EventBridge Lambda. Rate limiting (10 req/s, 10k daily quota) prevents abuse. CloudWatch monitoring detects anomalous usage patterns.
 
 ## 8. Expected Outcomes
 
-1. A fully functional, end-to-end predictive maintenance platform prototype.
-2. A resilient edge device that reliably logs data and performs local inference, even when offline.
-3. A working, real-time dashboard for visualizing sensor data and predictions.
-4. A "hands-off" automated MLOps pipeline that continuously improves the system's intelligence without human intervention.
+1. A fully functional, end-to-end predictive maintenance platform with production-grade security and automation.
+2. A resilient edge device that reliably logs data and performs local inference, even when offline, with zero data loss.
+3. A working, real-time dashboard for visualizing sensor data and predictions, with interactive Swagger API documentation.
+4. A "hands-off" automated MLOps pipeline that retrains models bi-weekly and rotates API keys monthly without human intervention.
+5. A scalable, serverless architecture with AWS service discovery patterns, enabling easy deployment of additional devices.

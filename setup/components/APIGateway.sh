@@ -11,45 +11,98 @@ source "$(dirname "$0")/common.sh"
 update_frontend_config() {
     print_log -c "[frontend] " "Updating frontend configuration..."
     
-    # Get S3 frontend bucket name and API key
-    local setup_dir="$(dirname "$(dirname "$0")")"
-    local resource_file="${setup_dir}/${PROJECT_NAME}_resources.txt"
+    # Ensure environment is set up
+    validate_inputs
+    setup_aws_environment
     
-    if [ -f "$resource_file" ]; then
-        local frontend_bucket=$(grep "S3_FRONTEND_BUCKET" "$resource_file" | cut -d'=' -f2)
-        local api_key=$(grep "API_KEY=" "$resource_file" | grep -v "API_KEY_ID" | cut -d'=' -f2)
+    # Discover frontend bucket by naming pattern
+    local project_clean=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+    local frontend_bucket=$(aws s3api list-buckets --query "Buckets[?contains(Name, '${project_clean}') && contains(Name, 'frontend')].Name" --output text 2>/dev/null | head -1)
+    
+    if [ -z "$frontend_bucket" ] || [ "$frontend_bucket" = "None" ]; then
+        print_log -y "[warn] " "Frontend bucket not found, skipping frontend update"
+        return 0
+    fi
+    
+    print_log -g "[found] " "Frontend bucket: $frontend_bucket"
+    
+    # Discover API key from current API
+    local api_name="${PROJECT_NAME}-api"
+    local api_id=$(aws apigateway get-rest-apis --region "${AWS_REGION}" --query "items[?name=='${api_name}'].id" --output text 2>/dev/null)
+    
+    if [ -z "$api_id" ] || [ "$api_id" = "None" ]; then
+        print_log -y "[warn] " "API Gateway not found, cannot retrieve API key"
+        return 0
+    fi
+    
+    # Construct API URL from discovered API ID
+    local api_url="https://${api_id}.execute-api.${AWS_REGION}.amazonaws.com/prod/data"
+    print_log -g "[found] " "API endpoint: $api_url"
+    
+    # Get usage plan associated with this API
+    local usage_plan_id=$(aws apigateway get-usage-plans --region "${AWS_REGION}" --query "items[?contains(name, '${PROJECT_NAME}')].id" --output text 2>/dev/null | head -1)
+    
+    if [ -z "$usage_plan_id" ] || [ "$usage_plan_id" = "None" ]; then
+        print_log -y "[warn] " "Usage plan not found, cannot retrieve API key"
+        return 0
+    fi
+    
+    # Get API key from usage plan
+    local api_key_id=$(aws apigateway get-usage-plan-keys --region "${AWS_REGION}" --usage-plan-id "$usage_plan_id" --query 'items[0].id' --output text 2>/dev/null)
+    
+    if [ -z "$api_key_id" ] || [ "$api_key_id" = "None" ]; then
+        print_log -y "[warn] " "API key not found in usage plan"
+        return 0
+    fi
+    
+    local api_key=$(aws apigateway get-api-key --region "${AWS_REGION}" --api-key "$api_key_id" --include-value --query 'value' --output text 2>/dev/null)
+    
+    # Check if Application directory exists
+    local app_dir="$(dirname "$(dirname "$0")")/Application"
+    if [ ! -d "$app_dir" ]; then
+        print_log -y "[warn] " "Application directory not found: $app_dir"
+        return 0
+    fi
+    
+    # Create temporary directory
+    local temp_dir="/tmp/siam-frontend-update-$$"
+    mkdir -p "$temp_dir"
+    
+    # Copy and update app.js with API endpoint and key
+    if [ -f "$app_dir/app.js" ]; then
+        cp "$app_dir/app.js" "$temp_dir/app.js"
+        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/app.js"
         
-        if [ -n "$frontend_bucket" ]; then
-            # Check if Application directory exists
-            local app_dir="$(dirname "$(dirname "$0")")/Application"
-            if [ -d "$app_dir" ]; then
-                # Create temporary directory
-                local temp_dir="/tmp/siam-frontend-update-$$"
-                mkdir -p "$temp_dir"
-                
-                # Copy and update app.js with API endpoint and key
-                if [ -f "$app_dir/app.js" ]; then
-                    cp "$app_dir/app.js" "$temp_dir/app.js"
-                    sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$API_URL|g" "$temp_dir/app.js"
-                    
-                    # Inject API key securely
-                    if [ -n "$api_key" ]; then
-                        sed -i "s|API_KEY_PLACEHOLDER|$api_key|g" "$temp_dir/app.js"
-                    fi
-                    
-                    # Upload updated app.js
-                    if aws s3 cp "$temp_dir/app.js" "s3://${frontend_bucket}/app.js"; then
-                        print_log -g "[ok] " "Frontend configuration updated with API endpoint and key"
-                    else
-                        print_log -y "[warn] " "Failed to update frontend configuration"
-                    fi
-                fi
-                
-                rm -rf "$temp_dir"
-            fi
+        # Inject API key securely
+        if [ -n "$api_key" ]; then
+            sed -i "s|API_KEY_PLACEHOLDER|$api_key|g" "$temp_dir/app.js"
+        fi
+        
+        # Upload updated app.js
+        if aws s3 cp "$temp_dir/app.js" "s3://${frontend_bucket}/app.js"; then
+            print_log -g "[ok] " "Frontend app.js updated with API endpoint and key"
+        else
+            print_log -y "[warn] " "Failed to update app.js"
         fi
     fi
-}setup_api_gateway() {
+    
+    # Copy and update swagger.html with API endpoint
+    if [ -f "$app_dir/swagger.html" ]; then
+        cp "$app_dir/swagger.html" "$temp_dir/swagger.html"
+        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/swagger.html"
+        
+        # Upload updated swagger.html
+        if aws s3 cp "$temp_dir/swagger.html" "s3://${frontend_bucket}/swagger.html"; then
+            print_log -g "[ok] " "Swagger page updated with API endpoint"
+        else
+            print_log -y "[warn] " "Failed to update swagger.html"
+        fi
+    fi
+    
+    rm -rf "$temp_dir"
+}
+
+setup_api_gateway() {
     print_log -b "[config] " "Setting up API Gateway..."
     validate_inputs
     setup_aws_environment
@@ -118,6 +171,14 @@ update_frontend_config() {
         --authorization-type NONE \
         --api-key-required
     
+    # Add method response with CORS headers for GET
+    aws apigateway put-method-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DATA_RESOURCE_ID" \
+        --http-method GET \
+        --status-code 200 \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":false}'
+    
     # Get Lambda function ARN
     LAMBDA_ARN=$(aws lambda get-function --function-name "$QUERY_LAMBDA_NAME" --query 'Configuration.FunctionArn' --output text 2>/dev/null)
     if [ -z "$LAMBDA_ARN" ] || [ "$LAMBDA_ARN" = "None" ]; then
@@ -135,6 +196,15 @@ update_frontend_config() {
         --type AWS_PROXY \
         --integration-http-method POST \
         --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/${LAMBDA_ARN}/invocations"
+    
+    # Add integration response with CORS headers
+    aws apigateway put-integration-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DATA_RESOURCE_ID" \
+        --http-method GET \
+        --status-code 200 \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''"}' \
+        --response-templates '{"application/json":""}'
     
     # Add Lambda permission for API Gateway
     print_log -c "[permission] " "Adding Lambda invoke permission..."
@@ -185,19 +255,13 @@ update_frontend_config() {
     # Get API endpoint URL
     API_URL="https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com/prod/data"
     
-    # Save API key securely
-    local setup_dir="$(dirname "$(dirname "$0")")"
-    local resource_file="${setup_dir}/${PROJECT_NAME}_resources.txt"
-    echo "API_KEY=${API_KEY_VALUE}" >> "$resource_file"
-    echo "API_KEY_ID=${API_KEY_ID}" >> "$resource_file"
-    echo "USAGE_PLAN_ID=${USAGE_PLAN_ID}" >> "$resource_file"
-    
     print_log -g "[ok] " "API Gateway setup complete!"
     print_log -m "[API Name] " "$API_NAME"
     print_log -m "[API ID] " "$API_ID"
     print_log -m "[Endpoint] " "$API_URL"
-    print_log -m "[API Key] " "${API_KEY_VALUE:0:8}...${API_KEY_VALUE: -4}"
-    print_log -y "[security] " "Full API key saved to ${resource_file}"
+    print_log -m "[API Key] " "$API_KEY_VALUE"
+    print_log -c "[info] " "For Swagger UI: Enter API key in the input box at the top-right of swagger.html"
+    print_log -y "[security] " "Store this API key securely - it won't be shown again"
     
     # Export variables for other components
     export API_ID API_URL API_KEY_VALUE
@@ -212,40 +276,107 @@ cleanup_api_gateway() {
     setup_aws_environment
 
     API_NAME="${PROJECT_NAME}-api"
-    local setup_dir="$(dirname "$(dirname "$0")")"
-    local resource_file="${setup_dir}/${PROJECT_NAME}_resources.txt"
     
-    # Get stored IDs from resource file
-    if [ -f "$resource_file" ]; then
-        local usage_plan_id=$(grep "USAGE_PLAN_ID=" "$resource_file" | cut -d'=' -f2)
-        local api_key_id=$(grep "API_KEY_ID=" "$resource_file" | cut -d'=' -f2)
-        
-        # Delete usage plan
-        if [ -n "$usage_plan_id" ] && [ "$usage_plan_id" != "None" ]; then
-            print_log -c "[delete] " "Deleting usage plan: $usage_plan_id"
-            aws apigateway delete-usage-plan --usage-plan-id "$usage_plan_id" 2>/dev/null || true
-        fi
-        
-        # Delete API key
-        if [ -n "$api_key_id" ] && [ "$api_key_id" != "None" ]; then
-            print_log -c "[delete] " "Deleting API key: $api_key_id"
-            aws apigateway delete-api-key --api-key "$api_key_id" 2>/dev/null || true
-        fi
+    # Check if any APIs exist first
+    local api_ids=$(aws apigateway get-rest-apis --query "items[?name=='${API_NAME}'].id" --output text 2>/dev/null)
+    
+    if [ -n "$api_ids" ] && [ "$api_ids" != "None" ]; then
+        for API_ID in $api_ids; do
+            if [ -n "$API_ID" ] && [ "$API_ID" != "None" ]; then
+                print_log -c "[delete] " "Deleting REST API: $API_ID"
+                while true; do
+                    if aws apigateway delete-rest-api --rest-api-id "$API_ID" 2>/dev/null; then
+                        print_log -g "[ok] " "API Gateway $API_ID deleted successfully"
+                        break
+                    fi
+                    print_log -y "[retry] " "Delete API failed, retrying..."
+                    sleep 2
+                done
+            fi
+        done
+    else
+        print_log -y "[skip] " "No API Gateway found with name '$API_NAME'"
     fi
     
-    # Find API by name
-    API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${API_NAME}'].id" --output text)
+    # Check if any usage plans exist
+    local usage_plan_ids=$(aws apigateway get-usage-plans --query "items[?contains(name, '${PROJECT_NAME}')].id" --output text 2>/dev/null)
     
-    if [ -n "$API_ID" ] && [ "$API_ID" != "None" ]; then
-        print_log -c "[delete] " "Deleting REST API: $API_ID"
-        if aws apigateway delete-rest-api --rest-api-id "$API_ID"; then
-            print_log -g "[ok] " "API Gateway deleted successfully"
+    if [ -n "$usage_plan_ids" ] && [ "$usage_plan_ids" != "None" ]; then
+        print_log -c "[delete] " "Found usage plans to delete"
+        for usage_plan_id in $usage_plan_ids; do
+            if [ -n "$usage_plan_id" ] && [ "$usage_plan_id" != "None" ]; then
+                # Get API keys associated with this usage plan
+                local api_key_ids=$(aws apigateway get-usage-plan-keys --usage-plan-id "$usage_plan_id" --query 'items[].id' --output text 2>/dev/null)
+                
+                # Delete each API key with retry
+                for api_key_id in $api_key_ids; do
+                    if [ -n "$api_key_id" ] && [ "$api_key_id" != "None" ]; then
+                        print_log -c "[delete] " "Deleting API key: $api_key_id"
+                        while true; do
+                            if aws apigateway delete-api-key --api-key "$api_key_id" 2>/dev/null; then
+                                break
+                            fi
+                            sleep 2
+                        done
+                    fi
+                done
+                
+                # Delete usage plan with retry
+                print_log -c "[delete] " "Deleting usage plan: $usage_plan_id"
+                while true; do
+                    if aws apigateway delete-usage-plan --usage-plan-id "$usage_plan_id" 2>/dev/null; then
+                        break
+                    fi
+                    sleep 2
+                done
+            fi
+        done
+    else
+        print_log -y "[skip] " "No usage plans found for project '${PROJECT_NAME}'"
+    fi
+    
+    # Verify cleanup success
+    print_log -c "[verify] " "Verifying cleanup completion..."
+    local remaining_apis=$(aws apigateway get-rest-apis --query "items[?name=='${API_NAME}'].id" --output text 2>/dev/null)
+    local remaining_plans=$(aws apigateway get-usage-plans --query "items[?contains(name, '${PROJECT_NAME}')].id" --output text 2>/dev/null)
+    
+    if [ -z "$remaining_apis" ] || [ "$remaining_apis" = "None" ]; then
+        if [ -z "$remaining_plans" ] || [ "$remaining_plans" = "None" ]; then
+            print_log -g "[verified] " "API Gateway cleanup completed successfully"
         else
-            print_log -r "[error] " "Failed to delete API Gateway"
-            return 1
+            print_log -y "[warn] " "Some usage plans may still exist"
         fi
     else
-        print_log -y "[skip] " "API Gateway '$API_NAME' not found"
+        print_log -r "[error] " "Some API Gateway resources may still exist"
+        return 1
+    fi
+}
+
+rotate_api_key() {
+    print_log -b "[rotate] " "Manually triggering API key rotation..."
+    validate_inputs
+    setup_aws_environment
+
+    ROTATE_LAMBDA_NAME="func-rotate-api-${PROJECT_NAME}"
+    
+    # Check if Lambda exists
+    if ! aws lambda get-function --function-name "$ROTATE_LAMBDA_NAME" > /dev/null 2>&1; then
+        print_log -r "[error] " "Rotation Lambda not found: $ROTATE_LAMBDA_NAME"
+        print_log -y "[info] " "Please run EventBridge setup first: ./AWS.sh setup (select EventBridge)"
+        return 1
+    fi
+    
+    # Invoke Lambda
+    print_log -c "[invoke] " "Invoking rotation Lambda..."
+    if aws lambda invoke --function-name "$ROTATE_LAMBDA_NAME" /tmp/rotate-output.json > /dev/null 2>&1; then
+        print_log -g "[ok] " "API key rotation completed successfully"
+        if [ -f /tmp/rotate-output.json ]; then
+            print_log -y "[result] " "$(cat /tmp/rotate-output.json | jq -r '.body' 2>/dev/null || cat /tmp/rotate-output.json)"
+            rm -f /tmp/rotate-output.json
+        fi
+    else
+        print_log -r "[error] " "API key rotation failed"
+        return 1
     fi
 }
 
@@ -263,8 +394,14 @@ case "${1:-}" in
             exit 1
         fi
         ;;
+    rotate)
+        if ! rotate_api_key; then
+            print_log -r "[error] " "API key rotation failed"
+            exit 1
+        fi
+        ;;
     *)
-        echo "Usage: $0 {setup|cleanup}"
+        echo "Usage: $0 {setup|cleanup|rotate}"
         echo "Environment variables required: PROJECT_NAME, THING_NAME"
         exit 1
         ;;

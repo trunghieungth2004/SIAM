@@ -738,6 +738,13 @@ SERVICE_EOF
     # Cleanup temporary files
     rm -f train.py inference.py sourcedir.tar.gz training-job.json sagemaker-trust-policy.json
     print_log -g "[cleanup] " "Temporary files cleaned up"
+    
+    # Delete local training data CSV file used for this training
+    if [ -n "$FOUND_DATA_FILE" ] && [ -f "$FOUND_DATA_FILE" ]; then
+        print_log -c "[delete] " "Deleting local training data: $(basename $FOUND_DATA_FILE)"
+        rm -f "$FOUND_DATA_FILE"
+        print_log -g "[ok] " "Local training data file deleted"
+    fi
 }
 
 cleanup_sagemaker() {

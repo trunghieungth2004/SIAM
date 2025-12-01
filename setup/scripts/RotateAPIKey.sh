@@ -89,19 +89,17 @@ rotate_api_key() {
         mkdir -p "$temp_dir"
         
         # Download current app.js
-        if aws s3 cp "s3://${frontend_bucket}/app.js" "$temp_dir/app_orig.js" 2>/dev/null; then
-            # Create new app.js with updated credentials
-            cat > "$temp_dir/app.js" <<EOF
-// Configuration - API Gateway endpoint will be injected here
-const API_ENDPOINT = '${api_url}';
-const API_KEY = '${new_api_key_value}';
-EOF
-            # Append the rest of the original file (skip first 3 lines)
-            tail -n +4 "$temp_dir/app_orig.js" >> "$temp_dir/app.js"
+        if aws s3 cp "s3://${frontend_bucket}/app.js" "$temp_dir/app.js" 2>/dev/null; then
+            # Get current API endpoint (preserve it)
+            local current_endpoint=$(grep "const API_ENDPOINT" "$temp_dir/app.js" | sed -E "s/.*'([^']+)'.*/\1/")
+            
+            # Update API key using sed (preserving the rest of the file)
+            sed -i "s|const API_KEY = '[^']*'|const API_KEY = '${new_api_key_value}'|g" "$temp_dir/app.js"
             
             # Upload updated file
             if aws s3 cp "$temp_dir/app.js" "s3://${frontend_bucket}/app.js"; then
                 print_log -g "[ok] " "Frontend updated with new API key"
+                print_log -y "[info] " "API endpoint preserved: ${current_endpoint}"
             else
                 print_log -y "[warn] " "Failed to update frontend"
             fi

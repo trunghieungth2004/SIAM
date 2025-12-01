@@ -26,10 +26,10 @@
       },
       "Artifacts": [
         {
-          "Uri": "s3://test-iot-data-2ccb20e3/greengrass/artifacts/datalogger.c"
+          "Uri": "s3://test-iot-data-08cadb15/greengrass/artifacts/datalogger.c"
         },
         {
-          "Uri": "s3://test-iot-data-2ccb20e3/greengrass/artifacts/streammanager_datalogger.py"
+          "Uri": "s3://test-iot-data-08cadb15/greengrass/artifacts/streammanager_datalogger.py"
         }
       ]
     }

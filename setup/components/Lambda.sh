@@ -132,7 +132,7 @@ EOL
         fi
         
         cat > query-permissions.json << EOL
-{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["dynamodb:Query"], "Resource": "*" }] }
+{ "Version": "2012-10-17", "Statement": [{ "Effect": "Allow", "Action": ["dynamodb:Query", "dynamodb:Scan"], "Resource": "*" }] }
 EOL
         if ! aws iam put-role-policy --role-name $QUERY_ROLE_NAME --policy-name "QueryLambdaPermissions" --policy-document file://query-permissions.json; then
             print_log -r "[error] " "Failed to attach custom permissions policy to Query Lambda role"

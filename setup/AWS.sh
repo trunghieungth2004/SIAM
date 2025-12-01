@@ -21,9 +21,8 @@ declare -A COMPONENTS=(
     ["6"]="Lambda"
     ["7"]="SageMaker"
     ["8"]="Greengrass"
-    ["9"]="IoT"
-    ["10"]="CloudWatch"
-    ["11"]="EventBridge"
+    ["9"]="CloudWatch"
+    ["10"]="EventBridge"
 )
 
 # Component categories
@@ -34,7 +33,6 @@ declare -A CATEGORIES=(
     ["SQS"]="Cloud"
     ["APIGateway"]="Cloud"
     ["Lambda"]="Cloud"
-    ["IoT"]="Cloud"
     ["Greengrass"]="Cloud"
     ["SageMaker"]="Cloud"
     ["CloudWatch"]="Cloud"
@@ -49,7 +47,6 @@ declare -A DESCRIPTIONS=(
     ["SQS"]="SQS queues for message handling"
     ["APIGateway"]="REST API for data queries and dashboard"
     ["Lambda"]="Lambda functions and IAM roles"
-    ["IoT"]="IoT Core - Things, certificates, and rules"
     ["Greengrass"]="IoT Greengrass Core for edge computing"
     ["SageMaker"]="ML model training for predictive maintenance"
     ["CloudWatch"]="Monitoring, alarms, and dashboards"
@@ -62,7 +59,7 @@ show_component_menu() {
     echo ":: Choose which components to $1:"
     echo ""
     
-    for i in {1..11}; do
+    for i in {1..10}; do
         local component="${COMPONENTS[$i]}"
         local desc="${DESCRIPTIONS[$component]}"
         local category="${CATEGORIES[$component]}"
@@ -81,7 +78,7 @@ parse_selection() {
     
     if [ -z "$selection" ] || [ "$selection" = "all" ]; then
         # Default: all components
-        for i in {1..11}; do
+        for i in {1..10}; do
             selected_components+=("${COMPONENTS[$i]}")
         done
     else
@@ -91,7 +88,7 @@ parse_selection() {
             exclude_mode=true
             selection="${selection#^}"
             # Start with all components for exclusion
-            for i in {1..11}; do
+            for i in {1..10}; do
                 selected_components+=("${COMPONENTS[$i]}")
             done
         fi
@@ -178,6 +175,9 @@ get_project_inputs() {
 run_setup() {
     set -e # Exit immediately if a command exits with a non-zero status.
     
+    # Start timing
+    local start_time=$(date +%s)
+    
     # Get project inputs
     get_project_inputs
     
@@ -212,7 +212,12 @@ run_setup() {
     fi
     
     # Run components in dependency order
-    local setup_order=("S3" "DynamoDB" "IoT" "SNS" "SQS" "Lambda" "APIGateway" "SageMaker" "Greengrass" "CloudWatch" "EventBridge")
+    # S3 first (creates resource file), then DynamoDB, SNS, SQS
+    # Lambda next (may read S3 bucket from resource file)
+    # APIGateway after Lambda (needs Lambda functions)
+    # SageMaker after S3 (needs S3 data bucket)
+    # EventBridge last (needs Lambda functions for automation)
+    local setup_order=("S3" "DynamoDB" "SNS" "SQS" "Lambda" "APIGateway" "SageMaker" "Greengrass" "CloudWatch" "EventBridge")
     
     for component in "${setup_order[@]}"; do
         if [[ " ${selected_components[*]} " =~ " ${component} " ]]; then
@@ -226,6 +231,12 @@ run_setup() {
         fi
     done
     
+    # Calculate duration
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+    local minutes=$((duration / 60))
+    local seconds=$((duration % 60))
+    
     echo ""
     print_log -g "--------------------------------------"
     print_log -g "  AWS INFRASTRUCTURE SETUP COMPLETE   "
@@ -233,6 +244,7 @@ run_setup() {
     echo ""
     print_log -m "[Project Name] " "${PROJECT_NAME}"
     print_log -m "[Thing Name] " "${THING_NAME}"
+    print_log -c "[Duration] " "${minutes}m ${seconds}s"
     
     # Display web URL if S3 frontend was deployed
     if [[ " ${selected_components[*]} " =~ " S3 " ]]; then
@@ -248,6 +260,9 @@ run_setup() {
 
 run_cleanup() {
     set +e # Continue on error
+    
+    # Start timing
+    local start_time=$(date +%s)
 
     # Get project inputs
     get_project_inputs
@@ -294,7 +309,10 @@ run_cleanup() {
     echo ""
     
     # Run cleanup in reverse dependency order
-    local cleanup_order=("EventBridge" "CloudWatch" "Greengrass" "SageMaker" "APIGateway" "Lambda" "SQS" "SNS" "IoT" "DynamoDB" "S3")
+    # EventBridge first (depends on Lambda), CloudWatch, Greengrass
+    # SageMaker, APIGateway (depends on Lambda), Lambda
+    # SQS, SNS, DynamoDB, S3 last (resource file cleanup)
+    local cleanup_order=("EventBridge" "CloudWatch" "Greengrass" "SageMaker" "APIGateway" "Lambda" "SQS" "SNS" "DynamoDB" "S3")
     local failed_components=()
     
     for component in "${cleanup_order[@]}"; do
@@ -306,17 +324,26 @@ run_cleanup() {
         fi
     done
     
+    # Calculate duration
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+    local minutes=$((duration / 60))
+    local seconds=$((duration % 60))
+    
     echo ""
     if [ ${#failed_components[@]} -eq 0 ]; then
         print_log -g "--------------------------------------"
         print_log -g "  AWS INFRASTRUCTURE CLEANUP COMPLETE "
         print_log -g "--------------------------------------"
+        echo ""
+        print_log -c "[Duration] " "${minutes}m ${seconds}s"
     else
         print_log -r "--------------------------------------"
         print_log -r "  CLEANUP COMPLETED WITH ERRORS       "
         print_log -r "--------------------------------------"
         echo ""
         print_log -r "[Failed Components] " "${failed_components[*]}"
+        print_log -c "[Duration] " "${minutes}m ${seconds}s"
     fi
 }
 #--------------------------------#
@@ -330,6 +357,7 @@ usage() {
     echo "  cleanup       : Deletes AWS resources (interactive selection)."
     echo "  local         : Set up local data collection on Raspberry Pi."
     echo "  local cleanup : Remove local data collection service from Raspberry Pi."
+    echo "  rotate-key    : Manually rotate API Gateway key (also runs monthly via EventBridge)."
     echo ""
     echo "Example component selection:"
     echo "  1 2 3      : Setup/cleanup components 1, 2, and 3"
@@ -363,6 +391,13 @@ case "$1" in
         else
             run_local_collection
         fi
+        ;;
+    rotate-key)
+        # Get project inputs
+        get_project_inputs
+        
+        # Call APIGateway component's rotate function
+        bash "${COMPONENTS_DIR}/APIGateway.sh" rotate
         ;;
     *)
         print_log -r "[error] " "Invalid command: $1"

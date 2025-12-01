@@ -3,55 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIAM - IoT Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <title>SIAM - Real-Time IoT Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>SIAM IoT Dashboard</h1>
-            <p>Smart Industrial Asset's longevity Monitor</p>
+            <div class="header-content">
+                <h1>SIAM IoT Dashboard</h1>
+                <div class="controls">
+                    <button id="theme-toggle" class="theme-btn">Toggle Theme</button>
+                    <button id="refresh-btn" class="refresh-btn">Refresh Now</button>
+                    <button id="debug-btn" class="debug-btn">Export Debug Data</button>
+                    <button id="swagger-btn" class="swagger-btn" onclick="window.location.href='swagger.html'">API Docs</button>
+                    <span id="last-update" class="last-update">Last update: Never</span>
+                </div>
+            </div>
         </header>
 
-        <div class="controls">
-            <input type="text" id="deviceId" placeholder="Device ID" value="esp32-device">
-            <input type="number" id="hours" placeholder="Hours" value="24" min="1" max="168">
-            <select id="dataType">
-                <option value="sensor">Sensor Data</option>
-                <option value="predictions">ML Predictions</option>
-                <option value="both">Both</option>
-            </select>
-            <button onclick="loadData()">Load Data</button>
-            <button onclick="autoRefresh()">Auto Refresh</button>
-        </div>
-
-        <div class="status" id="status">Ready</div>
-
-        <div class="charts-container">
-            <div class="chart-section">
-                <h3>Temperature (°C)</h3>
-                <canvas id="tempChart"></canvas>
-            </div>
-            <div class="chart-section">
-                <h3>Vibration</h3>
-                <canvas id="vibrationChart"></canvas>
-            </div>
-            <div class="chart-section">
-                <h3>Current (A)</h3>
-                <canvas id="currentChart"></canvas>
-            </div>
-            <div class="chart-section">
-                <h3>ML Predictions</h3>
-                <canvas id="predictionChart"></canvas>
-            </div>
-        </div>
-
-        <div class="data-table">
-            <h3>Recent Data</h3>
-            <div id="dataTable"></div>
-        </div>
+        <main id="devices-container">
+            <div class="loading">Loading devices...</div>
+        </main>
     </div>
 
     <script src="app.js"></script>

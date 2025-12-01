@@ -16,9 +16,11 @@ SIAM is an end-to-end predictive maintenance platform that combines edge computi
 
 - **Native C Datalogger**: High-performance sensor reading (MPU-6050, INA219, DS18B20)
 - **Edge ML Inference**: Real-time anomaly detection on Coral TPU
-- **AWS Integration**: IoT Core, Greengrass, Lambda, DynamoDB, S3, SageMaker
-- **Automated MLOps**: Weekly model retraining with EventBridge and SageMaker
-- **Real-time Dashboard**: Web-based monitoring via S3 Static Website
+- **AWS Integration**: Greengrass, Lambda, DynamoDB, S3, SageMaker, API Gateway
+- **REST API**: API Gateway with usage plans, rate limiting, and automatic key rotation
+- **Interactive API Docs**: Swagger/OpenAPI documentation for testing endpoints
+- **Automated MLOps**: Bi-weekly model retraining and monthly API key rotation via EventBridge
+- **Real-time Dashboard**: Web-based monitoring with S3 Static Website hosting
 - **Offline Resilience**: Zero data loss with Greengrass Stream Manager
 - **Docker Containerization**: Solves Coral TPU library obsolescence
 
@@ -29,13 +31,15 @@ The platform uses a hybrid edge-cloud architecture:
 - **Edge Layer**: Raspberry Pi 5 + Coral TPU running AWS IoT Greengrass
   - Native C datalogger component
   - Dockerized Python ML inference service
+  - Local buffering with Stream Manager
   
-- **Cloud Layer**: AWS VPC with serverless compute
-  - IoT Core for MQTT ingestion
-  - Lambda functions for processing
-  - DynamoDB for real-time data
-  - S3 for data lake and hosting
-  - SageMaker for model training
+- **Cloud Layer**: Serverless AWS infrastructure
+  - Lambda functions for data processing and queries
+  - DynamoDB for time-series sensor data storage
+  - S3 for data lake, model artifacts, and web hosting
+  - SageMaker for automated model training
+  - API Gateway for REST API with authentication
+  - EventBridge for automation (retraining, deployment, key rotation)
 
 ![Architecture Diagram](https://drive.google.com/file/d/1oSuNWL722zBMHkhSlheuezGVoR6sTiq3/view?usp=sharing)
 
@@ -76,23 +80,57 @@ The platform uses a hybrid edge-cloud architecture:
 ```
 SIAM/
 ├── setup/                          # Infrastructure automation scripts
-│   ├── AWS.sh                      # Main orchestration script
+│   ├── AWS.sh                      # Main orchestration script with duration tracking
+│   ├── data/                       # Training data (auto-fetched from Pi)
+│   ├── Application/                # Frontend dashboard and Swagger UI
+│   │   ├── index.html              # Main dashboard
+│   │   ├── app.js                  # Dashboard logic
+│   │   ├── swagger.html            # Interactive API documentation
+│   │   ├── style.css               # Styling
+│   │   └── error.html              # Error page
+│   ├── certificates/               # Greengrass device certificates
+│   │   └── IOT/                    # IoT Core certificates (if used)
+│   │       └── GreengrassCore_*/   # Device-specific certificates
 │   ├── components/                 # Component-specific setup scripts
-│   │   ├── VPC.sh                  # AWS VPC setup
-│   │   ├── IoT.sh                  # IoT Core setup
-│   │   ├── Greengrass.sh           # Greengrass deployment
-│   │   ├── Lambda.sh               # Lambda functions
+│   │   ├── common.sh               # Shared utilities
+│   │   ├── S3.sh                   # S3 buckets (data + frontend hosting)
+│   │   ├── DynamoDB.sh             # NoSQL tables
+│   │   ├── SNS.sh                  # Notification service
+│   │   ├── SQS.sh                  # Message queues
+│   │   ├── Lambda.sh               # Function deployment
+│   │   ├── APIGateway.sh           # REST API with discovery-based config
 │   │   ├── SageMaker.sh            # ML training pipeline
+│   │   ├── CloudWatch.sh           # Monitoring and alarms
+│   │   ├── EventBridge.sh          # Automation rules
+│   │   ├── Greengrass.sh           # Edge deployment
 │   │   ├── Local.sh                # Local data collection
-│   │   └── Greengrass/             # Greengrass components
-│   │       ├── DataLogger/         # C datalogger component
-│   │       └── MLInference/        # Docker ML inference
+│   │   ├── VPC.sh                  # VPC setup (deprecated, not used)
+│   │   ├── IoT.sh                  # IoT Core setup (deprecated, not used)
+│   │   ├── Application/            # Frontend build artifacts
+│   │   ├── Lambda/                 # Lambda source files
+│   │   │   ├── ingestion.js        # IoT data processor
+│   │   │   ├── query.mjs           # API query handler
+│   │   │   ├── deploy.mjs          # Greengrass deployment
+│   │   │   ├── retrain.mjs         # Training trigger (AWS service discovery)
+│   │   │   └── rotate.mjs          # API key rotation (AWS service discovery)
+│   │   ├── Greengrass/             # Greengrass components
+│   │   │   ├── Pi.sh               # Pi preparation with Tailscale support
+│   │   │   ├── DataLogger/         # C datalogger component
+│   │   │   │   ├── datalogger.c    # Native C sensor reader
+│   │   │   │   ├── streammanager_datalogger.py  # StreamManager integration
+│   │   │   │   └── component_recipe.json        # Component configuration
+│   │   │   └── MLInference/        # Docker ML inference
+│   │   │       ├── tpu_inference_service.py     # TPU inference service
+│   │   │       ├── Dockerfile.tpu              # Docker build file
+│   │   │       └── component_recipe.json        # Component configuration
+│   │   └── Local/                  # Local datalogger
+│   │       └── local_datalogger.c  # Standalone C datalogger for Pi
 │   └── scripts/                    # Utility scripts
+│       ├── EdgeTPUCompiler.sh      # Model compilation for Coral TPU
+│       └── RotateAPIKey.sh         # Manual key rotation (deprecated - use EventBridge)
 ├── src/                            # ESP32 prototype source code
 │   ├── main.cpp                    # Main application
 │   └── connection/                 # WiFi and AWS connectivity
-├── data/                           # Sensor data logs
-├── diagram/                        # Architecture diagrams
 ├── website/                        # Hugo static site
 │   ├── content/                    # Proposal and documentation
 │   ├── layouts/                    # Hugo templates
@@ -105,12 +143,12 @@ SIAM/
 The `AWS.sh` script provides an interactive menu for component selection:
 
 ```bash
-./AWS.sh setup    # Deploy AWS infrastructure
-./AWS.sh cleanup  # Remove AWS resources
-./AWS.sh local    # Set up local data collection
+./AWS.sh setup        # Deploy AWS infrastructure (interactive component selection)
+./AWS.sh cleanup      # Remove AWS resources (interactive component selection)
+./AWS.sh local        # Set up local data collection on Raspberry Pi
+./AWS.sh local cleanup # Remove local data collection service
+./AWS.sh rotate-key   # Manually rotate API Gateway key
 ```
-
-
 
 ### Cleanup
 
@@ -149,18 +187,33 @@ Real-time anomaly detection:
 
 ### 3. AWS Lambda Functions
 
-- **Ingestion**: Processes IoT data to DynamoDB and S3
-- **Query**: API Gateway backend for web dashboard
-- **Retrain**: Triggers SageMaker training jobs
-- **Deploy**: Updates Greengrass components with new models
+- **Ingestion**: Processes Greengrass data to DynamoDB and S3
+- **Query**: API Gateway backend for web dashboard with time-range filtering
+- **Retrain**: Triggers SageMaker training jobs (bi-weekly via EventBridge)
+- **Rotate**: Automates API key rotation with frontend updates (monthly via EventBridge)
+- **Deploy**: Updates Greengrass components with new models (event-driven)
+- All functions use AWS SDK v3 with service discovery (no resource file dependency)
 - Located in: `setup/components/Lambda/`
 
 ### 4. SageMaker Training
 
-- Automated weekly retraining with EventBridge
-- TensorFlow model with multi-output prediction
-- Edge TPU compiler for model optimization
+- Automated bi-weekly retraining with EventBridge (cost-optimized)
+- Local-first data fetching: checks `setup/data/` then SSH/SCP from Pi
+- TensorFlow model with INT8 quantization for Edge TPU
+- Multi-output prediction: maintenance score and days to failure
+- Auto-cleanup: deletes local training CSV and temp files post-training
 - Located in: `setup/components/SageMaker.sh`
+
+### 5. API Gateway
+
+- REST API endpoint: `/data` with query parameters
+- Authentication: x-api-key header with usage plans
+- Rate limiting: 10 req/s, burst 20, daily quota 10k
+- CORS enabled for frontend access
+- Automatic key rotation: monthly via EventBridge Lambda
+- Discovery-based configuration (no resource file dependency)
+- Interactive Swagger documentation at `/swagger.html`
+- Located in: `setup/components/APIGateway.sh`
 
 ## Development
 
@@ -203,12 +256,14 @@ node ingestion.js
 
 ## Security
 
-- AWS credentials stored in Secrets Manager
-- VPC with private/public subnet isolation
-- NAT Instance (EC2) for cost-effective internet access
-- VPC Endpoints for AWS services
-- IoT certificates for device authentication
-- API Gateway with IP restrictions/API keys
+- **API Authentication**: API Gateway with usage plans and API keys
+- **Rate Limiting**: Request throttling (10 req/s, burst 20) and daily quotas
+- **Automatic Rotation**: Monthly API key rotation via EventBridge Lambda
+- **Edge Security**: Greengrass device certificates for authentication
+- **IAM Least Privilege**: Component-specific roles with inline policies
+- **No Resource Files**: AWS service discovery prevents credential exposure
+- **Frontend Security**: S3 static hosting with CloudFront-ready architecture
+- **Tailscale Support**: Pi SSH validation with Tailscale authentication checks
 
 ## License
 

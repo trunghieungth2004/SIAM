@@ -48,10 +48,34 @@ deploy_frontend() {
         return 1
     }
     
-    # Inject API endpoint into app.js
+    # Try to discover API key if API Gateway exists
+    local api_key=""
+    if [ "$api_endpoint" != "API_GATEWAY_ENDPOINT_PLACEHOLDER" ]; then
+        local api_name="${PROJECT_NAME}-api"
+        local usage_plan_id=$(aws apigateway get-usage-plans --query "items[?contains(name, '${PROJECT_NAME}')].id" --output text 2>/dev/null | head -1)
+        if [ -n "$usage_plan_id" ] && [ "$usage_plan_id" != "None" ]; then
+            local api_key_id=$(aws apigateway get-usage-plan-keys --usage-plan-id "$usage_plan_id" --query 'items[0].id' --output text 2>/dev/null)
+            if [ -n "$api_key_id" ] && [ "$api_key_id" != "None" ]; then
+                api_key=$(aws apigateway get-api-key --api-key "$api_key_id" --include-value --query 'value' --output text 2>/dev/null)
+            fi
+        fi
+    fi
+    
+    # Inject API endpoint and key into app.js and swagger.html
     if [ -f "$temp_dir/app.js" ]; then
         sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_endpoint|g" "$temp_dir/app.js"
-        print_log -g "[config] " "API endpoint injected: $api_endpoint"
+        
+        if [ -n "$api_key" ]; then
+            sed -i "s|API_KEY_PLACEHOLDER|$api_key|g" "$temp_dir/app.js"
+            print_log -g "[config] " "API endpoint and key injected into app.js"
+        else
+            print_log -g "[config] " "API endpoint injected: $api_endpoint (key will be injected when APIGateway is deployed)"
+        fi
+    fi
+    
+    if [ -f "$temp_dir/swagger.html" ]; then
+        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_endpoint|g" "$temp_dir/swagger.html"
+        print_log -g "[config] " "API endpoint injected into swagger.html: $api_endpoint"
     fi
     
     # Upload to S3
@@ -307,175 +331,49 @@ cleanup_s3() {
     # Proceed with cleanup if we have bucket names
     if [ ! -z "$S3_DATA_BUCKET" ] || [ ! -z "$S3_FRONTEND_BUCKET" ]; then
         if [ ! -z "$S3_DATA_BUCKET" ]; then
-            print_log -c "[delete] " "Emptying S3 Data Bucket (including all versions)..."
-            
             # Check if bucket exists first
             if aws s3api head-bucket --bucket "$S3_DATA_BUCKET" > /dev/null 2>&1; then
-                print_log -y "[wait] " "Deleting all object versions and delete markers..."
+                print_log -c "[delete] " "Deleting S3 Data Bucket (with force empty)..."
                 
-                # Delete all object versions
-                local version_loop_count=0
-                local max_version_loops=20
-                while [ $version_loop_count -lt $max_version_loops ]; do
-                    VERSIONS=$(aws s3api list-object-versions --bucket "$S3_DATA_BUCKET" --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}' --max-items 1000 2>/dev/null)
-                    if [ "$VERSIONS" == '{"Objects": null}' ] || [ "$VERSIONS" == '{"Objects": []}' ] || [ -z "$VERSIONS" ]; then
-                        print_log -g "[ok] " "All object versions deleted."
-                        break
-                    fi
-                    
-                    # Check if we actually have objects to delete
-                    local object_count=$(echo "$VERSIONS" | jq -r '.Objects | length' 2>/dev/null || echo "0")
-                    if [ "$object_count" == "0" ] || [ "$object_count" == "null" ]; then
-                        print_log -g "[ok] " "No more object versions to delete."
-                        break
-                    fi
-                    
-                    if ! aws s3api delete-objects --bucket "$S3_DATA_BUCKET" --delete "$VERSIONS" > /dev/null 2>&1; then
-                        print_log -y "[retry] " "Retrying deletion of object versions... (loop $version_loop_count/$max_version_loops)"
-                        sleep 2
-                        version_loop_count=$((version_loop_count + 1))
-                        continue
-                    fi
-                    print_log -y "[progress] " "Deleted batch of $object_count object versions..."
-                    version_loop_count=$((version_loop_count + 1))
-                done
-                
-                if [ $version_loop_count -eq $max_version_loops ]; then
-                    print_log -r "[error] " "Reached maximum attempts for object version deletion"
-                fi
-                
-                # Delete all delete markers
-                local marker_loop_count=0
-                local max_marker_loops=20
-                while [ $marker_loop_count -lt $max_marker_loops ]; do
-                    DELETE_MARKERS=$(aws s3api list-object-versions --bucket "$S3_DATA_BUCKET" --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}' --max-items 1000 2>/dev/null)
-                    if [ "$DELETE_MARKERS" == '{"Objects": null}' ] || [ "$DELETE_MARKERS" == '{"Objects": []}' ] || [ -z "$DELETE_MARKERS" ]; then
-                        print_log -g "[ok] " "All delete markers deleted."
-                        break
-                    fi
-                    
-                    # Check if we actually have markers to delete
-                    local marker_count=$(echo "$DELETE_MARKERS" | jq -r '.Objects | length' 2>/dev/null || echo "0")
-                    if [ "$marker_count" == "0" ] || [ "$marker_count" == "null" ]; then
-                        print_log -g "[ok] " "No more delete markers to delete."
-                        break
-                    fi
-                    
-                    if ! aws s3api delete-objects --bucket "$S3_DATA_BUCKET" --delete "$DELETE_MARKERS" > /dev/null 2>&1; then
-                        print_log -y "[retry] " "Retrying deletion of delete markers... (loop $marker_loop_count/$max_marker_loops)"
-                        sleep 2
-                        marker_loop_count=$((marker_loop_count + 1))
-                        continue
-                    fi
-                    print_log -y "[progress] " "Deleted batch of $marker_count delete markers..."
-                    marker_loop_count=$((marker_loop_count + 1))
-                done
-                
-                if [ $marker_loop_count -eq $max_marker_loops ]; then
-                    print_log -r "[error] " "Reached maximum attempts for delete marker deletion"
-                fi
-                
-                # Final cleanup of any remaining objects
-                aws s3 rm s3://${S3_DATA_BUCKET} --recursive > /dev/null 2>&1 || true
-                
-                print_log -y "[wait] " "Waiting for bucket to be empty..."
-                sleep 5
-                
-                # Now delete the bucket
-                RETRY_COUNT=0
-                MAX_RETRIES=5
-                while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-                    if aws s3api delete-bucket --bucket ${S3_DATA_BUCKET} 2>/dev/null; then
-                        print_log -g "[ok] " "S3 Data Bucket ($S3_DATA_BUCKET) deleted."
-                        break
+                # Use rb --force to empty and delete in one command
+                while true; do
+                    if aws s3 rb s3://${S3_DATA_BUCKET} --force 2>/dev/null; then
+                        # Verify bucket is actually deleted
+                        if ! aws s3api head-bucket --bucket "$S3_DATA_BUCKET" > /dev/null 2>&1; then
+                            print_log -g "[verified] " "S3 Data Bucket ($S3_DATA_BUCKET) deleted."
+                            break
+                        else
+                            print_log -y "[retry] " "Bucket still exists, retrying deletion..."
+                        fi
                     else
-                        RETRY_COUNT=$((RETRY_COUNT + 1))
-                        print_log -y "[retry] " "Bucket deletion failed, retrying... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-                        sleep 10
+                        print_log -y "[retry] " "Delete bucket failed, retrying..."
                     fi
+                    sleep 2
                 done
-                
-                if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-                    print_log -r "[error] " "Failed to delete S3 Data Bucket after $MAX_RETRIES attempts"
-                fi
             else
                 print_log -y "[skip] " "S3 Data Bucket ($S3_DATA_BUCKET) does not exist."
             fi
         fi
         if [ ! -z "$S3_FRONTEND_BUCKET" ]; then
-            print_log -c "[delete] " "Emptying S3 Frontend Bucket..."
-            
             # Check if bucket exists first
             if aws s3api head-bucket --bucket "$S3_FRONTEND_BUCKET" > /dev/null 2>&1; then
-                print_log -y "[wait] " "Deleting all objects from frontend bucket..."
+                print_log -c "[delete] " "Deleting S3 Frontend Bucket (with force empty)..."
                 
-                # Delete all object versions (in case versioning was enabled)
-                local version_loop_count=0
-                local max_version_loops=20
-                while [ $version_loop_count -lt $max_version_loops ]; do
-                    VERSIONS=$(aws s3api list-object-versions --bucket "$S3_FRONTEND_BUCKET" --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}' --max-items 1000 2>/dev/null)
-                    if [ "$VERSIONS" == '{"Objects": null}' ] || [ "$VERSIONS" == '{"Objects": []}' ] || [ -z "$VERSIONS" ]; then
-                        print_log -g "[ok] " "All frontend object versions deleted."
-                        break
-                    fi
-                    
-                    # Check if we actually have objects to delete
-                    local object_count=$(echo "$VERSIONS" | jq -r '.Objects | length' 2>/dev/null || echo "0")
-                    if [ "$object_count" == "0" ] || [ "$object_count" == "null" ]; then
-                        print_log -g "[ok] " "No more frontend object versions to delete."
-                        break
-                    fi
-                    
-                    aws s3api delete-objects --bucket "$S3_FRONTEND_BUCKET" --delete "$VERSIONS" > /dev/null 2>&1 || true
-                    print_log -y "[progress] " "Deleted batch of $object_count frontend objects..."
-                    version_loop_count=$((version_loop_count + 1))
-                done
-                
-                # Delete all delete markers
-                local marker_loop_count=0
-                local max_marker_loops=20
-                while [ $marker_loop_count -lt $max_marker_loops ]; do
-                    DELETE_MARKERS=$(aws s3api list-object-versions --bucket "$S3_FRONTEND_BUCKET" --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}' --max-items 1000 2>/dev/null)
-                    if [ "$DELETE_MARKERS" == '{"Objects": null}' ] || [ "$DELETE_MARKERS" == '{"Objects": []}' ] || [ -z "$DELETE_MARKERS" ]; then
-                        print_log -g "[ok] " "All frontend delete markers deleted."
-                        break
-                    fi
-                    
-                    # Check if we actually have markers to delete
-                    local marker_count=$(echo "$DELETE_MARKERS" | jq -r '.Objects | length' 2>/dev/null || echo "0")
-                    if [ "$marker_count" == "0" ] || [ "$marker_count" == "null" ]; then
-                        print_log -g "[ok] " "No more frontend delete markers to delete."
-                        break
-                    fi
-                    
-                    aws s3api delete-objects --bucket "$S3_FRONTEND_BUCKET" --delete "$DELETE_MARKERS" > /dev/null 2>&1 || true
-                    print_log -y "[progress] " "Deleted batch of $marker_count delete markers..."
-                    marker_loop_count=$((marker_loop_count + 1))
-                done
-                
-                # Remove any remaining objects
-                aws s3 rm s3://${S3_FRONTEND_BUCKET} --recursive > /dev/null 2>&1 || true
-                
-                print_log -y "[wait] " "Waiting for frontend bucket to be empty..."
-                sleep 5
-                
-                # Now delete the bucket
-                RETRY_COUNT=0
-                MAX_RETRIES=5
-                while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-                    if aws s3api delete-bucket --bucket ${S3_FRONTEND_BUCKET} 2>/dev/null; then
-                        print_log -g "[ok] " "S3 Frontend Bucket ($S3_FRONTEND_BUCKET) deleted."
-                        break
+                # Use rb --force to empty and delete in one command
+                while true; do
+                    if aws s3 rb s3://${S3_FRONTEND_BUCKET} --force 2>/dev/null; then
+                        # Verify bucket is actually deleted
+                        if ! aws s3api head-bucket --bucket "$S3_FRONTEND_BUCKET" > /dev/null 2>&1; then
+                            print_log -g "[verified] " "S3 Frontend Bucket ($S3_FRONTEND_BUCKET) deleted."
+                            break
+                        else
+                            print_log -y "[retry] " "Bucket still exists, retrying deletion..."
+                        fi
                     else
-                        RETRY_COUNT=$((RETRY_COUNT + 1))
-                        print_log -y "[retry] " "Frontend bucket deletion failed, retrying... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-                        sleep 10
+                        print_log -y "[retry] " "Delete bucket failed, retrying..."
                     fi
+                    sleep 2
                 done
-                
-                if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-                    print_log -r "[error] " "Failed to delete S3 Frontend Bucket after $MAX_RETRIES attempts"
-                fi
             else
                 print_log -y "[skip] " "S3 Frontend Bucket ($S3_FRONTEND_BUCKET) does not exist."
             fi
