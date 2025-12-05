@@ -26,6 +26,7 @@ declare -A COMPONENTS=(
 )
 
 # Component categories
+# Component categories
 declare -A CATEGORIES=(
     ["S3"]="Cloud"
     ["DynamoDB"]="Cloud"
@@ -38,7 +39,6 @@ declare -A CATEGORIES=(
     ["CloudWatch"]="Cloud"
     ["EventBridge"]="Cloud"
 )
-
 # Component descriptions
 declare -A DESCRIPTIONS=(
     ["S3"]="S3 Buckets for data storage and web hosting"
@@ -48,11 +48,11 @@ declare -A DESCRIPTIONS=(
     ["APIGateway"]="REST API for data queries and dashboard"
     ["Lambda"]="Lambda functions and IAM roles"
     ["Greengrass"]="IoT Greengrass Core for edge computing"
+    ["Greengrass"]="IoT Greengrass Core for edge computing"
     ["SageMaker"]="ML model training for predictive maintenance"
     ["CloudWatch"]="Monitoring, alarms, and dashboards"
     ["EventBridge"]="Automated ML pipeline and edge deployment"
 )
-
 show_component_menu() {
     echo ""
     print_log -c "AWS Infrastructure Components"
@@ -63,10 +63,8 @@ show_component_menu() {
         local component="${COMPONENTS[$i]}"
         local desc="${DESCRIPTIONS[$component]}"
         local category="${CATEGORIES[$component]}"
-        printf "%2s  %-12s [%-5s] %s\n" "$i" "$component" "$category" "$desc"
+        printf "%2s  %-15s [%-5s] %s\n" "$i" "$component" "$category" "$desc"
     done
-    
-    echo ""
     echo "==> Components to $1: (eg: \"1 2 3\", \"1-3\", \"^4\" to exclude, or \"all\")"
     echo " -> $1 all components by default if no selection made"
     echo -n "==> "
@@ -92,7 +90,6 @@ parse_selection() {
                 selected_components+=("${COMPONENTS[$i]}")
             done
         fi
-        
         # Handle ranges and individual numbers
         for part in $selection; do
             if [[ "$part" =~ ^([0-9]+)-([0-9]+)$ ]]; then
@@ -357,6 +354,7 @@ usage() {
     echo "  cleanup       : Deletes AWS resources (interactive selection)."
     echo "  local         : Set up local data collection on Raspberry Pi."
     echo "  local cleanup : Remove local data collection service from Raspberry Pi."
+    echo "  documentation : Convert proposal.txt to DOCX and create GitHub release."
     echo "  rotate-key    : Manually rotate API Gateway key (also runs monthly via EventBridge)."
     echo ""
     echo "Example component selection:"
@@ -390,6 +388,14 @@ case "$1" in
             run_local_cleanup
         else
             run_local_collection
+        fi
+        ;;
+    documentation|doc)
+        source "${COMPONENTS_DIR}/Documentation.sh"
+        if [ "$2" = "cleanup" ]; then
+            print_log -y "[skip] " "Documentation has no cleanup operation"
+        else
+            setup_documentation
         fi
         ;;
     rotate-key)

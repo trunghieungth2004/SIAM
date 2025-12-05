@@ -1,0 +1,293 @@
+[IMAGE: material/AWS FCJ.png]
+
+# AWS First Cloud AI Journey – Project Plan
+
+**SIAM Project Team – FPT University HCMC – SIAM (Smart Industrial Asset's longevity Monitor)**
+
+November 12, 2025
+
+---
+
+## Table of Contents
+
+1. Background and Motivation
+2. Solution Architecture / Architectural Diagram
+3. Activities and Deliverables
+4. Expected AWS Cost Breakdown by Services
+5. Team
+6. Resources & Cost Estimates
+7. Acceptance
+
+---
+
+## 1. BACKGROUND AND MOTIVATION
+
+### 1.1 Executive Summary
+
+This proposal outlines the development of a high-performance, resilient predictive maintenance platform, SIAM (Smart Industrial Asset's longevity Monitor). The system is designed to monitor industrial equipment (represented by a demo fan machine) in real-time, detect anomalous behavior, and predict equipment health.
+
+This solution leverages a hybrid architecture, combining a powerful edge device (Raspberry Pi 5 with a Coral TPU) with a secure, serverless AWS backend. The edge device runs AWS IoT Greengrass to manage two distinct applications:
+
+1. A native C-based datalogger that reads directly from hardware sensors (MPU-6050, INA219, DS18B20) and writes data to Greengrass Stream Manager.
+2. A Docker-containerized Python ML inference application that reads from Stream Manager, performs real-time anomaly detection using the Coral TPU, and publishes predictions back to the cloud.
+
+The cloud backend uses Greengrass Stream Manager to buffer sensor data locally and publish to AWS IoT Core. Data is ingested via an IoT Rule triggering a Lambda function that stores records in DynamoDB and S3 Data Lake. The system features a REST API via API Gateway with x-api-key authentication, rate limiting, and automatic monthly key rotation. A fully automated MLOps pipeline using EventBridge and SageMaker retrains models bi-weekly and redeploys to the edge. A public web dashboard hosted on S3 provides real-time monitoring with Swagger/OpenAPI documentation for the REST API.
+
+### 1.2 Project Success Criteria
+
+Success for this project will be measured by the following criteria:
+
+- **Functional Cloud Backend**: All AWS infrastructure (S3, DynamoDB, Lambda, API Gateway, etc.) is successfully deployed via the `./AWS.sh` script.
+- **Operational Edge Device**: The Raspberry Pi is successfully provisioned with AWS IoT Greengrass using the setup script.
+- **Reliable Data Collection**: The native C datalogger component successfully reads from all sensors (MPU-6050, INA219, DS18B20) and logs data to the local Stream Manager.
+- **Offline Resilience**: The system can successfully buffer data on the Pi during a network outage and automatically sync to the cloud upon re-connection (zero data loss guarantee).
+- **Trained ML Model**: An initial anomaly detection model is successfully trained in Amazon SageMaker using a locally-collected 24-hour dataset.
+- **End-to-End Inference**: The full pipeline is demonstrated: the Dockerized inference component on the Pi successfully loads the trained model, reads from the local stream, performs real-time inference using the Coral TPU, and publishes predictions.
+- **Automated MLOps**: The EventBridge-driven retraining pipeline works: it automatically triggers bi-weekly to train a new model and deploy it back to the Greengrass device without manual intervention.
+- **Secure API**: API Gateway with x-api-key authentication, rate limiting (10 req/s, burst 20, 10k daily quota), and automated monthly key rotation.
+
+### 1.3 Assumptions
+
+- A stable 5V/5A USB-C PD power supply is available for the Raspberry Pi 5.
+- A stable internet connection is available for the Raspberry Pi for cloud communication.
+- A stable internet connection is available on the Arch Linux management machine.
+- An AWS account with Administrator-level permissions is available to run the setup scripts.
+- All required hardware (Pi 5, Coral TPU, sensors, breadboard, etc.) is sourced and available for development.
+- The `./AWS.sh` setup script is available for infrastructure deployment.
+
+---
+
+## 2. SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
+
+### 2.1 Technical Architecture Diagram
+
+[IMAGE: SIAM_Architecture.drawio]
+
+**AWS Services Used:**
+
+- **Edge**: AWS IoT Greengrass (Core, Stream Manager, Component Deployments)
+- **Ingestion**: AWS IoT Core (MQTT Broker, Rules)
+- **Compute**: AWS Lambda (Ingestion, Query, Retrain, Deploy, Rotate)
+- **Storage**: Amazon DynamoDB, Amazon S3 (Data Lake, Model Artifacts, Web Hosting)
+- **API & Security**: API Gateway (REST API, x-api-key auth, rate limiting), IAM
+- **Machine Learning**: Amazon SageMaker (Training Jobs)
+- **Automation**: Amazon EventBridge (Bi-weekly retraining, Monthly key rotation, Deployment triggers)
+- **Monitoring**: Amazon CloudWatch, Amazon SNS
+- **Reliability**: Amazon SQS (Dead-Letter Queue)
+
+### 2.2 Technical Plan
+
+The architecture is composed of the following component groups:
+
+**Edge Device:** A Raspberry Pi 5 running Raspberry Pi OS Lite. AWS Greengrass Core runs as the main agent. Two primary applications are deployed as components:
+
+1. **datalogger**: A native C application that reads from I2C/1-Wire sensors and publishes data to a local Stream Manager stream.
+2. **inference**: A Docker container running Python, which subscribes to the local Stream Manager stream, loads the ML model, performs inference on the Coral TPU.
+
+**Cloud Pipeline:** Greengrass Stream Manager → IoT Core → IoT Rule → Ingestion Lambda. The Lambda writes to DynamoDB and S3.
+
+**Web Application:** A vanilla JavaScript app on S3 Static Website. The app fetches data from API Gateway (with x-api-key authentication), which triggers the Query Lambda to read from DynamoDB. The endpoint is secured with rate limiting and automatic monthly key rotation. Interactive API documentation is provided via Swagger UI.
+
+**MLOps Pipeline:** An EventBridge rule runs bi-weekly (every 14 days), triggering the Retrain Lambda. This Lambda aggregates up to 500 samples from S3 and starts a SageMaker Training Job. Upon job completion, EventBridge triggers a Deploy Lambda which creates a new Greengrass Deployment to send the updated model to the Pi.
+
+**Security Automation:** An EventBridge rule runs monthly (every 30 days), triggering the Rotate Lambda. This Lambda creates a new API key, updates the usage plan, deletes the old key, and updates the frontend files in S3 with the new key.
+
+**Reliability:** The Ingestion Lambda is backed by an SQS Dead-Letter Queue (DLQ) to capture and hold any failed messages, ensuring no data is lost.
+
+### 2.3 Project Plan
+
+**Implementation Phases:**
+
+**Phase 0: Prototyping & Design (Weeks 1-2)**
+- Set up an ESP32 with sensors to learn the basics of AWS IoT Core, MQTT, and Lambda.
+- Design the full system architecture, culminating in the SIAM.drawio diagram.
+- Prototype individual components (local C datalogger, Python inference scripts, shell script structures).
+
+**Phase 1: Cloud Foundation (Week 3)**
+- Deploy the entire AWS backend infrastructure using automated scripts (S3, DynamoDB, SNS, SQS, Lambda, API Gateway, SageMaker, Greengrass, CloudWatch, EventBridge).
+- Test and validate cloud resources, ensuring API Gateway authentication and rate limiting work correctly.
+
+**Phase 2: Edge Device Setup (Week 4)**
+- Provision the Raspberry Pi with Greengrass Core software.
+- Develop and compile the standalone C datalogger application.
+- Run the C datalogger as a local systemd service for 24-72 hours to collect a high-quality "normal" dataset.
+
+**Phase 4: Initial Model Training (Week 6)**
+- Prepare the collected sensor data for training.
+- Train the first version of the anomaly detection model using SageMaker.
+
+**Phase 5: Full Integration (Weeks 7-8)**
+- Convert the C datalogger into a native Greengrass component.
+- Build the Docker-based Python inference component (with Coral TPU libraries).
+- Deploy Stream Manager, the datalogger component, and the inference component via Greengrass.
+- **Final Goal**: Demonstrate the full, end-to-end pipeline: sensor data is collected locally, read by the inference container, and real-time predictions are made on the edge device.
+
+**Timeline & Milestones (3 Months):**
+
+**Month 1: Foundation & Single-Device Prototype (Weeks 1-4)**
+- Milestone 1 (Wk 2): Complete Phase 0 (ESP32 prototyping and final architecture design).
+- Milestone 2 (Wk 3): Complete Phase 1 & 2 (Cloud and Edge setup scripts run successfully).
+- Milestone 3 (Wk 4): Complete Phase 3 (Local C datalogger is built and collecting data).
+
+**Month 2: Full Pipeline Integration (Weeks 5-8)**
+- Milestone 4 (Wk 6): Complete Phase 4 (Initial ML model is trained in SageMaker).
+- Milestone 5 (Wk 8): Complete Phase 5 (Full Greengrass integration is working). The Pi is performing local, real-time inference using the trained model.
+
+**Month 3: Automation, Dashboard & Validation (Weeks 9-12)**
+- Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge → Retrain Lambda → SageMaker with bi-weekly retraining).
+- Milestone 7 (Wk 10): Build the S3/API Gateway web application with Swagger documentation and x-api-key authentication.
+- Milestone 8 (Wk 11): Implement monthly API key rotation automation. Perform system-wide stress testing and model validation using a second "failure" device (a fan with an imbalance) to prove the anomaly detection loop.
+- Milestone 9 (Wk 12): Final documentation, code cleanup, and project handover.
+
+### 2.4 Security Considerations
+
+**Device Security:** The Raspberry Pi authenticates with AWS IoT Core using X.509 client certificates. No long-lived AWS credentials (access keys) are stored on the edge device.
+
+**API Security:** The API Gateway acts as a secure front-door, protecting the Query Lambda. Access is restricted using x-api-key authentication with:
+- Rate limiting: 10 requests/second, burst capacity 20
+- Daily quota: 10,000 requests
+- Automated monthly key rotation via EventBridge Lambda
+- CloudWatch monitoring for anomalous usage patterns
+
+**Data Security:** All data-in-transit is encrypted (HTTPS, MQTT over TLS). Lambda functions access resources via IAM roles with least-privilege permissions.
+
+**Credential Management:** All sensitive credentials are stored in AWS Secrets Manager and retrieved at runtime by Lambda functions.
+
+---
+
+## 3. ACTIVITIES AND DELIVERABLES
+
+### 3.1 Activities and Deliverables
+
+| Project Phase | Timeline | Activities | Deliverables/Milestones | Total man-day |
+|--------------|----------|------------|------------------------|---------------|
+| Assessment & Design | Week 1-2 | • Prototype basic cloud connectivity with ESP32<br>• Research sensor capabilities and finalize selection<br>• Design the full end-to-end system architecture | • A working ESP32 prototype<br>• The final SIAM_Architecture.drawio diagram | 10 man-days |
+| Infrastructure & Edge Setup | Week 3-4 | • Run ./AWS.sh setup to deploy the entire cloud backend<br>• Develop and compile the standalone C datalogger (main.c) | • Fully deployed AWS cloud infrastructure<br>• Provisioned Greengrass Core device<br>• A functional, standalone C datalogger application running on the Pi | 10 man-days |
+| Initial Data Collection & Model Training | Week 5-6 | • Run the C datalogger for 24-72 hours to collect a high-quality "normal" dataset<br>• Prepare the sensor_log.csv into a train.csv file and upload to S3<br>• Train the first ML model in SageMaker | • A high-quality "normal" dataset (train.csv)<br>• Initial trained ML model artifact (model.tar.gz) in S3 | 10 man-days |
+| Full System Integration | Week 7-8 | • Convert the C datalogger into a native Greengrass component<br>• Build the Docker container for the Python inference application (with Coral TPU libraries)<br>• Deploy Stream Manager, datalogger, and inference components via Greengrass | • A fully integrated Greengrass deployment performing local, real-time inference on the Pi | 10 man-days |
+| Automation & Dashboard | Week 9-10 | • Implement the full MLOps pipeline (EventBridge → Retrain Lambda → SageMaker → Deploy Lambda)<br>• Build the S3/API Gateway web application with x-api-key authentication<br>• Implement automated monthly API key rotation | • A demonstrated, working MLOps pipeline with bi-weekly retraining<br>• A functional web dashboard displaying live sensor data<br>• Automated API key rotation system | 10 man-days |
+| Validation & Handover | Week 11-12 | • Perform system-wide stress testing<br>• Validate the anomaly detection model using a "failure" device<br>• Finalize all project documentation and clean up the code repository | • Successful validation test results<br>• Complete project documentation<br>• Clean, production-ready codebase | 10 man-days |
+
+### 3.2 Out of Scope
+
+- Implementation of user authentication (e.g., Amazon Cognito) for the web dashboard beyond API key protection.
+- Physical deployment and scaling of the system to multiple devices.
+- Custom PCB design for production hardware.
+
+### 3.3 Path to Production
+
+This project is a **Production-Ready Prototype**. To move to a full production deployment, the following steps would be taken:
+
+**Hardware Finalization:** Move the sensor array from a breadboard to a dedicated PCB (Printed Circuit Board) to create a robust, manufacturable, and reliable hardware unit.
+
+**Scaling Architecture:** Implement the "Hub-and-Spoke" model. This would use low-cost ESP32s as "Spoke" dataloggers, transmitting data locally to a central Raspberry Pi "Hub". The Hub would aggregate data and run inference before sending a single, processed data stream to the cloud.
+
+**CI/CD Pipeline:** Integrate the shell scripts (AWS.sh) into an automated MLOps CI/CD pipeline. This pipeline would be responsible for automatically training, versioning, and deploying new models and infrastructure updates.
+
+**Security Hardening:** Implement Amazon Cognito for user authentication on the web dashboard and enforce fine-grained IAM policies across all services.
+
+**Hardware Tiers for Production:**
+
+- **High-End (As-Designed)**: Pi 5 + Coral TPU.
+  - Pros: Extremely fast, real-time inference on the edge. High-throughput data logging.
+  - Cons: Highest cost, library complexity for TPU (solved by our Docker approach).
+
+- **Mid-Range**: Pi 5 (no TPU).
+  - Pros: All-in-one solution with a powerful CPU for ML inference. No need for a separate TPU.
+  - Cons: Higher cost and power consumption. Inference would be slower than TPU-accelerated.
+
+- **Low-End**: Pi 4 / Pi Zero 2W.
+  - Pros: Very low cost.
+  - Cons: Slower C datalogging. On-device inference would be too slow to be practical. This architecture would likely need to be modified to send data to a cloud-hosted SageMaker endpoint for inference, losing offline capabilities.
+
+---
+
+## 4. EXPECTED AWS COST BREAKDOWN BY SERVICES
+
+**Infrastructure Costs (Monthly, Production Single-Device Deployment):**
+
+- **AWS Lambda**: ~$1.20
+  - 5 Lambda functions (Ingestion, Query, Retrain, Deploy, Rotate)
+  - Estimated 50,000 invocations/month
+  - ~500 GB-seconds compute time
+
+- **AWS IoT Greengrass**: $0.00 (Free for up to 10 devices)
+
+- **AWS IoT Core**: ~$2.50
+  - 1 device sending 1 msg/min = ~43,200 msgs/month
+  - Connectivity + messaging + rules engine
+
+- **Amazon DynamoDB**: ~$3.75
+  - On-demand pricing for 43,200 writes/month
+  - ~5,000 reads/month (dashboard queries)
+  - 5 GB storage
+
+- **Amazon S3**: ~$1.50
+  - Data Lake: 10 GB storage
+  - Model artifacts: 2 GB
+  - Static website hosting
+
+- **API Gateway**: ~$2.00
+  - REST API with 5,000 requests/month
+  - Rate limiting and usage plans
+
+- **Amazon SageMaker**: ~$4.80
+  - Bi-weekly training (2 jobs/month)
+  - ml.m5.xlarge instance: 30 minutes per job
+
+- **Amazon EventBridge**: ~$0.10
+  - 3 scheduled rules (retrain bi-weekly, rotate monthly, deploy on completion)
+
+- **Amazon CloudWatch**: ~$2.50
+  - Log ingestion: ~5 GB/month
+  - Metrics and dashboards
+
+- **Amazon SNS**: ~$0.15
+  - ~100 notifications/month (alerts, automation)
+
+**Total Monthly Cloud Cost**: ~$18.50 - $20.00
+
+**AWS Free Tier (First 12 Months):**
+
+For new AWS accounts, the first year costs are significantly reduced:
+
+- **AWS Lambda**: $0.00 (1 million requests/month free)
+- **AWS IoT Core**: ~$0.50 (500,000 messages/month free)
+- **Amazon DynamoDB**: $0.00 (25 GB storage + 25 WCU + 25 RCU always free)
+- **Amazon S3**: ~$0.10 (5 GB storage + 20,000 GET + 2,000 PUT requests)
+- **API Gateway**: $0.00 (1 million API calls/month free for 12 months)
+- **Amazon SageMaker**: ~$0.27 (250 hours ml.t3.medium/month for first 2 months)
+- **Amazon CloudWatch**: $0.00 (5 GB log ingestion + 10 custom metrics always free)
+- **EventBridge & SNS**: $0.00 (covered by free tier)
+
+**Total Monthly Cost (First 12 Months)**: ~$1.00 - $2.00
+
+---
+
+## 5. TEAM
+
+| Name | Title | Role | Email / Contact Info |
+|------|-------|------|---------------------|
+| Nguyễn Trung Hiếu | Intern | Developer | hieuntse184626@fpt.edu.vn |
+
+---
+
+## 6. RESOURCES & COST ESTIMATES
+
+**Cloud Costs:** As detailed in Section 4, the monthly cloud cost for this prototype is negligible (~$1.50/month) during the first 12 months due to the AWS Free Tier, then ~$18.50/month in production.
+
+**Hardware (One-Time Cost):**
+- Raspberry Pi 5 (8GB): ~$80
+- Official 27W Power Supply: ~$12
+- Google Coral TPU (USB): ~$60
+- Sensors (MPU-6050, INA219, DS18B20): ~$25
+- Breadboard, wires, resistors: ~$10
+
+**Estimated Total Hardware Cost**: ~$187 per device
+
+---
+
+## 7. ACCEPTANCE
+
+This project plan outlines a comprehensive approach to building a production-ready predictive maintenance platform. Success will be measured by the completion of all milestones within the 3-month timeline and the demonstration of a fully functional, automated MLOps pipeline with zero data loss guarantee and secure API access.
+

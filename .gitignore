@@ -4,6 +4,7 @@
 .vscode/launch.json
 .vscode/ipch
 .cache
+.csv
 
 AWS_KEY.h
 WiFi_KEY.h
