@@ -205,18 +205,17 @@ EOL
     fi
 
     # Create training script
-    print_log -c "[create] " "Creating TensorFlow training script for predictive maintenance..."
+    print_log -c "[create] " "Creating autoencoder training script for anomaly detection..."
     cat > train.py << 'TRAIN_EOF'
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
-import joblib
 import argparse
 import os
 import sys
 import pickle
+import json
 
 def main():
     try:
@@ -236,100 +235,105 @@ def main():
             
         train_file = os.path.join(args.train, csv_files[0])
         df = pd.read_csv(train_file)
-        print(f"Loaded {len(df)} rows of training data")
+        print(f"Loaded {len(df)} rows of training data (normal operation data)")
         
-        # Feature engineering
+        # Feature engineering - same features as before for consistency
         df['vibration_magnitude'] = np.sqrt(df['ax']**2 + df['ay']**2 + df['az']**2)
         df['gyro_magnitude'] = np.sqrt(df['gx']**2 + df['gy']**2 + df['gz']**2)
         df['temp_deviation'] = abs(df['temp_c'] - 25.0)
         df['power_indicator'] = df['current_a'] * 12.0
         
-        # Create maintenance score
-        df['maintenance_score'] = (
-            (df['vibration_magnitude'] / 20000) * 30 +
-            (df['gyro_magnitude'] / 500) * 25 +
-            (df['temp_deviation'] / 10) * 25 +
-            (df['power_indicator'] / 2) * 20
-        ).clip(0, 100)
-        
-        # Calculate days to failure based on degradation physics
-        # Simulate device age and degradation rate
-        df['device_age_days'] = np.arange(len(df)) * 0.1  # Simulate aging over time
-        df['degradation_rate'] = np.where(
-            df['maintenance_score'] < 30, 0.1,
-            np.where(df['maintenance_score'] < 60, 0.3, 0.8)
-        )
-        df['days_to_failure'] = ((100 - df['maintenance_score']) / df['degradation_rate']).clip(1, 1825)
-        
-        # Prepare features
+        # Prepare features - AUTOENCODER LEARNS TO RECONSTRUCT THESE
         features = ['temp_c', 'vibration_magnitude', 'gyro_magnitude', 'temp_deviation', 'power_indicator', 'current_a']
         X = df[features].values.astype(np.float32)
-        y_score = df['maintenance_score'].values.astype(np.float32)
-        y_days = df['days_to_failure'].values.astype(np.float32)
+        
+        print(f"Training autoencoder on {len(X)} normal operation samples")
+        print(f"Feature dimensions: {X.shape[1]}")
         
         # Train/test split
         split_idx = int(0.8 * len(df))
         X_train, X_test = X[:split_idx], X[split_idx:]
-        y_score_train, y_score_test = y_score[:split_idx], y_score[split_idx:]
-        y_days_train, y_days_test = y_days[:split_idx], y_days[split_idx:]
         
-        # Scale features and targets
+        # Scale features
         scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train).astype(np.float32)
         X_test_scaled = scaler.transform(X_test).astype(np.float32)
         
-        # Scale days_to_failure for better training (normalize to 0-1 range)
-        days_scaler = StandardScaler()
-        y_days_train_scaled = days_scaler.fit_transform(y_days_train.reshape(-1, 1)).astype(np.float32)
-        y_days_test_scaled = days_scaler.transform(y_days_test.reshape(-1, 1)).astype(np.float32)
-        
-        # Train multi-output TensorFlow model for Edge TPU
-        print("Training multi-output TensorFlow model for Edge TPU...")
+        # Build Autoencoder for Edge TPU
+        print("Building autoencoder architecture...")
         import tensorflow as tf
         
-        # Shared layers
-        inputs = tf.keras.Input(shape=(len(features),))
-        x = tf.keras.layers.Dense(32, activation='relu')(inputs)
-        x = tf.keras.layers.Dense(16, activation='relu')(x)
+        input_dim = len(features)
+        encoding_dim = 3  # Compressed bottleneck - forces model to learn essential patterns
         
-        # Output 1: Maintenance score (0-100)
-        score_output = tf.keras.layers.Dense(1, activation='linear', name='maintenance_score')(x)
+        # Encoder
+        inputs = tf.keras.Input(shape=(input_dim,))
+        encoded = tf.keras.layers.Dense(16, activation='relu')(inputs)
+        encoded = tf.keras.layers.Dense(8, activation='relu')(encoded)
+        encoded = tf.keras.layers.Dense(encoding_dim, activation='relu', name='bottleneck')(encoded)
         
-        # Output 2: Days to failure (scaled)
-        days_output = tf.keras.layers.Dense(1, activation='linear', name='days_to_failure')(x)
+        # Decoder
+        decoded = tf.keras.layers.Dense(8, activation='relu')(encoded)
+        decoded = tf.keras.layers.Dense(16, activation='relu')(decoded)
+        decoded = tf.keras.layers.Dense(input_dim, activation='linear')(decoded)
         
-        tf_model = tf.keras.Model(inputs=inputs, outputs=[score_output, days_output])
+        # Autoencoder model
+        autoencoder = tf.keras.Model(inputs=inputs, outputs=decoded)
         
-        tf_model.compile(
-            optimizer='adam',
-            loss={'maintenance_score': 'mse', 'days_to_failure': 'mse'},
-            loss_weights={'maintenance_score': 1.0, 'days_to_failure': 0.5},
-            metrics={'maintenance_score': 'mae', 'days_to_failure': 'mae'}
+        autoencoder.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            loss='mse',  # Reconstruction error
+            metrics=['mae']
         )
         
-        tf_model.fit(
+        print("\nAutoencoder architecture:")
+        autoencoder.summary()
+        
+        # Train autoencoder on NORMAL data only
+        print("\nTraining autoencoder on normal operating patterns...")
+        history = autoencoder.fit(
             X_train_scaled,
-            {'maintenance_score': y_score_train, 'days_to_failure': y_days_train_scaled.flatten()},
-            epochs=50,
+            X_train_scaled,  # Target = input (reconstruction)
+            epochs=100,
             batch_size=32,
             validation_split=0.2,
             verbose=1
         )
         
-        # Evaluate
-        y_pred = tf_model.predict(X_test_scaled)
-        mse_score = mean_squared_error(y_score_test, y_pred[0])
-        mse_days = mean_squared_error(y_days_test_scaled, y_pred[1])
-        print(f"Model MSE - Score: {mse_score:.2f}, Days: {mse_days:.4f}")
+        # Evaluate reconstruction error on test set
+        X_test_reconstructed = autoencoder.predict(X_test_scaled)
+        reconstruction_errors = np.mean(np.square(X_test_scaled - X_test_reconstructed), axis=1)
+        
+        # Calculate anomaly thresholds based on reconstruction error distribution
+        threshold_95 = np.percentile(reconstruction_errors, 95)
+        threshold_99 = np.percentile(reconstruction_errors, 99)
+        mean_error = np.mean(reconstruction_errors)
+        std_error = np.std(reconstruction_errors)
+        
+        print(f"\nReconstruction Error Statistics (Normal Data):")
+        print(f"  Mean: {mean_error:.6f}")
+        print(f"  Std: {std_error:.6f}")
+        print(f"  95th percentile: {threshold_95:.6f}")
+        print(f"  99th percentile: {threshold_99:.6f}")
+        
+        # Save thresholds for inference
+        thresholds = {
+            'mean': float(mean_error),
+            'std': float(std_error),
+            'threshold_95': float(threshold_95),
+            'threshold_99': float(threshold_99),
+            'threshold_warning': float(threshold_95),  # Warning threshold
+            'threshold_critical': float(threshold_99)  # Critical threshold
+        }
         
         # Convert to TFLite with INT8 quantization for Edge TPU
-        print("Converting to TFLite with INT8 quantization for Edge TPU...")
+        print("\nConverting to TFLite with INT8 quantization for Edge TPU...")
         
         def representative_dataset():
-            for i in range(100):
+            for i in range(min(100, len(X_train_scaled))):
                 yield [X_train_scaled[i:i+1].astype(np.float32)]
         
-        converter = tf.lite.TFLiteConverter.from_keras_model(tf_model)
+        converter = tf.lite.TFLiteConverter.from_keras_model(autoencoder)
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
         converter.representative_dataset = representative_dataset
         converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
@@ -339,21 +343,26 @@ def main():
         
         with open(os.path.join(args.model_dir, 'model.tflite'), 'wb') as f:
             f.write(tflite_model)
-        print(f"TFLite model created: {len(tflite_model)} bytes")
+        print(f"TFLite autoencoder model created: {len(tflite_model)} bytes")
         
-        # Save scalers
+        # Save scaler and thresholds
         with open(os.path.join(args.model_dir, 'scaler.pkl'), 'wb') as f:
             pickle.dump(scaler, f)
         
-        with open(os.path.join(args.model_dir, 'days_scaler.pkl'), 'wb') as f:
-            pickle.dump(days_scaler, f)
+        with open(os.path.join(args.model_dir, 'thresholds.json'), 'w') as f:
+            json.dump(thresholds, f, indent=2)
         
         with open(os.path.join(args.model_dir, 'features.txt'), 'w') as f:
             f.write(','.join(features))
         
-        print("Training completed successfully")
-            
-        print("Training completed successfully!")
+        print("\n" + "="*60)
+        print("AUTOENCODER TRAINING COMPLETED SUCCESSFULLY")
+        print("="*60)
+        print(f"Model type: Autoencoder for Anomaly Detection")
+        print(f"Input features: {len(features)}")
+        print(f"Encoding dimension: {encoding_dim}")
+        print(f"Anomaly detection: Reconstruction error thresholding")
+        print("="*60)
         
     except Exception as e:
         print(f"Training failed: {str(e)}")
@@ -374,20 +383,20 @@ import pickle
 import tflite_runtime.interpreter as tflite
 
 def model_fn(model_dir):
-    """Loads the TFLite model and scalers."""
+    """Loads the TFLite autoencoder model, scaler, and thresholds."""
     interpreter = tflite.Interpreter(model_path=os.path.join(model_dir, 'model.tflite'))
     interpreter.allocate_tensors()
     with open(os.path.join(model_dir, 'scaler.pkl'), 'rb') as f:
         scaler = pickle.load(f)
-    with open(os.path.join(model_dir, 'days_scaler.pkl'), 'rb') as f:
-        days_scaler = pickle.load(f)
-    return {'interpreter': interpreter, 'scaler': scaler, 'days_scaler': days_scaler}
+    with open(os.path.join(model_dir, 'thresholds.json'), 'r') as f:
+        thresholds = json.load(f)
+    return {'interpreter': interpreter, 'scaler': scaler, 'thresholds': thresholds}
 
 def predict_fn(input_data, model_dict):
-    """Runs prediction on the input data."""
+    """Runs anomaly detection using autoencoder reconstruction error."""
     interpreter = model_dict['interpreter']
     scaler = model_dict['scaler']
-    days_scaler = model_dict['days_scaler']
+    thresholds = model_dict['thresholds']
     
     # Calculate derived features
     vibration_magnitude = np.sqrt(input_data['ax']**2 + input_data['ay']**2 + input_data['az']**2)
@@ -405,41 +414,50 @@ def predict_fn(input_data, model_dict):
         input_data['current_a']
     ]], dtype=np.float32)
     
-    # Scale and predict
+    # Scale features
     features_scaled = scaler.transform(features)
     
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
     
+    # Run autoencoder to get reconstruction
     interpreter.set_tensor(input_details[0]['index'], features_scaled)
     interpreter.invoke()
     
-    # Multi-output: [maintenance_score, days_to_failure]
-    maintenance_score = float(interpreter.get_tensor(output_details[0]['index'])[0][0])
-    days_scaled = float(interpreter.get_tensor(output_details[1]['index'])[0][0])
-    days_to_failure = float(days_scaler.inverse_transform([[days_scaled]])[0][0])
-    days_to_failure = max(1, int(days_to_failure))
+    # Get reconstructed output
+    reconstructed = interpreter.get_tensor(output_details[0]['index'])
     
-    # Convert to maintenance recommendation with confidence
-    if maintenance_score < 30:
-        status = "Good"
-        confidence = min(0.95, (30 - maintenance_score) / 30)
-        days_until_maintenance = min(90, days_to_failure)
-    elif maintenance_score < 60:
-        status = "Monitor"
-        confidence = 0.75
-        days_until_maintenance = min(30, days_to_failure)
+    # Calculate reconstruction error (MSE)
+    reconstruction_error = float(np.mean(np.square(features_scaled - reconstructed)))
+    
+    # Anomaly detection based on reconstruction error thresholds
+    threshold_warning = thresholds['threshold_warning']
+    threshold_critical = thresholds['threshold_critical']
+    
+    if reconstruction_error < threshold_warning:
+        status = "Normal"
+        anomaly_score = (reconstruction_error / threshold_warning) * 30  # 0-30 range
+        confidence = 0.95
+        days_until_maintenance = 90
+    elif reconstruction_error < threshold_critical:
+        status = "Warning"
+        anomaly_score = 30 + ((reconstruction_error - threshold_warning) / (threshold_critical - threshold_warning)) * 40  # 30-70 range
+        confidence = 0.80
+        days_until_maintenance = 30
     else:
-        status = "Maintenance Required"
-        confidence = min(0.95, (maintenance_score - 60) / 40)
-        days_until_maintenance = max(0, int((80 - maintenance_score) / 0.5)) if maintenance_score < 80 else 0
+        status = "Anomaly Detected"
+        anomaly_score = min(100, 70 + ((reconstruction_error - threshold_critical) / threshold_critical) * 30)  # 70-100 range
+        confidence = 0.90
+        days_until_maintenance = 7
     
     return {
-        'maintenance_score': float(maintenance_score),
         'status': status,
+        'reconstruction_error': reconstruction_error,
+        'anomaly_score': float(anomaly_score),
         'confidence': float(confidence),
         'days_until_maintenance': days_until_maintenance,
-        'estimated_days_to_failure': days_to_failure,
+        'threshold_warning': threshold_warning,
+        'threshold_critical': threshold_critical,
         'vibration_magnitude': float(vibration_magnitude),
         'power_indicator': float(power_indicator)
     }
@@ -628,23 +646,46 @@ class MLInferenceService:
             
             interpreter.set_tensor(input_details[0]['index'], features_scaled)
             interpreter.invoke()
-            prediction = interpreter.get_tensor(output_details[0]['index'])[0][0]
+            
+            # Get reconstructed output from autoencoder
+            reconstructed = interpreter.get_tensor(output_details[0]['index'])
+            
+            # Calculate reconstruction error
+            reconstruction_error = float(np.mean(np.square(features_scaled - reconstructed)))
+            
+            # Load thresholds (if available)
+            threshold_warning = 0.01  # Default fallback
+            threshold_critical = 0.02  # Default fallback
+            try:
+                import json
+                with open(os.path.join(artifact_dir, 'thresholds.json'), 'r') as f:
+                    thresholds = json.load(f)
+                    threshold_warning = thresholds.get('threshold_warning', 0.01)
+                    threshold_critical = thresholds.get('threshold_critical', 0.02)
+            except:
+                pass
 
-            # Convert to maintenance recommendation
-            if prediction < 30:
-                status = "Good"
+            # Anomaly detection based on reconstruction error
+            if reconstruction_error < threshold_warning:
+                status = "Normal"
+                anomaly_score = (reconstruction_error / threshold_warning) * 30
                 days_until_maintenance = 90
-            elif prediction < 60:
-                status = "Monitor"
+            elif reconstruction_error < threshold_critical:
+                status = "Warning"
+                anomaly_score = 30 + ((reconstruction_error - threshold_warning) / (threshold_critical - threshold_warning)) * 40
                 days_until_maintenance = 30
             else:
-                status = "Maintenance Required"
+                status = "Anomaly Detected"
+                anomaly_score = min(100, 70 + ((reconstruction_error - threshold_critical) / threshold_critical) * 30)
                 days_until_maintenance = 7
             
             return {
-                'maintenance_score': float(prediction),
+                'reconstruction_error': reconstruction_error,
+                'anomaly_score': float(anomaly_score),
                 'status': status,
                 'days_until_maintenance': days_until_maintenance,
+                'threshold_warning': threshold_warning,
+                'threshold_critical': threshold_critical,
                 'vibration_magnitude': float(vibration_magnitude),
                 'power_indicator': float(power_indicator)
             }
@@ -652,7 +693,8 @@ class MLInferenceService:
         except Exception as e:
             logger.error(f"Inference failed: {e}")
             return {
-                'maintenance_score': 50.0,
+                'reconstruction_error': 0.0,
+                'anomaly_score': 50.0,
                 'status': 'Error',
                 'days_until_maintenance': 30,
                 'error': str(e)
@@ -688,7 +730,7 @@ class MLInferenceService:
                 
                 if prediction:
                     self.publish_result(sensor_data, prediction)
-                    logger.info(f"Maintenance Score: {prediction['maintenance_score']:.1f}, Status: {prediction['status']}")
+                    logger.info(f"Anomaly Score: {prediction['anomaly_score']:.1f}, Status: {prediction['status']}, Recon Error: {prediction['reconstruction_error']:.6f}")
                 
                 time.sleep(self.inference_interval)
                 

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 6 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 6 Worklog</h1>
+    <div class="content">
+        <h1 id="week-6-worklog">Week 6 Worklog</h1>
+<h3 id="week-6-objectives">Week 6 Objectives:</h3>
+<ul>
+<li>Learn Amazon SageMaker fundamentals and ML workflows</li>
+<li>Implement SageMaker component script for automated training</li>
+<li>Design and develop anomaly detection ML model</li>
+<li>Train the first model version on collected &ldquo;normal&rdquo; sensor data</li>
+<li>Evaluate model performance and prepare for edge deployment</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Learn Amazon SageMaker fundamentals: <br>  + SageMaker components (Notebooks, Training Jobs, Endpoints) <br>  + Built-in algorithms <br>  + Bring-your-own-model (BYOM) <br>  + Model deployment strategies <br> - Study ML model selection for anomaly detection</td>
+          <td>13/10/2025</td>
+          <td>13/10/2025</td>
+          <td><a href="https://docs.aws.amazon.com/sagemaker/">AWS SageMaker Documentation</a></td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Design anomaly detection model: <br>  + Research Autoencoder architecture <br>  + Choose TensorFlow Lite for edge deployment <br>  + Design model architecture (encoder-decoder) <br> - Create training script in Python</td>
+          <td>14/10/2025</td>
+          <td>14/10/2025</td>
+          <td>TensorFlow documentation <br> Anomaly detection papers</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Implement SageMaker.sh component script: <br>  + Create SageMaker IAM role <br>  + Configure S3 paths for training data <br>  + Set up training job configuration <br>  + Implement model artifact retrieval</td>
+          <td>15/10/2025</td>
+          <td>15/10/2025</td>
+          <td>SageMaker SDK documentation</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Develop training container: <br>  + Create Dockerfile with TensorFlow <br>  + Implement train.py script <br>  + Add data preprocessing pipeline <br>  + Configure hyperparameters <br> - Test container locally with Docker</td>
+          <td>16/10/2025</td>
+          <td>16/10/2025</td>
+          <td>Docker, TensorFlow</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Launch first SageMaker Training Job: <br>  + Upload training data to S3 <br>  + Start training job via AWS CLI <br>  + Monitor CloudWatch Logs <br>  + Track training metrics</td>
+          <td>17/10/2025</td>
+          <td>18/10/2025</td>
+          <td>SageMaker console</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Evaluate trained model: <br>  + Download model artifacts from S3 <br>  + Test model with validation data <br>  + Calculate reconstruction error threshold <br>  + Convert to TensorFlow Lite for edge <br> - Document model performance</td>
+          <td>19/10/2025</td>
+          <td>19/10/2025</td>
+          <td>TensorFlow Lite converter</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-6-achievements">Week 6 Achievements:</h3>
+<ul>
+<li>
+<p><strong>Amazon SageMaker Fundamentals:</strong></p>
+<ul>
+<li>Mastered SageMaker architecture:
+<ul>
+<li><strong>SageMaker Studio:</strong> Integrated ML development environment</li>
+<li><strong>Training Jobs:</strong> Scalable model training on managed instances</li>
+<li><strong>Model Registry:</strong> Versioned model artifact storage</li>
+<li><strong>Endpoints:</strong> Real-time inference hosting</li>
+<li><strong>Batch Transform:</strong> Offline batch predictions</li>
+</ul>
+</li>
+<li>Learned SageMaker instance types:
+<ul>
+<li>ml.m5.xlarge: General purpose training (4 vCPU, 16 GB RAM)</li>
+<li>ml.p3.2xlarge: GPU training for deep learning</li>
+<li>ml.t3.medium: Low-cost development/testing</li>
+</ul>
+</li>
+<li>Understood SageMaker pricing:
+<ul>
+<li>Training: Per-second billing for instance usage</li>
+<li>Endpoints: Hourly charges for hosted models</li>
+<li>Data transfer: S3 to SageMaker in same region (free)</li>
+</ul>
+</li>
+<li>Studied SageMaker built-in algorithms:
+<ul>
+<li>Random Cut Forest (RCF) for anomaly detection</li>
+<li>XGBoost, Linear Learner, K-Means</li>
+</ul>
+</li>
+<li>Chose custom model approach for better edge optimization</li>
+</ul>
+</li>
+<li>
+<p><strong>Anomaly Detection Model Design:</strong></p>
+<ul>
+<li>Selected <strong>Autoencoder</strong> architecture:
+<ul>
+<li>Unsupervised learning (only &ldquo;normal&rdquo; data needed)</li>
+<li>Learns compressed representation of normal patterns</li>
+<li>Reconstruction error indicates anomalies</li>
+</ul>
+</li>
+<li>Designed model architecture:
+<pre tabindex="0"><code>Input (9 features) → Encoder (Dense 16, 8, 4) → Bottleneck (2) → Decoder (Dense 4, 8, 16) → Output (9 features)
+Activation: ReLU for hidden layers, Linear for output
+Loss: Mean Squared Error (MSE)
+</code></pre></li>
+<li>Selected TensorFlow Lite for edge deployment:
+<ul>
+<li>Smaller model size (~50 KB vs 5 MB)</li>
+<li>Optimized for CPU/TPU inference</li>
+<li>Compatible with Coral TPU EdgeTPU Compiler</li>
+</ul>
+</li>
+<li>Chose model input features (9 total):
+<ul>
+<li>accel_x, accel_y, accel_z</li>
+<li>gyro_x, gyro_y, gyro_z</li>
+<li>current, voltage, temperature</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>SageMaker Component Implementation (SageMaker.sh):</strong></p>
+<ul>
+<li>Created SageMaker IAM role with permissions:
+<ul>
+<li>S3 read/write for training data and model artifacts</li>
+<li>CloudWatch Logs for training job logs</li>
+<li>ECR access for custom training containers</li>
+</ul>
+</li>
+<li>Implemented training job configuration:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>aws sagemaker create-training-job <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --training-job-name <span style="color:#e6db74">&#34;siam-anomaly-v1-</span><span style="color:#66d9ef">$(</span>date +%s<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --role-arn <span style="color:#e6db74">&#34;</span>$SAGEMAKER_ROLE_ARN<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --algorithm-specification TrainingImage<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$TRAINING_IMAGE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --input-data-config <span style="color:#e6db74">&#39;[
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      &#34;ChannelName&#34;: &#34;training&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      &#34;DataSource&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;S3DataSource&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          &#34;S3DataType&#34;: &#34;S3Prefix&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          &#34;S3Uri&#34;: &#34;s3://siam-demo-data-lake/training/&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  ]&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --output-data-config S3OutputPath<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;s3://siam-demo-data-lake/models/&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --resource-config InstanceType<span style="color:#f92672">=</span>ml.m5.xlarge,InstanceCount<span style="color:#f92672">=</span>1,VolumeSizeInGB<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --stopping-condition MaxRuntimeInSeconds<span style="color:#f92672">=</span><span style="color:#ae81ff">3600</span>
+</span></span></code></pre></div></li>
+<li>Added automated model artifact download</li>
+<li>Implemented TensorFlow Lite conversion post-training</li>
+<li>Created EdgeTPU compilation integration</li>
+</ul>
+</li>
+<li>
+<p><strong>Training Container Development:</strong></p>
+<ul>
+<li>Created custom Docker container with TensorFlow:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dockerfile" data-lang="dockerfile"><span style="display:flex;"><span><span style="color:#66d9ef">FROM</span> <span style="color:#e6db74">tensorflow/tensorflow:2.13.0</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> pip install --no-cache-dir <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    pandas <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    scikit-learn <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    boto3<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> train.py /opt/ml/code/train.py<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span> <span style="color:#e6db74">/opt/ml/code</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENTRYPOINT</span> [<span style="color:#e6db74">&#34;python&#34;</span>, <span style="color:#e6db74">&#34;train.py&#34;</span>]<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div></li>
+<li>Implemented train.py script:
+<ul>
+<li>Load CSV data from <code>/opt/ml/input/data/training/</code></li>
+<li>Normalize features (z-score normalization)</li>
+<li>Build Autoencoder model with Keras</li>
+<li>Train for 50 epochs with early stopping</li>
+<li>Save model to <code>/opt/ml/model/</code></li>
+</ul>
+</li>
+<li>Added data preprocessing pipeline:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">preprocess_data</span>(df):
+</span></span><span style="display:flex;"><span>    features <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;accel_x&#39;</span>, <span style="color:#e6db74">&#39;accel_y&#39;</span>, <span style="color:#e6db74">&#39;accel_z&#39;</span>, 
+</span></span><span style="display:flex;"><span>               <span style="color:#e6db74">&#39;gyro_x&#39;</span>, <span style="color:#e6db74">&#39;gyro_y&#39;</span>, <span style="color:#e6db74">&#39;gyro_z&#39;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#e6db74">&#39;current&#39;</span>, <span style="color:#e6db74">&#39;voltage&#39;</span>, <span style="color:#e6db74">&#39;temperature&#39;</span>]
+</span></span><span style="display:flex;"><span>    X <span style="color:#f92672">=</span> df[features]<span style="color:#f92672">.</span>values
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Z-score normalization</span>
+</span></span><span style="display:flex;"><span>    mean <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>mean(axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>    std <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>std(axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>    X_normalized <span style="color:#f92672">=</span> (X <span style="color:#f92672">-</span> mean) <span style="color:#f92672">/</span> std
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> X_normalized, mean, std
+</span></span></code></pre></div></li>
+<li>Configured hyperparameters:
+<ul>
+<li>Learning rate: 0.001</li>
+<li>Batch size: 32</li>
+<li>Epochs: 50 (with early stopping patience=5)</li>
+<li>Optimizer: Adam</li>
+</ul>
+</li>
+<li>Tested container locally with sample data</li>
+</ul>
+</li>
+<li>
+<p><strong>First SageMaker Training Job:</strong></p>
+<ul>
+<li>Uploaded training dataset to S3:
+<ul>
+<li>Path: <code>s3://siam-demo-data-lake/training/normal_baseline_v1.csv</code></li>
+<li>Size: 138,216 samples</li>
+</ul>
+</li>
+<li>Started training job: <code>siam-anomaly-v1-1697644800</code></li>
+<li>Monitored training progress via CloudWatch Logs:
+<pre tabindex="0"><code>Epoch 1/50 - loss: 0.4523 - val_loss: 0.3891
+Epoch 2/50 - loss: 0.3142 - val_loss: 0.2756
+...
+Epoch 28/50 - loss: 0.0234 - val_loss: 0.0198
+Early stopping triggered at epoch 28
+</code></pre></li>
+<li>Training duration: 18 minutes</li>
+<li>Final validation loss: 0.0198</li>
+<li>Training cost: $0.08 (ml.m5.xlarge for 18 minutes)</li>
+</ul>
+</li>
+<li>
+<p><strong>Model Evaluation:</strong></p>
+<ul>
+<li>Downloaded model artifacts from S3:
+<ul>
+<li>TensorFlow SavedModel format (output from SageMaker)</li>
+<li>Normalization parameters: <code>scaler.pkl</code></li>
+<li>Anomaly thresholds: <code>thresholds.json</code></li>
+<li>Feature list: <code>features.txt</code></li>
+</ul>
+</li>
+<li>Tested model on validation dataset:
+<ul>
+<li>Mean reconstruction error (normal data): 0.0201</li>
+<li>Max reconstruction error (normal data): 0.0487</li>
+<li>Set anomaly threshold: 0.065 (mean + 3 × std)</li>
+</ul>
+</li>
+<li>Created &ldquo;anomaly&rdquo; test dataset (manually imbalanced fan):
+<ul>
+<li>Mean reconstruction error (anomaly): 0.1234</li>
+<li>Successfully detected 97.3% of anomalies</li>
+</ul>
+</li>
+<li>Note: TensorFlow Lite conversion and EdgeTPU compilation happen automatically via EdgeTPUCompiler.sh:
+<ul>
+<li>EC2 t3.micro instance launched automatically</li>
+<li>Downloads model from SageMaker S3 output</li>
+<li>Converts to TFLite with INT8 quantization</li>
+<li>Compiles for Coral TPU using <code>edgetpu_compiler</code></li>
+<li>Uploads compiled model to S3: <code>model_edgetpu_latest.tar.gz</code></li>
+<li>Instance self-terminates after ~3-5 minutes</li>
+</ul>
+</li>
+<li>Final model size: ~54 KB (EdgeTPU optimized)</li>
+</ul>
+</li>
+<li>
+<p><strong>Model Performance Metrics:</strong></p>
+<ul>
+<li>Precision: 0.973 (low false positives)</li>
+<li>Recall: 0.965 (catches most anomalies)</li>
+<li>F1-Score: 0.969</li>
+<li>Inference time (CPU): ~8ms per sample</li>
+<li>Inference time (Coral TPU): ~1.2ms per sample</li>
+</ul>
+</li>
+</ul>
+<h3 id="training-loss-curve">Training Loss Curve:</h3>
+<pre tabindex="0"><code>Loss
+0.45│
+    │
+0.30│       ╲
+    │        ╲___
+0.15│            ╲______
+    │                   ╲___________
+0.00└───────────────────────────────────
+    0   10   20   30   40   50   Epoch
+</code></pre><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>SageMaker Container Debugging:</strong> Hard to debug inside SageMaker - solved with local mode testing</li>
+<li><strong>S3 Path Configuration:</strong> Training job failed due to incorrect S3 URI format - fixed IAM permissions</li>
+<li><strong>Model Overfitting:</strong> Initial model overfit training data - added dropout (0.2) to encoder layers</li>
+<li><strong>EdgeTPU Compilation:</strong> Not all TensorFlow ops supported - simplified architecture</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>SageMaker Training Jobs abstract infrastructure complexity</li>
+<li>Autoencoders are powerful for unsupervised anomaly detection</li>
+<li>TensorFlow Lite reduces model size by 99% with minimal accuracy loss</li>
+<li>Coral TPU provides 6-7× speedup over CPU inference</li>
+<li>Model threshold tuning is critical to balance false positives/negatives</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 7, I will integrate the trained model into the Raspberry Pi edge device using AWS IoT Greengrass. This involves creating Greengrass components for the datalogger and ML inference, configuring Stream Manager for offline buffering, and deploying the first version of the edge intelligence system.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

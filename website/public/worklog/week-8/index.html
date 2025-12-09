@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 8 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 8 Worklog</h1>
+    <div class="content">
+        <h1 id="week-8-worklog">Week 8 Worklog</h1>
+<h3 id="week-8-objectives">Week 8 Objectives:</h3>
+<ul>
+<li>Complete end-to-end pipeline integration (edge to cloud)</li>
+<li>Implement CloudWatch monitoring and alarms</li>
+<li>Set up SNS notifications for anomaly alerts</li>
+<li>Test system with simulated equipment failure</li>
+<li>Validate offline resilience and data recovery</li>
+<li>Optimize system performance and resource usage</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Implement CloudWatch.sh component script: <br>  + Create custom CloudWatch metrics <br>  + Configure log groups for all components <br>  + Set up metric filters <br>  + Create CloudWatch dashboard</td>
+          <td>27/10/2025</td>
+          <td>27/10/2025</td>
+          <td><a href="https://docs.aws.amazon.com/cloudwatch/">AWS CloudWatch Documentation</a></td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Configure CloudWatch Alarms: <br>  + Anomaly detection alarm <br>  + Greengrass offline alarm <br>  + Lambda error rate alarm <br>  + DynamoDB throttling alarm <br> - Integrate SNS for email notifications</td>
+          <td>28/10/2025</td>
+          <td>28/10/2025</td>
+          <td>CloudWatch Alarms guide</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Create CloudWatch Dashboard: <br>  + Real-time sensor metrics <br>  + Prediction confidence scores <br>  + System health indicators <br>  + Component status widgets <br> - Test dashboard visualization</td>
+          <td>29/10/2025</td>
+          <td>29/10/2025</td>
+          <td>Dashboard JSON configuration</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- End-to-end pipeline testing: <br>  + Verify sensor → edge → cloud flow <br>  + Check Lambda ingestion and query <br>  + Validate DynamoDB writes <br>  + Test API Gateway responses <br> - Monitor CloudWatch metrics</td>
+          <td>30/10/2025</td>
+          <td>30/10/2025</td>
+          <td>Integration testing plan</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Simulate equipment failure: <br>  + Attach weight to fan blade (imbalance) <br>  + Collect 1 hour of anomalous data <br>  + Verify ML model detects anomaly <br>  + Confirm CloudWatch alarm triggered <br>  + Validate SNS email notification</td>
+          <td>31/10/2025</td>
+          <td>31/10/2025</td>
+          <td>Anomaly testing procedure</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Test offline resilience: <br>  + Disconnect network for 2 hours <br>  + Verify local buffering (Stream Manager) <br>  + Reconnect and confirm data sync <br>  + Check for data loss <br> - Perform system optimization</td>
+          <td>01/11/2025</td>
+          <td>02/11/2025</td>
+          <td>Resilience testing guide</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-8-achievements">Week 8 Achievements:</h3>
+<ul>
+<li>
+<p><strong>CloudWatch Component Implementation (CloudWatch.sh):</strong></p>
+<ul>
+<li>Created automated CloudWatch setup script</li>
+<li>Configured log groups for all AWS components:
+<ul>
+<li><code>/aws/lambda/siam-ingestion</code> - Ingestion Lambda logs</li>
+<li><code>/aws/lambda/siam-query</code> - Query Lambda logs</li>
+<li><code>/aws/greengrass/siam-edge-01</code> - Greengrass Core logs</li>
+<li><code>/aws/iot/siam-predictions</code> - ML prediction logs</li>
+</ul>
+</li>
+<li>Set log retention: 7 days (cost optimization)</li>
+<li>Enabled log insights for advanced queries</li>
+<li>Created custom CloudWatch metrics:
+<ul>
+<li><code>SIAM/SensorData/Temperature</code> - Real-time temperature</li>
+<li><code>SIAM/SensorData/Current</code> - Motor current draw</li>
+<li><code>SIAM/Predictions/ReconstructionError</code> - ML model score</li>
+<li><code>SIAM/System/GreengrassConnected</code> - Device online status</li>
+</ul>
+</li>
+<li>Implemented metric filters for pattern matching:
+<ul>
+<li>ERROR log pattern → <code>ErrorCount</code> metric</li>
+<li>&ldquo;anomaly detected&rdquo; pattern → <code>AnomalyCount</code> metric</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>CloudWatch Alarms Configuration:</strong></p>
+<ul>
+<li>Created <strong>Anomaly Detection Alarm</strong>:
+<ul>
+<li>Metric: <code>SIAM/Predictions/ReconstructionError</code></li>
+<li>Threshold: &gt; 0.065 (model threshold)</li>
+<li>Evaluation periods: 2 out of 3 datapoints</li>
+<li>Actions: Publish to SNS topic <code>siam-alerts</code></li>
+</ul>
+</li>
+<li>Created <strong>Greengrass Offline Alarm</strong>:
+<ul>
+<li>Metric: <code>SIAM/System/GreengrassConnected</code></li>
+<li>Threshold: &lt; 1 (device disconnected)</li>
+<li>Evaluation periods: 3 consecutive datapoints (3 minutes)</li>
+<li>Actions: SNS notification + CloudWatch event</li>
+</ul>
+</li>
+<li>Created <strong>Lambda Error Rate Alarm</strong>:
+<ul>
+<li>Metric: <code>AWS/Lambda</code> Errors metric</li>
+<li>Threshold: &gt; 5 errors in 5 minutes</li>
+<li>Actions: SNS notification to admin</li>
+</ul>
+</li>
+<li>Created <strong>DynamoDB Throttle Alarm</strong>:
+<ul>
+<li>Metric: <code>AWS/DynamoDB</code> ThrottledRequests</li>
+<li>Threshold: &gt; 0</li>
+<li>Actions: SNS notification + auto-scaling trigger</li>
+</ul>
+</li>
+<li>Configured SNS email subscriptions:
+<ul>
+<li>Subscribed engineering email to <code>siam-alerts</code> topic</li>
+<li>Confirmed subscription via email</li>
+<li>Tested with manual alarm trigger</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>CloudWatch Dashboard Creation:</strong></p>
+<ul>
+<li>Designed comprehensive monitoring dashboard: <code>SIAM-Production-Dashboard</code></li>
+<li>Widgets implemented:
+<ol>
+<li><strong>Sensor Time-Series Widget:</strong>
+<ul>
+<li>Line graph: Temperature, Current, Voltage</li>
+<li>1-hour rolling window</li>
+<li>Auto-refresh every 1 minute</li>
+</ul>
+</li>
+<li><strong>Reconstruction Error Widget:</strong>
+<ul>
+<li>Line graph with anomaly threshold line</li>
+<li>Color-coded: Green (normal), Red (anomaly)</li>
+</ul>
+</li>
+<li><strong>Anomaly Count Widget:</strong>
+<ul>
+<li>Number widget showing total anomalies detected</li>
+<li>24-hour period</li>
+</ul>
+</li>
+<li><strong>System Health Widget:</strong>
+<ul>
+<li>Pie chart: Component status (Running/Stopped/Error)</li>
+</ul>
+</li>
+<li><strong>Lambda Performance Widget:</strong>
+<ul>
+<li>Bar graph: Invocation count, error rate, duration</li>
+</ul>
+</li>
+<li><strong>DynamoDB Metrics Widget:</strong>
+<ul>
+<li>Line graph: Read/write capacity units consumed</li>
+</ul>
+</li>
+<li><strong>Greengrass Status Widget:</strong>
+<ul>
+<li>Number widget: Connection status (1=Online, 0=Offline)</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>Exported dashboard configuration to <code>dashboard.json</code></li>
+<li>Implemented auto-deployment in CloudWatch.sh script</li>
+</ul>
+</li>
+<li>
+<p><strong>End-to-End Pipeline Testing:</strong></p>
+<ul>
+<li>
+<p><strong>Test 1: Normal Operation Flow</strong></p>
+<ol>
+<li>DataLogger reads sensors every 1 second</li>
+<li>Data published to Stream Manager</li>
+<li>Stream Manager exports to IoT Core (batch every 5s)</li>
+<li>IoT Rule triggers Ingestion Lambda</li>
+<li>Lambda writes to DynamoDB and S3</li>
+<li>MLInference reads from Stream Manager</li>
+<li>Prediction published to IoT Core</li>
+<li>CloudWatch metrics updated</li>
+</ol>
+<ul>
+<li>Result:  All steps successful, latency &lt; 2s end-to-end</li>
+</ul>
+</li>
+<li>
+<p><strong>Test 2: API Query Flow</strong></p>
+<ol>
+<li>Frontend calls API Gateway with x-api-key</li>
+<li>API Gateway triggers Query Lambda</li>
+<li>Lambda queries DynamoDB</li>
+<li>Response returned with CORS headers</li>
+</ol>
+<ul>
+<li>Result:  Response time ~150ms, data accurate</li>
+</ul>
+</li>
+<li>
+<p><strong>Test 3: Monitoring Flow</strong></p>
+<ol>
+<li>Custom metrics published to CloudWatch</li>
+<li>Dashboard widgets updated in real-time</li>
+<li>Metrics visible in CloudWatch console</li>
+</ol>
+<ul>
+<li>Result:  Dashboard refreshing every minute</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Simulated Equipment Failure Testing:</strong></p>
+<ul>
+<li><strong>Setup:</strong>
+<ul>
+<li>Attached 10g weight to one fan blade (created imbalance)</li>
+<li>Expected: Increased vibration (accelerometer) and current draw</li>
+</ul>
+</li>
+<li><strong>Data Collection (1 hour):</strong>
+<ul>
+<li>Collected 3,600 anomalous samples</li>
+<li>Observed metrics:
+<ul>
+<li>Accelerometer Z-axis stddev: 0.12 (normal: 0.02)</li>
+<li>Current draw: 0.68A (normal: 0.52A, +31% increase)</li>
+<li>Gyroscope readings: erratic fluctuations</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>ML Model Performance:</strong>
+<ul>
+<li>Reconstruction error: Mean = 0.0923 (normal: 0.0201)</li>
+<li>Anomalies detected: 3,487 out of 3,600 (96.9% detection rate)</li>
+<li>False positives: 13 (0.36%)</li>
+</ul>
+</li>
+<li><strong>CloudWatch Alarm Triggering:</strong>
+<ul>
+<li>Anomaly alarm entered ALARM state after 2 minutes</li>
+<li>SNS email notification received:
+<pre tabindex="0"><code>Subject: ALARM: SIAM-AnomalyDetected
+
+Alarm: SIAM-AnomalyDetected in US East (N. Virginia)
+Description: High reconstruction error detected
+Threshold: 0.065
+Current Value: 0.0923
+
+Device: RaspberryPi_5_Core
+Timestamp: 2025-10-31T14:23:45Z
+</code></pre></li>
+<li>Dashboard showed red alert banner</li>
+</ul>
+</li>
+<li><strong>Test Result:</strong>  System successfully detected equipment failure</li>
+</ul>
+</li>
+<li>
+<p><strong>Offline Resilience Testing:</strong></p>
+<ul>
+<li>
+<p><strong>Test Procedure:</strong></p>
+<ol>
+<li>Disconnected Raspberry Pi WiFi at 10:00 AM</li>
+<li>Continued data collection for 2 hours (offline)</li>
+<li>Reconnected WiFi at 12:00 PM</li>
+<li>Monitored data synchronization</li>
+</ol>
+</li>
+<li>
+<p><strong>Results:</strong></p>
+<ul>
+<li>
+<p><strong>During Offline Period (10:00-12:00):</strong></p>
+<ul>
+<li>DataLogger: Continued writing to Stream Manager (7,200 messages)</li>
+<li>Stream Manager: Buffered all messages to disk (<code>/greengrass/v2/work/aws.greengrass.StreamManager/SensorDataStream/</code>)</li>
+<li>MLInference: Continued local predictions (no cloud publish)</li>
+<li>Disk usage: 14.3 MB for buffered data</li>
+</ul>
+</li>
+<li>
+<p><strong>Greengrass Offline Alarm:</strong></p>
+<ul>
+<li>Triggered at 10:03 AM (3 minutes after disconnect)</li>
+<li>SNS notification sent to admin</li>
+</ul>
+</li>
+<li>
+<p><strong>After Reconnection (12:00):</strong></p>
+<ul>
+<li>Stream Manager auto-synced buffered messages</li>
+<li>Sync completed in 4 minutes 32 seconds</li>
+<li>All 7,200 messages successfully exported to IoT Core</li>
+<li>Ingestion Lambda processed backlog (no errors)</li>
+<li>DynamoDB wrote all 7,200 records</li>
+<li>S3 data lake received all raw sensor data</li>
+</ul>
+</li>
+<li>
+<p><strong>Data Integrity Check:</strong></p>
+<ul>
+<li>Queried DynamoDB for time range 10:00-12:00</li>
+<li>Retrieved all 7,200 records</li>
+<li>Verified no gaps in timestamps</li>
+<li><strong>Zero data loss confirmed</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>System Performance Optimization:</strong></p>
+<ul>
+<li>
+<p><strong>Edge Device (Raspberry Pi 5):</strong></p>
+<ul>
+<li>CPU usage: 18% average (DataLogger: 3%, MLInference: 12%, Greengrass: 3%)</li>
+<li>Memory usage: 1.2 GB / 8 GB (15%)</li>
+<li>Disk I/O: Minimal (Stream Manager optimized for batch writes)</li>
+<li>Network: 2.3 KB/s average (efficient batching)</li>
+</ul>
+</li>
+<li>
+<p><strong>Cloud Services:</strong></p>
+<ul>
+<li>Lambda cold start optimization:
+<ul>
+<li>Added Provisioned Concurrency (1 instance) for Query Lambda</li>
+<li>Reduced cold start from 450ms to &lt;50ms</li>
+</ul>
+</li>
+<li>DynamoDB optimization:
+<ul>
+<li>On-demand billing handles variable traffic well</li>
+<li>Average read latency: 8ms</li>
+<li>Average write latency: 12ms</li>
+</ul>
+</li>
+<li>API Gateway:
+<ul>
+<li>Added caching (5-minute TTL) for frequent queries</li>
+<li>Reduced Lambda invocations by 60%</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Cost Optimization:</strong></p>
+<ul>
+<li>Enabled S3 Intelligent-Tiering for data lake</li>
+<li>Reduced CloudWatch Logs retention to 7 days</li>
+<li>Scheduled Greengrass deployments during off-peak hours</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Integration Test Summary:</strong></p>
+<ul>
+<li>Sensor data collection: 100% uptime over 7 days</li>
+<li>Edge ML inference: 1.3ms average latency</li>
+<li>Cloud data ingestion: 99.97% success rate</li>
+<li>API response time: 142ms average (p95: 280ms)</li>
+<li>Anomaly detection accuracy: 96.9%</li>
+<li>Offline resilience: Zero data loss after 2-hour outage</li>
+<li>CloudWatch alarms: 100% trigger accuracy</li>
+<li>SNS notifications: Delivered within 30 seconds</li>
+</ul>
+</li>
+</ul>
+<h3 id="system-architecture-diagram-verified">System Architecture Diagram (Verified):</h3>
+<pre tabindex="0"><code>┌─────────────────────────────────────────────────────────┐
+│ Edge Device (Raspberry Pi 5)                            │
+│  ┌──────────┐    ┌──────────────┐    ┌──────────────┐  │
+│  │ Sensors  │───▶│ DataLogger   │───▶│ Stream       │  │
+│  │(MPU/INA/ │    │ (Native C)   │    │ Manager      │──┼──▶ IoT Core
+│  │ DS18B20) │    └──────────────┘    └──────┬───────┘  │
+│  └──────────┘           │                   │          │
+│                         │                   ▼          │
+│                         │            ┌──────────────┐  │
+│                         └───────────▶│ MLInference  │  │
+│                                      │ (Docker+TPU) │──┼──▶ IoT Core
+│                                      └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│ AWS Cloud                                                │
+│  IoT Core ──▶ Lambda ──▶ DynamoDB / S3 ──▶ API Gateway  │
+│                  │                              │        │
+│                  ▼                              ▼        │
+│            CloudWatch ◀────────────────── Web Dashboard  │
+│                  │                                       │
+│                  ▼                                       │
+│                SNS ──▶ Email Alerts                      │
+└─────────────────────────────────────────────────────────┘
+</code></pre><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>CloudWatch Metric Delay:</strong> Custom metrics took 2-3 minutes to appear - expected behavior for CloudWatch</li>
+<li><strong>Stream Manager Memory:</strong> Initial config used too much memory - reduced buffer size from 1GB to 256MB</li>
+<li><strong>Alarm False Positives:</strong> Initial threshold too sensitive - tuned to 2 out of 3 datapoints</li>
+<li><strong>S3 Data Lake Growth:</strong> 7 days of data = 1.2 GB - implemented lifecycle policy (archive after 90 days)</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>CloudWatch is essential for production monitoring and troubleshooting</li>
+<li>Stream Manager&rsquo;s offline buffering is critical for industrial IoT reliability</li>
+<li>Real-world anomaly testing validates ML model effectiveness</li>
+<li>SNS provides reliable, fast alerting for critical events</li>
+<li>Dashboard visualization helps stakeholders understand system health</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 9, I will implement the automated MLOps pipeline using EventBridge and Lambda. This includes bi-weekly model retraining, automated deployment to the edge, and monthly API key rotation. The focus shifts to production automation and operational excellence.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

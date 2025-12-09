@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 10 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 10 Worklog</h1>
+    <div class="content">
+        <h1 id="week-10-worklog">Week 10 Worklog</h1>
+<h3 id="week-10-objectives">Week 10 Objectives:</h3>
+<ul>
+<li>Implement automated monthly API key rotation</li>
+<li>Enhance API Gateway security with rate limiting and throttling</li>
+<li>Develop rotate Lambda for automated key management</li>
+<li>Build frontend web dashboard with real-time data visualization</li>
+<li>Integrate Swagger UI for API documentation</li>
+<li>Test security controls and key rotation workflow</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Learn API Gateway security best practices: <br>  + x-api-key authentication <br>  + Usage plans and quotas <br>  + Rate limiting and throttling <br>  + API key rotation strategies</td>
+          <td>10/11/2025</td>
+          <td>10/11/2025</td>
+          <td><a href="https://docs.aws.amazon.com/apigateway/latest/developerguide/security.html">API Gateway Security</a></td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Implement rotate Lambda (rotate.mjs): <br>  + Create new API key <br>  + Update usage plan <br>  + Delete old API key <br>  + Update frontend S3 files with new key <br> - Configure error handling and rollback</td>
+          <td>11/11/2025</td>
+          <td>11/11/2025</td>
+          <td>API Gateway SDK</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Add monthly rotation to EventBridge.sh: <br>  + Create monthly scheduled rule <br>  + Configure rotate Lambda target <br>  + Test manual rotation <br> - Document rotation procedure</td>
+          <td>12/11/2025</td>
+          <td>12/11/2025</td>
+          <td>Automation best practices</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Develop frontend web dashboard: <br>  + Create index.html with layout <br>  + Implement styles.css (responsive design) <br>  + Build app.js (API integration, charts) <br>  + Add real-time data fetching</td>
+          <td>13/11/2025</td>
+          <td>14/11/2025</td>
+          <td>JavaScript (Chart.js, Fetch API)</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Integrate Swagger UI for API documentation: <br>  + Create OpenAPI 3.0 specification <br>  + Set up swagger.html page <br>  + Add &ldquo;Try it out&rdquo; functionality <br>  + Document all endpoints</td>
+          <td>15/11/2025</td>
+          <td>15/11/2025</td>
+          <td><a href="https://swagger.io/specification/">OpenAPI Specification</a></td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Test security controls: <br>  + Verify rate limiting (10 req/s) <br>  + Test daily quota (10k requests) <br>  + Validate x-api-key authentication <br>  + Test key rotation end-to-end <br> - Load testing with Apache Bench</td>
+          <td>16/11/2025</td>
+          <td>16/11/2025</td>
+          <td>Security testing</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-10-achievements">Week 10 Achievements:</h3>
+<ul>
+<li>
+<p><strong>API Gateway Security Best Practices:</strong></p>
+<ul>
+<li>Mastered API Gateway security mechanisms:
+<ul>
+<li><strong>x-api-key:</strong> Simple authentication via HTTP header</li>
+<li><strong>Usage Plans:</strong> Control access, set quotas and throttling</li>
+<li><strong>Rate Limiting:</strong> Requests per second (steady-state)</li>
+<li><strong>Burst Limit:</strong> Handle traffic spikes</li>
+<li><strong>Quota:</strong> Maximum requests per day/week/month</li>
+</ul>
+</li>
+<li>Learned key rotation strategies:
+<ul>
+<li><strong>Graceful rotation:</strong> New key created before old deleted</li>
+<li><strong>Overlap period:</strong> Both keys work during transition</li>
+<li><strong>Automated rotation:</strong> EventBridge scheduled rule</li>
+</ul>
+</li>
+<li>Understood security layers:
+<ul>
+<li>L1: Network (VPC endpoints, PrivateLink)</li>
+<li>L2: Authentication (x-api-key, IAM, Cognito)</li>
+<li>L3: Authorization (usage plans, resource policies)</li>
+<li>L4: Rate control (throttling, quotas)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Rotate Lambda Implementation (rotate.mjs):</strong></p>
+<ul>
+<li>Implemented automated API key rotation:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">APIGatewayClient</span>, <span style="color:#a6e22e">GetUsagePlanCommand</span>, <span style="color:#a6e22e">CreateApiKeyCommand</span>, <span style="color:#a6e22e">CreateUsagePlanKeyCommand</span>, <span style="color:#a6e22e">DeleteApiKeyCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-api-gateway&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">S3Client</span>, <span style="color:#a6e22e">GetObjectCommand</span>, <span style="color:#a6e22e">PutObjectCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-s3&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">SNSClient</span>, <span style="color:#a6e22e">PublishCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-sns&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">apigateway</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">APIGatewayClient</span>({});
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s3</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">S3Client</span>({});
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sns</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">SNSClient</span>({});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handler</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">event</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Starting API key rotation...&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 1. Get current API key from usage plan
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">usagePlan</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">apigateway</span>.<span style="color:#a6e22e">send</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">GetUsagePlanCommand</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">usagePlanId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">USAGE_PLAN_ID</span>
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">oldKeyId</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">usagePlan</span>.<span style="color:#a6e22e">apiStages</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">apiKeyId</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 2. Create new API key
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">newKeyName</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`siam-api-key-</span><span style="color:#e6db74">${</span>Date.<span style="color:#a6e22e">now</span>()<span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">newKey</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">apigateway</span>.<span style="color:#a6e22e">createApiKey</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">newKeyName</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">description</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;SIAM API Key (auto-rotated)&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">enabled</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Created new API key: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">newKey</span>.<span style="color:#a6e22e">id</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 3. Associate new key with usage plan
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">apigateway</span>.<span style="color:#a6e22e">createUsagePlanKey</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">usagePlanId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">USAGE_PLAN_ID</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">keyId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">newKey</span>.<span style="color:#a6e22e">id</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">keyType</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;API_KEY&#39;</span>
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Associated new key with usage plan&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 4. Update frontend files in S3 with new key
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">updateFrontendConfig</span>(<span style="color:#a6e22e">newKey</span>.<span style="color:#a6e22e">value</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Updated frontend configuration&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 5. Wait 60 seconds for frontend propagation
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">sleep</span>(<span style="color:#ae81ff">60000</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 6. Delete old API key
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">apigateway</span>.<span style="color:#a6e22e">deleteApiKey</span>({ <span style="color:#a6e22e">apiKey</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">oldKeyId</span> });
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Deleted old API key: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">oldKeyId</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 7. Send SNS notification
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">sns</span>.<span style="color:#a6e22e">publish</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">TopicArn</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">SNS_TOPIC_ARN</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">Subject</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;SIAM API Key Rotated&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">Message</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`API key successfully rotated.\nNew Key ID: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">newKey</span>.<span style="color:#a6e22e">id</span><span style="color:#e6db74">}</span><span style="color:#e6db74">\nOld Key ID: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">oldKeyId</span><span style="color:#e6db74">}</span><span style="color:#e6db74">\nTimestamp: </span><span style="color:#e6db74">${</span><span style="color:#66d9ef">new</span> Date().<span style="color:#a6e22e">toISOString</span>()<span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">statusCode</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">200</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>({
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">message</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;API key rotated successfully&#39;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">newKeyId</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">newKey</span>.<span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>            })
+</span></span><span style="display:flex;"><span>        };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">error</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">error</span>(<span style="color:#e6db74">&#39;Rotation failed:&#39;</span>, <span style="color:#a6e22e">error</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Send error notification
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">sns</span>.<span style="color:#a6e22e">publish</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">TopicArn</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">SNS_TOPIC_ARN</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">Subject</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;SIAM API Key Rotation FAILED&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">Message</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`Error: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">error</span>.<span style="color:#a6e22e">message</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throw</span> <span style="color:#a6e22e">error</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">updateFrontendConfig</span>(<span style="color:#a6e22e">newApiKey</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Download app.js from S3
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">appJs</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">getObject</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">FRONTEND_BUCKET</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;app.js&#39;</span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Replace API key in code
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">updatedCode</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">appJs</span>.<span style="color:#a6e22e">Body</span>.<span style="color:#a6e22e">toString</span>()
+</span></span><span style="display:flex;"><span>        .<span style="color:#a6e22e">replace</span>(<span style="color:#e6db74">/const API_KEY = &#39;[^&#39;]*&#39;/</span>, <span style="color:#e6db74">`const API_KEY = &#39;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">newApiKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;`</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Upload updated app.js
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">putObject</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">FRONTEND_BUCKET</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;app.js&#39;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">updatedCode</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ContentType</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;application/javascript&#39;</span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+<li>Added comprehensive error handling</li>
+<li>Implemented rollback mechanism (restore old key on failure)</li>
+<li>Configured Lambda timeout: 5 minutes</li>
+<li>Added SNS notifications for rotation status</li>
+</ul>
+</li>
+<li>
+<p><strong>Monthly Rotation EventBridge Rule:</strong></p>
+<ul>
+<li>Enhanced EventBridge.sh to create rotation rule:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>aws events put-rule <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --name <span style="color:#e6db74">&#34;SIAM-MonthlyKeyRotation&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --description <span style="color:#e6db74">&#34;Rotate API Gateway key monthly&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --schedule-expression <span style="color:#e6db74">&#34;cron(0 3 1 * ? *)&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --state ENABLED
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>aws events put-targets <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --rule <span style="color:#e6db74">&#34;SIAM-MonthlyKeyRotation&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --targets <span style="color:#e6db74">&#34;Id=1,Arn=</span><span style="color:#e6db74">${</span>ROTATE_LAMBDA_ARN<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</span></span></code></pre></div><ul>
+<li>Schedule: 1st of every month at 3 AM UTC</li>
+<li>Target: Rotate Lambda function</li>
+</ul>
+</li>
+<li>Added manual rotation capability via AWS.sh:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./AWS.sh rotate-key
+</span></span></code></pre></div></li>
+<li>Documented rotation procedure in README</li>
+</ul>
+</li>
+<li>
+<p><strong>Frontend Web Dashboard Development:</strong></p>
+<ul>
+<li>
+<p>Created responsive single-page application (SPA)</p>
+</li>
+<li>
+<p><strong>index.html</strong> - Dashboard structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span><span style="color:#75715e">&lt;!DOCTYPE html&gt;</span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">html</span> <span style="color:#a6e22e">lang</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;en&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">head</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">charset</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;UTF-8&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;viewport&#34;</span> <span style="color:#a6e22e">content</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;width=device-width, initial-scale=1.0&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">title</span>&gt;SIAM - Predictive Maintenance Dashboard&lt;/<span style="color:#f92672">title</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">link</span> <span style="color:#a6e22e">rel</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;styles.css&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://cdn.jsdelivr.net/npm/chart.js@3.9.1&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">head</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">body</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">header</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">h1</span>&gt; SIAM Dashboard&lt;/<span style="color:#f92672">h1</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">p</span>&gt;Smart Industrial Asset&#39;s longevity Monitor&lt;/<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">header</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">main</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status-card&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">h2</span>&gt;System Status&lt;/<span style="color:#f92672">h2</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status-indicator&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;status-normal&#34;</span>&gt;● NORMAL&lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">p</span>&gt;Last Update: &lt;<span style="color:#f92672">span</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;last-update&#34;</span>&gt;--&lt;/<span style="color:#f92672">span</span>&gt;&lt;/<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;chart-container&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">h2</span>&gt;Sensor Readings (Last Hour)&lt;/<span style="color:#f92672">h2</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">canvas</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;sensorChart&#34;</span>&gt;&lt;/<span style="color:#f92672">canvas</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;chart-container&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">h2</span>&gt;ML Prediction Score&lt;/<span style="color:#f92672">h2</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">canvas</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;predictionChart&#34;</span>&gt;&lt;/<span style="color:#f92672">canvas</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metrics-grid&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metric-card&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">h3</span>&gt;Temperature&lt;/<span style="color:#f92672">h3</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">p</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;temp-value&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metric-value&#34;</span>&gt;--°C&lt;/<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metric-card&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">h3</span>&gt;Current&lt;/<span style="color:#f92672">h3</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">p</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;current-value&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metric-value&#34;</span>&gt;--A&lt;/<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metric-card&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">h3</span>&gt;Vibration&lt;/<span style="color:#f92672">h3</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">p</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;vibration-value&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metric-value&#34;</span>&gt;--m/s²&lt;/<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">main</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">footer</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;swagger.html&#34;</span>&gt;📚 API Documentation&lt;/<span style="color:#f92672">a</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">footer</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;app.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">body</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">html</span>&gt;
+</span></span></code></pre></div></li>
+<li>
+<p><strong>styles.css</strong> - Responsive design:</p>
+<ul>
+<li>Clean, modern UI with AWS color scheme</li>
+<li>Mobile-first responsive layout (breakpoints: 768px, 1024px)</li>
+<li>CSS Grid for metrics dashboard</li>
+<li>Smooth animations and transitions</li>
+<li>Dark theme for better visibility</li>
+</ul>
+</li>
+<li>
+<p><strong>app.js</strong> - Data fetching and visualization:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">API_ENDPOINT</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;https://abc123xyz.execute-api.us-east-1.amazonaws.com/prod&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">API_KEY</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;auto-replaced-by-rotate-lambda&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">DEVICE_ID</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;RaspberryPi_5_Core&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">REFRESH_INTERVAL</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">60000</span>; <span style="color:#75715e">// 1 minute
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Initialize Chart.js charts
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sensorChart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Chart</span>(document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;sensorChart&#39;</span>), {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;line&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">labels</span><span style="color:#f92672">:</span> [],
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">datasets</span><span style="color:#f92672">:</span> [
+</span></span><span style="display:flex;"><span>            { <span style="color:#a6e22e">label</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Temperature (°C)&#39;</span>, <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> [], <span style="color:#a6e22e">borderColor</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;rgb(255, 99, 132)&#39;</span> },
+</span></span><span style="display:flex;"><span>            { <span style="color:#a6e22e">label</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Current (A)&#39;</span>, <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> [], <span style="color:#a6e22e">borderColor</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;rgb(54, 162, 235)&#39;</span> },
+</span></span><span style="display:flex;"><span>            { <span style="color:#a6e22e">label</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Acceleration Z (m/s²)&#39;</span>, <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> [], <span style="color:#a6e22e">borderColor</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;rgb(75, 192, 192)&#39;</span> }
+</span></span><span style="display:flex;"><span>        ]
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">options</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">responsive</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>, <span style="color:#a6e22e">maintainAspectRatio</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span> }
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">predictionChart</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Chart</span>(document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;predictionChart&#39;</span>), {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;line&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">labels</span><span style="color:#f92672">:</span> [],
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">datasets</span><span style="color:#f92672">:</span> [{
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">label</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Reconstruction Error&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> [],
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">borderColor</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;rgb(153, 102, 255)&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">fill</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        }]
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">options</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">responsive</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">plugins</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">annotation</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">annotations</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">threshold</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>                        <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;line&#39;</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#a6e22e">yMin</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0.065</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#a6e22e">yMax</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">0.065</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#a6e22e">borderColor</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;rgb(255, 0, 0)&#39;</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#a6e22e">borderWidth</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>                        <span style="color:#a6e22e">label</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">content</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Anomaly Threshold&#39;</span>, <span style="color:#a6e22e">enabled</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span> }
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Fetch sensor data from API
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">fetchSensorData</span>() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">endTime</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">floor</span>(Date.<span style="color:#a6e22e">now</span>() <span style="color:#f92672">/</span> <span style="color:#ae81ff">1000</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">startTime</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">endTime</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">3600</span>; <span style="color:#75715e">// Last hour
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">fetch</span>(
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">API_ENDPOINT</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/data?device_id=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">DEVICE_ID</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&amp;start_time=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">startTime</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&amp;end_time=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">endTime</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>,
+</span></span><span style="display:flex;"><span>            { <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> { <span style="color:#e6db74">&#39;x-api-key&#39;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">API_KEY</span> } }
+</span></span><span style="display:flex;"><span>        );
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">ok</span>) <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">`API Error: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">status</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">json</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">updateCharts</span>(<span style="color:#a6e22e">data</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">updateMetrics</span>(<span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>]); <span style="color:#75715e">// Latest reading
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">updateStatus</span>(<span style="color:#a6e22e">data</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">error</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">error</span>(<span style="color:#e6db74">&#39;Failed to fetch data:&#39;</span>, <span style="color:#a6e22e">error</span>);
+</span></span><span style="display:flex;"><span>        document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;status-indicator&#39;</span>).<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;● ERROR&#39;</span>;
+</span></span><span style="display:flex;"><span>        document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;status-indicator&#39;</span>).<span style="color:#a6e22e">className</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;status-error&#39;</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">updateCharts</span>(<span style="color:#a6e22e">data</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">labels</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">d</span> =&gt; <span style="color:#66d9ef">new</span> Date(<span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">timestamp</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">1000</span>).<span style="color:#a6e22e">toLocaleTimeString</span>());
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">sensorChart</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">labels</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">labels</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">sensorChart</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">datasets</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">d</span> =&gt; <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">temperature</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">sensorChart</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">datasets</span>[<span style="color:#ae81ff">1</span>].<span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">d</span> =&gt; <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">current</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">sensorChart</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">datasets</span>[<span style="color:#ae81ff">2</span>].<span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">d</span> =&gt; <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">accel_z</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">sensorChart</span>.<span style="color:#a6e22e">update</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">predictionChart</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">labels</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">labels</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">predictionChart</span>.<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">datasets</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">d</span> =&gt; <span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">reconstruction_error</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">predictionChart</span>.<span style="color:#a6e22e">update</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">updateMetrics</span>(<span style="color:#a6e22e">latest</span>) {
+</span></span><span style="display:flex;"><span>    document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;temp-value&#39;</span>).<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">latest</span>.<span style="color:#a6e22e">temperature</span>.<span style="color:#a6e22e">toFixed</span>(<span style="color:#ae81ff">1</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">°C`</span>;
+</span></span><span style="display:flex;"><span>    document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;current-value&#39;</span>).<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">latest</span>.<span style="color:#a6e22e">current</span>.<span style="color:#a6e22e">toFixed</span>(<span style="color:#ae81ff">2</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">A`</span>;
+</span></span><span style="display:flex;"><span>    document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;vibration-value&#39;</span>).<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">latest</span>.<span style="color:#a6e22e">accel_z</span>.<span style="color:#a6e22e">toFixed</span>(<span style="color:#ae81ff">2</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">m/s²`</span>;
+</span></span><span style="display:flex;"><span>    document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;last-update&#39;</span>).<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Date().<span style="color:#a6e22e">toLocaleTimeString</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">updateStatus</span>(<span style="color:#a6e22e">data</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">latestError</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">data</span>[<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>].<span style="color:#a6e22e">reconstruction_error</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">statusDiv</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;status-indicator&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">latestError</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0.065</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">statusDiv</span>.<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;ANOMALY DETECTED&#39;</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">statusDiv</span>.<span style="color:#a6e22e">className</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;status-alert&#39;</span>;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">statusDiv</span>.<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;✓ NORMAL&#39;</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">statusDiv</span>.<span style="color:#a6e22e">className</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;status-normal&#39;</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Auto-refresh every minute
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">setInterval</span>(<span style="color:#a6e22e">fetchSensorData</span>, <span style="color:#a6e22e">REFRESH_INTERVAL</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">fetchSensorData</span>(); <span style="color:#75715e">// Initial load
+</span></span></span></code></pre></div></li>
+</ul>
+</li>
+<li>
+<p><strong>Swagger UI Integration:</strong></p>
+<ul>
+<li>Created OpenAPI 3.0 specification:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">openapi</span>: <span style="color:#ae81ff">3.0.0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">info</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">title</span>: <span style="color:#ae81ff">SIAM API</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">description</span>: <span style="color:#ae81ff">Smart Industrial Asset&#39;s longevity Monitor REST API</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">version</span>: <span style="color:#ae81ff">1.0.0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">servers</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://abc123xyz.execute-api.us-east-1.amazonaws.com/prod</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">security</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">ApiKeyAuth</span>: []
+</span></span><span style="display:flex;"><span><span style="color:#f92672">paths</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">/data</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">get</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">summary</span>: <span style="color:#ae81ff">Query sensor data</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">parameters</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">device_id</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">in</span>: <span style="color:#ae81ff">query</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">required</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">schema</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">type</span>: <span style="color:#ae81ff">string</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">start_time</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">in</span>: <span style="color:#ae81ff">query</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">required</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">schema</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">type</span>: <span style="color:#ae81ff">integer</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">end_time</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">in</span>: <span style="color:#ae81ff">query</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">required</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">schema</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">type</span>: <span style="color:#ae81ff">integer</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">responses</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#39;200&#39;</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">description</span>: <span style="color:#ae81ff">Successful response</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">content</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">application/json</span>:
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">schema</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">type</span>: <span style="color:#ae81ff">array</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">items</span>:
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">$ref</span>: <span style="color:#e6db74">&#39;#/components/schemas/SensorReading&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">components</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">securitySchemes</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ApiKeyAuth</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">apiKey</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">in</span>: <span style="color:#ae81ff">header</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">x-api-key</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">schemas</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">SensorReading</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">object</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">properties</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">device_id</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">string</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">timestamp</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">integer</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">temperature</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">number</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">current</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">number</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">voltage</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">number</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">accel_x</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">number</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">accel_y</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">number</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">accel_z</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">number</span>
+</span></span></code></pre></div></li>
+<li>Integrated Swagger UI in swagger.html</li>
+<li>Added &ldquo;Try it out&rdquo; functionality with x-api-key input</li>
+<li>Deployed to S3 static website</li>
+</ul>
+</li>
+<li>
+<p><strong>Security Testing:</strong></p>
+<ul>
+<li>
+<p><strong>Rate Limiting Test:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Exceeded 10 req/s limit</span>
+</span></span><span style="display:flex;"><span>ab -n <span style="color:#ae81ff">100</span> -c <span style="color:#ae81ff">20</span> -H <span style="color:#e6db74">&#34;x-api-key: ...&#34;</span> https://api-endpoint/data?device_id<span style="color:#f92672">=</span>...
+</span></span></code></pre></div><p>Result: 429 Too Many Requests after ~10 requests/second</p>
+</li>
+<li>
+<p><strong>Daily Quota Test:</strong></p>
+<ul>
+<li>Simulated 10,000 requests over 24 hours</li>
+<li>API returned 429 after quota exhausted</li>
+<li>Quota reset at midnight UTC</li>
+</ul>
+</li>
+<li>
+<p><strong>Authentication Test:</strong></p>
+<ul>
+<li>Request without x-api-key → 403 Forbidden</li>
+<li>Request with invalid key → 403 Forbidden</li>
+<li>Request with valid key → 200 OK</li>
+</ul>
+</li>
+<li>
+<p><strong>Key Rotation Test:</strong></p>
+<ol>
+<li>Triggered rotation Lambda manually</li>
+<li>Verified new key created and old key deleted</li>
+<li>Tested frontend with auto-updated key</li>
+<li>Confirmed old key no longer works</li>
+<li>Received SNS notification email</li>
+</ol>
+<ul>
+<li><strong>Result:</strong>  Rotation successful in 65 seconds</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="frontend-dashboard-screenshot-text-representation">Frontend Dashboard Screenshot (Text Representation):</h3>
+<pre tabindex="0"><code>┌────────────────────────────────────────────────────────────┐
+│  SIAM Dashboard                                          │
+│ Smart Industrial Asset&#39;s longevity Monitor                │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  System Status        ┌──────────────────────────────┐    │
+│  ✓ NORMAL             │ Sensor Readings (Last Hour)  │    │
+│  Last Update: 14:23   │                              │    │
+│                       │  [Line Chart]                │    │
+│                       │  - Temperature               │    │
+│                       │  - Current                   │    │
+│                       │  - Acceleration Z            │    │
+│                       └──────────────────────────────┘    │
+│                                                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
+│  │ Temperature  │  │   Current    │  │  Vibration   │    │
+│  │   24.3°C     │  │   0.52A      │  │  9.78 m/s²   │    │
+│  └──────────────┘  └──────────────┘  └──────────────┘    │
+│                                                            │
+│  📚 API Documentation                                      │
+└────────────────────────────────────────────────────────────┘
+</code></pre><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>CORS Issues:</strong> Initial API requests blocked by browser - added CORS headers to Lambda responses</li>
+<li><strong>API Key Exposure:</strong> Hardcoded key in frontend is visible in source - documented as acceptable trade-off for demo (production would use Cognito)</li>
+<li><strong>Chart.js Responsiveness:</strong> Charts didn&rsquo;t resize on mobile - fixed with maintainAspectRatio: false</li>
+<li><strong>Rotation Timing:</strong> Frontend cached old key - added 60s wait before deleting old key</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>API key rotation improves security posture significantly</li>
+<li>Usage plans and throttling prevent API abuse and control costs</li>
+<li>Swagger UI provides interactive API documentation for developers</li>
+<li>Responsive design is critical for modern web applications</li>
+<li>Automated security controls reduce human error</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 11, I will focus on comprehensive system testing, performance optimization, and creating detailed project documentation. This includes stress testing, failure scenario simulations, and preparing the final project report and demo materials.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

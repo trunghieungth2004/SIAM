@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 4 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 4 Worklog</h1>
+    <div class="content">
+        <h1 id="week-4-worklog">Week 4 Worklog</h1>
+<h3 id="week-4-objectives">Week 4 Objectives:</h3>
+<ul>
+<li>Deep dive into EC2 instance types and use cases</li>
+<li>Master VPC networking and security configuration</li>
+<li>Set up Raspberry Pi 5 hardware and Raspberry Pi OS</li>
+<li>Install and configure AWS IoT Greengrass Core on the Pi</li>
+<li>Begin local sensor data collection development</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Deep dive into EC2: <br>  + Instance families (T3, M5, C5, etc.) <br>  + Pricing models (On-Demand, Reserved, Spot) <br>  + EC2 Auto Scaling <br> - Learn about EC2 placement groups <br> - Study EC2 Instance Connect and Session Manager</td>
+          <td>29/09/2025</td>
+          <td>29/09/2025</td>
+          <td><a href="https://docs.aws.amazon.com/ec2/">AWS EC2 Documentation</a> <br> FCJ EC2 workshops</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Hands-on VPC workshop: <br>  + Create VPC with public/private subnets <br>  + Configure Internet Gateway <br>  + Set up NAT Gateway <br>  + Configure route tables <br>  + Test EC2 in public subnet</td>
+          <td>30/09/2025</td>
+          <td>30/09/2025</td>
+          <td>FCJ VPC workshop materials</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Set up Raspberry Pi 5 hardware: <br>  + Unbox and assemble Pi 5 <br>  + Install heatsink and cooling fan <br>  + Connect power supply and peripherals <br> - Download Raspberry Pi OS Lite (64-bit) <br> - Flash OS to microSD card using Raspberry Pi Imager</td>
+          <td>01/10/2025</td>
+          <td>01/10/2025</td>
+          <td><a href="https://www.raspberrypi.com/documentation/">Raspberry Pi Documentation</a></td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Configure Raspberry Pi OS: <br>  + Enable SSH <br>  + Configure WiFi/Ethernet <br>  + Update system packages <br>  + Set up static IP address <br> - Install development tools (git, gcc, python3) <br> - Configure I2C and 1-Wire interfaces</td>
+          <td>02/10/2025</td>
+          <td>02/10/2025</td>
+          <td>Raspberry Pi setup guides</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Install AWS IoT Greengrass Core: <br>  + Download Greengrass installer <br>  + Create Greengrass IAM role <br>  + Run Greengrass installer <br>  + Configure Greengrass as systemd service <br> - Verify Greengrass connectivity to AWS</td>
+          <td>03/10/2025</td>
+          <td>03/10/2025</td>
+          <td><a href="https://docs.aws.amazon.com/greengrass/">AWS IoT Greengrass Documentation</a></td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Create Local.sh component script: <br>  + Compile local data logger (C) <br>  + Set up systemd service <br>  + Configure automatic startup <br> - Begin 24-hour local data collection test</td>
+          <td>04/10/2025</td>
+          <td>05/10/2025</td>
+          <td>Project requirements</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-4-achievements">Week 4 Achievements:</h3>
+<ul>
+<li>
+<p><strong>EC2 Advanced Concepts:</strong></p>
+<ul>
+<li>Mastered EC2 instance family selection criteria:
+<ul>
+<li><strong>T3/T3a:</strong> Burstable, cost-effective for variable workloads</li>
+<li><strong>M5/M5a:</strong> General purpose, balanced compute/memory</li>
+<li><strong>C5/C5a:</strong> Compute-optimized for CPU-intensive tasks</li>
+<li><strong>R5/R5a:</strong> Memory-optimized for in-memory databases</li>
+<li><strong>P3/G4:</strong> GPU instances for ML training/inference</li>
+</ul>
+</li>
+<li>Learned EC2 pricing strategies:
+<ul>
+<li>On-Demand: Pay per second, no commitment</li>
+<li>Reserved Instances: 1-3 year commitment, up to 75% savings</li>
+<li>Spot Instances: Bid for unused capacity, up to 90% savings</li>
+<li>Savings Plans: Flexible pricing for consistent usage</li>
+</ul>
+</li>
+<li>Understood EC2 Auto Scaling for high availability</li>
+<li>Learned EC2 Instance Connect (browser-based SSH)</li>
+<li>Explored AWS Systems Manager Session Manager (no SSH keys needed)</li>
+</ul>
+</li>
+<li>
+<p><strong>VPC Hands-on Workshop:</strong></p>
+<ul>
+<li>Created production-grade VPC from scratch:
+<ul>
+<li>VPC CIDR: 10.0.0.0/16 (65,536 IPs)</li>
+<li>Public subnet: 10.0.1.0/24 (in us-east-1a)</li>
+<li>Private subnet: 10.0.2.0/24 (in us-east-1a)</li>
+</ul>
+</li>
+<li>Configured Internet Gateway (IGW) for public internet access</li>
+<li>Deployed NAT Instance (t3.nano) in public subnet for private subnet egress</li>
+<li>Created and associated route tables:
+<ul>
+<li>Public route table: 0.0.0.0/0 → IGW</li>
+<li>Private route table: 0.0.0.0/0 → NAT Instance</li>
+</ul>
+</li>
+<li>Launched EC2 instances in both subnets:
+<ul>
+<li>Public subnet: Jump host/bastion (Amazon Linux 2)</li>
+<li>Private subnet: Application server (no public IP)</li>
+</ul>
+</li>
+<li>Configured Security Groups:
+<ul>
+<li>Bastion SG: Allow SSH (22) from my IP</li>
+<li>App SG: Allow SSH (22) from Bastion SG only</li>
+</ul>
+</li>
+<li>Successfully tested SSH jump: Local → Bastion → Private EC2</li>
+<li>Learned VPC Flow Logs for network troubleshooting</li>
+</ul>
+</li>
+<li>
+<p><strong>VPC Endpoints Deep Dive:</strong></p>
+<ul>
+<li>Created S3 Gateway Endpoint:
+<ul>
+<li>Benefit: Private S3 access without NAT Gateway charges</li>
+<li>Route added to private route table</li>
+<li>Free of charge</li>
+</ul>
+</li>
+<li>Learned Interface Endpoints (AWS PrivateLink):
+<ul>
+<li>Private connections to AWS services via ENI</li>
+<li>Examples: DynamoDB, SNS, SQS, Lambda</li>
+<li>Hourly charges + data transfer costs</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Raspberry Pi 5 Hardware Setup:</strong></p>
+<ul>
+<li>Unboxed and assembled Raspberry Pi 5:
+<ul>
+<li>8GB RAM model (optimal for ML inference)</li>
+<li>Active cooler installed for thermal management</li>
+<li>64GB microSD card (SanDisk Extreme Pro)</li>
+</ul>
+</li>
+<li>Downloaded Raspberry Pi OS Lite (64-bit) - minimal, no desktop</li>
+<li>Used Raspberry Pi Imager to flash OS:
+<ul>
+<li>Pre-configured SSH enabled</li>
+<li>Set hostname: <code>siam-edge-01</code></li>
+<li>Configured WiFi credentials</li>
+<li>Set user: <code>pi</code> with secure password</li>
+</ul>
+</li>
+<li>First boot successful, SSH connection established</li>
+<li>Assigned static IP: 192.168.1.100</li>
+</ul>
+</li>
+<li>
+<p><strong>Raspberry Pi OS Configuration:</strong></p>
+<ul>
+<li>Updated system packages:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt update <span style="color:#f92672">&amp;&amp;</span> sudo apt upgrade -y
+</span></span></code></pre></div></li>
+<li>Installed development tools:
+<ul>
+<li><code>build-essential</code> - GCC, G++, Make</li>
+<li><code>git</code> - Version control</li>
+<li><code>python3-pip</code> - Python package manager</li>
+<li><code>docker.io</code> - Container runtime (for ML inference)</li>
+<li><code>i2c-tools</code> - I2C debugging</li>
+</ul>
+</li>
+<li>Enabled hardware interfaces via <code>raspi-config</code>:
+<ul>
+<li>I2C (for MPU-6050, INA219)</li>
+<li>1-Wire (for DS18B20 temperature sensor)</li>
+<li>SPI (for future expansion)</li>
+</ul>
+</li>
+<li>Verified I2C: <code>i2cdetect -y 1</code> - detected devices on bus</li>
+<li>Configured kernel modules to load at boot:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo echo <span style="color:#e6db74">&#34;i2c-dev&#34;</span> &gt;&gt; /etc/modules
+</span></span><span style="display:flex;"><span>sudo echo <span style="color:#e6db74">&#34;w1-gpio&#34;</span> &gt;&gt; /etc/modules
+</span></span><span style="display:flex;"><span>sudo echo <span style="color:#e6db74">&#34;w1-therm&#34;</span> &gt;&gt; /etc/modules
+</span></span></code></pre></div></li>
+</ul>
+</li>
+<li>
+<p><strong>AWS IoT Greengrass Installation:</strong></p>
+<ul>
+<li>Created Greengrass-specific IAM role with permissions:
+<ul>
+<li>S3 access for component artifacts</li>
+<li>CloudWatch Logs for logging</li>
+<li>IoT Core for connectivity</li>
+</ul>
+</li>
+<li>Created Greengrass Thing in AWS IoT Core: <code>RaspberryPi_5_Core</code></li>
+<li>Downloaded Greengrass Core installer (v2.12.0):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/greengrass-nucleus-latest.zip &gt; greengrass-nucleus-latest.zip
+</span></span><span style="display:flex;"><span>unzip greengrass-nucleus-latest.zip -d GreengrassInstaller
+</span></span></code></pre></div></li>
+<li>Ran Greengrass installer with automated provisioning:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo -E java -Droot<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/greengrass/v2&#34;</span> -Dlog.store<span style="color:#f92672">=</span>FILE <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -jar ./GreengrassInstaller/lib/Greengrass.jar <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --aws-region us-east-1 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --thing-name RaspberryPi_5_Core <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --thing-group-name SIAMDevices <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --component-default-user ggc_user:ggc_group <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --provision true <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --setup-system-service true
+</span></span></code></pre></div></li>
+<li>Verified Greengrass service status:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo systemctl status greengrass.service
+</span></span></code></pre></div></li>
+<li>Confirmed connectivity in AWS IoT console (Thing status: Connected)</li>
+</ul>
+</li>
+<li>
+<p><strong>Greengrass.sh Component Script:</strong></p>
+<ul>
+<li>Enhanced Greengrass component script for automated Pi provisioning</li>
+<li>Implemented remote SSH commands for Greengrass installation</li>
+<li>Added certificate download and transfer logic</li>
+<li>Created Greengrass component recipes (JSON) for deployment</li>
+<li>Tested deployment of hello-world component successfully</li>
+</ul>
+</li>
+<li>
+<p><strong>Local Data Collection Development:</strong></p>
+<ul>
+<li>Created <code>local_datalogger.c</code> in C for high-performance sensor reading</li>
+<li>Implemented I2C communication for MPU-6050 and INA219</li>
+<li>Integrated 1-Wire protocol for DS18B20 temperature sensor</li>
+<li>Designed sensor data structure:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> accel_x, accel_y, accel_z;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> gyro_x, gyro_y, gyro_z;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> voltage, current;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> temperature;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint64_t</span> timestamp;
+</span></span><span style="display:flex;"><span>} SensorData;
+</span></span></code></pre></div></li>
+<li>Compiled native binary: <code>gcc -o datalogger local_datalogger.c -lm -lpthread</code></li>
+<li>Created systemd service for automatic startup:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#66d9ef">[Unit]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Description</span><span style="color:#f92672">=</span><span style="color:#e6db74">SIAM Local Data Logger</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">After</span><span style="color:#f92672">=</span><span style="color:#e6db74">network.target</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Service]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ExecStart</span><span style="color:#f92672">=</span><span style="color:#e6db74">/home/pi/datalogger</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Restart</span><span style="color:#f92672">=</span><span style="color:#e6db74">always</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">User</span><span style="color:#f92672">=</span><span style="color:#e6db74">pi</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Install]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">WantedBy</span><span style="color:#f92672">=</span><span style="color:#e6db74">multi-user.target</span>
+</span></span></code></pre></div></li>
+<li>Enabled service: <code>sudo systemctl enable datalogger.service</code></li>
+<li>Started 24-hour continuous data collection test</li>
+</ul>
+</li>
+<li>
+<p><strong>Local.sh Component Script:</strong></p>
+<ul>
+<li>Implemented <code>Local.sh</code> for automated local data logger deployment</li>
+<li>Features:
+<ul>
+<li>Cross-compile C datalogger from local machine</li>
+<li>SCP binary to Raspberry Pi</li>
+<li>Install as systemd service remotely</li>
+<li>Start data collection</li>
+</ul>
+</li>
+<li>Added cleanup function to stop and remove service</li>
+</ul>
+</li>
+<li>
+<p><strong>VPC Component Implementation:</strong></p>
+<ul>
+<li>Finalized VPC.sh script (created during EC2 learning)</li>
+<li>Automated VPC creation with public/private subnets</li>
+<li>Security group configuration for SSH and HTTPS</li>
+<li>Not used in final SIAM architecture (edge device uses direct IoT Core connection)</li>
+<li>Retained for future EC2-based expansion scenarios</li>
+</ul>
+</li>
+</ul>
+<h3 id="sample-sensor-data-log">Sample Sensor Data Log:</h3>
+<pre tabindex="0"><code>[2025-10-05 08:23:15] accel(0.02, -0.03, 9.78) gyro(0.01, 0.00, -0.01) V=12.4 I=0.52A T=24.2°C
+[2025-10-05 08:23:16] accel(0.01, -0.02, 9.79) gyro(0.00, 0.01, 0.00) V=12.3 I=0.51A T=24.2°C
+[2025-10-05 08:23:17] accel(0.03, -0.04, 9.77) gyro(0.02, -0.01, 0.01) V=12.4 I=0.53A T=24.3°C
+</code></pre><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>I2C Permission Errors:</strong> User <code>pi</code> couldn&rsquo;t access I2C bus - solved by adding user to <code>i2c</code> group: <code>sudo usermod -a -G i2c pi</code></li>
+<li><strong>Greengrass Java Dependency:</strong> Greengrass requires Java - installed <code>openjdk-11-jdk</code></li>
+<li><strong>NAT Instance Setup:</strong> Used NAT Instance (t3.nano) instead of NAT Gateway to save costs ($0.0052/hour vs $0.045/hour)</li>
+<li><strong>SSH Key Management:</strong> Initial SSH issues with Greengrass installer - resolved by using correct key path</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>EC2 is powerful but not needed for edge-first IoT architectures</li>
+<li>VPC networking knowledge is essential for enterprise AWS deployments</li>
+<li>Raspberry Pi 5 is significantly faster than Pi 4 for ML workloads</li>
+<li>AWS IoT Greengrass simplifies edge device management at scale</li>
+<li>Systemd services enable reliable autonomous edge operation</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 5, I will analyze the 24-48 hours of local sensor data collected from the Raspberry Pi, prepare the dataset for ML training, and complete the Lambda component scripts for data ingestion and querying. The focus shifts to cloud data processing pipelines.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

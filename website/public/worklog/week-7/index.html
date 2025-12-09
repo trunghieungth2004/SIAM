@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 7 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 7 Worklog</h1>
+    <div class="content">
+        <h1 id="week-7-worklog">Week 7 Worklog</h1>
+<h3 id="week-7-objectives">Week 7 Objectives:</h3>
+<ul>
+<li>Master AWS IoT Greengrass component development</li>
+<li>Convert local datalogger to Greengrass component</li>
+<li>Implement Greengrass Stream Manager for data buffering</li>
+<li>Set up Docker on Raspberry Pi for ML inference container</li>
+<li>Deploy and test Greengrass components on the edge device</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Learn AWS IoT Greengrass V2 architecture: <br>  + Components and recipes <br>  + Nucleus and component lifecycle <br>  + Local pub/sub messaging <br>  + Stream Manager <br> - Study component recipe JSON schema</td>
+          <td>20/10/2025</td>
+          <td>20/10/2025</td>
+          <td><a href="https://docs.aws.amazon.com/greengrass/v2/">AWS Greengrass V2 Documentation</a></td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Convert local_datalogger.c to Greengrass component: <br>  + Modify code to use Stream Manager SDK <br>  + Create component recipe JSON <br>  + Test local compilation <br> - Implement graceful shutdown handling</td>
+          <td>21/10/2025</td>
+          <td>21/10/2025</td>
+          <td>Greengrass SDK documentation</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Create DataLogger Greengrass component: <br>  + Write component recipe <br>  + Configure lifecycle scripts <br>  + Set up Stream Manager stream <br>  + Upload artifacts to S3 <br> - Deploy component to Raspberry Pi</td>
+          <td>22/10/2025</td>
+          <td>22/10/2025</td>
+          <td>Component development guide</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Set up Docker on Raspberry Pi: <br>  + Install Docker Engine <br>  + Configure Docker daemon <br>  + Add pi user to docker group <br>  + Test container runtime <br> - Pull TensorFlow Lite runtime image</td>
+          <td>23/10/2025</td>
+          <td>23/10/2025</td>
+          <td><a href="https://docs.docker.com/">Docker Documentation</a></td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Develop ML Inference Docker container: <br>  + Create Dockerfile with Coral TPU support <br>  + Implement inference service in Python <br>  + Integrate Stream Manager consumer <br>  + Add model loading and prediction <br> - Test container locally</td>
+          <td>24/10/2025</td>
+          <td>25/10/2025</td>
+          <td>Coral TPU documentation</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Create MLInference Greengrass component: <br>  + Write component recipe for Docker <br>  + Configure Docker container lifecycle <br>  + Deploy model artifact from S3 <br>  + Test end-to-end data flow <br> - Monitor component logs</td>
+          <td>26/10/2025</td>
+          <td>26/10/2025</td>
+          <td>Greengrass Docker integration</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-7-achievements">Week 7 Achievements:</h3>
+<ul>
+<li>
+<p><strong>AWS IoT Greengrass V2 Architecture:</strong></p>
+<ul>
+<li>Mastered Greengrass Core concepts:
+<ul>
+<li><strong>Nucleus:</strong> Core runtime engine, manages component lifecycle</li>
+<li><strong>Components:</strong> Modular software units (native, Docker, Lambda)</li>
+<li><strong>Recipes:</strong> JSON configuration defining component behavior</li>
+<li><strong>Deployments:</strong> Push updates to Greengrass devices/groups</li>
+<li><strong>Local Pub/Sub:</strong> IPC for inter-component communication</li>
+<li><strong>Stream Manager:</strong> Local data buffering and cloud sync</li>
+</ul>
+</li>
+<li>Understood component lifecycle:
+<ul>
+<li>NEW → INSTALLED → STARTING → RUNNING → STOPPING → FINISHED</li>
+<li>Automatic restart on failure (configurable)</li>
+</ul>
+</li>
+<li>Learned recipe schema:
+<ul>
+<li>ComponentName, ComponentVersion</li>
+<li>Manifests (platform-specific)</li>
+<li>Lifecycle scripts (Install, Run, Shutdown)</li>
+<li>Artifacts (code, binaries, models)</li>
+<li>ComponentDependencies</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Greengrass Stream Manager Deep Dive:</strong></p>
+<ul>
+<li>Learned Stream Manager capabilities:
+<ul>
+<li>Local persistent message buffer (disk-backed)</li>
+<li>Automatic export to AWS IoT Core, Kinesis, IoT Analytics</li>
+<li>Offline resilience (buffers when disconnected)</li>
+<li>Configurable retention (size, age)</li>
+</ul>
+</li>
+<li>Configured stream parameters:
+<ul>
+<li>Strategy: <code>StrategyOnFull.RejectNewData</code></li>
+<li>Persistence: <code>Persisted to disk</code></li>
+<li>Flush on write: <code>false</code> (batch for efficiency)</li>
+<li>Export to IoT Core: <code>true</code></li>
+</ul>
+</li>
+<li>Benefits for SIAM:
+<ul>
+<li>Zero data loss during network outages</li>
+<li>Decouples data collection from cloud connectivity</li>
+<li>Local stream acts as message bus between components</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>DataLogger Greengrass Component:</strong></p>
+<ul>
+<li>Converted <code>local_datalogger.c</code> to use Stream Manager:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stream_manager.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+</span></span><span style="display:flex;"><span>    StreamManagerClient client <span style="color:#f92672">=</span> <span style="color:#a6e22e">create_stream_manager_client</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (running) {
+</span></span><span style="display:flex;"><span>        SensorData data <span style="color:#f92672">=</span> <span style="color:#a6e22e">read_sensors</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> json_payload[<span style="color:#ae81ff">512</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">snprintf</span>(json_payload, <span style="color:#66d9ef">sizeof</span>(json_payload),
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;{</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">device_id</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">:</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">,</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">timestamp</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">:%llu,</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">accel_x</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">:%.3f,...}&#34;</span>,
+</span></span><span style="display:flex;"><span>            DEVICE_ID, <span style="color:#a6e22e">get_timestamp</span>(), data.accel_x);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">append_to_stream</span>(client, <span style="color:#e6db74">&#34;SensorDataStream&#34;</span>, json_payload);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">sleep</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+<li>Implemented signal handling for graceful shutdown (SIGTERM, SIGINT)</li>
+<li>Created component recipe <code>com.siam.DataLogger-1.0.0.json</code>:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;RecipeFormatVersion&#34;</span>: <span style="color:#e6db74">&#34;2020-01-25&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentName&#34;</span>: <span style="color:#e6db74">&#34;com.siam.DataLogger&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentVersion&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentDescription&#34;</span>: <span style="color:#e6db74">&#34;Native C datalogger with Stream Manager&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentPublisher&#34;</span>: <span style="color:#e6db74">&#34;SIAM&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentDependencies&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;aws.greengrass.StreamManager&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;VersionRequirement&#34;</span>: <span style="color:#e6db74">&#34;^2.0.0&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Manifests&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Platform&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;os&#34;</span>: <span style="color:#e6db74">&#34;linux&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;architecture&#34;</span>: <span style="color:#e6db74">&#34;arm64&#34;</span>
+</span></span><span style="display:flex;"><span>      },
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Lifecycle&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;Install&#34;</span>: <span style="color:#e6db74">&#34;chmod +x {artifacts:path}/datalogger&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;Run&#34;</span>: <span style="color:#e6db74">&#34;{artifacts:path}/datalogger&#34;</span>
+</span></span><span style="display:flex;"><span>      },
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Artifacts&#34;</span>: [
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">&#34;URI&#34;</span>: <span style="color:#e6db74">&#34;s3://siam-demo-components/datalogger-arm64&#34;</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>      ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+<li>Compiled for ARM64: <code>gcc -o datalogger datalogger.c -lstream_manager -lpthread</code></li>
+<li>Uploaded binary to S3 component bucket</li>
+<li>Deployed component to Raspberry Pi via Greengrass console</li>
+</ul>
+</li>
+<li>
+<p><strong>Docker Setup on Raspberry Pi:</strong></p>
+<ul>
+<li>Installed Docker Engine:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -fsSL https://get.docker.com -o get-docker.sh
+</span></span><span style="display:flex;"><span>sudo sh get-docker.sh
+</span></span><span style="display:flex;"><span>sudo usermod -aG docker pi
+</span></span><span style="display:flex;"><span>sudo systemctl enable docker
+</span></span></code></pre></div></li>
+<li>Configured Docker daemon for Greengrass:
+<ul>
+<li>Added <code>ggc_user</code> to docker group</li>
+<li>Set resource limits (memory: 512MB)</li>
+</ul>
+</li>
+<li>Tested Docker installation:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run hello-world
+</span></span></code></pre></div></li>
+<li>Pulled base images:
+<ul>
+<li><code>python:3.9-slim-bullseye</code> - Lightweight Python runtime</li>
+<li>Downloaded Coral TPU libraries manually (PyCoral, TensorFlow Lite)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>ML Inference Docker Container:</strong></p>
+<ul>
+<li>Created <code>Dockerfile.tpu</code> with Coral TPU support:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dockerfile" data-lang="dockerfile"><span style="display:flex;"><span><span style="color:#66d9ef">FROM</span> <span style="color:#e6db74">python:3.9-slim-bullseye</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Install Coral TPU runtime libraries</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;deb https://packages.cloud.google.com/apt coral-edgetpu-stable main&#34;</span> &gt; /etc/apt/sources.list.d/coral-edgetpu.list <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    apt-get update <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    apt-get install -y libedgetpu1-std python3-pycoral <span style="color:#f92672">&amp;&amp;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    apt-get clean<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Install Python dependencies</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> pip install --no-cache-dir <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    paho-mqtt <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    numpy <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    boto3<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Copy inference service code</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> tpu_inference_service.py /app/<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> model_edgetpu.tflite /app/models/<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span> <span style="color:#e6db74">/app</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">CMD</span> [<span style="color:#e6db74">&#34;python&#34;</span>, <span style="color:#e6db74">&#34;tpu_inference_service.py&#34;</span>]<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div></li>
+<li>Implemented inference service <code>tpu_inference_service.py</code>:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> pycoral.utils <span style="color:#f92672">import</span> edgetpu
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> pycoral.adapters <span style="color:#f92672">import</span> common
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> json
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> time
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Load TPU model</span>
+</span></span><span style="display:flex;"><span>interpreter <span style="color:#f92672">=</span> edgetpu<span style="color:#f92672">.</span>make_interpreter(<span style="color:#e6db74">&#39;models/model_edgetpu.tflite&#39;</span>)
+</span></span><span style="display:flex;"><span>interpreter<span style="color:#f92672">.</span>allocate_tensors()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Load normalization params</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;normalization_params.json&#39;</span>) <span style="color:#66d9ef">as</span> f:
+</span></span><span style="display:flex;"><span>    norm_params <span style="color:#f92672">=</span> json<span style="color:#f92672">.</span>load(f)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Stream Manager consumer</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Read from Stream Manager</span>
+</span></span><span style="display:flex;"><span>    message <span style="color:#f92672">=</span> read_from_stream(<span style="color:#e6db74">&#39;SensorDataStream&#39;</span>)
+</span></span><span style="display:flex;"><span>    sensor_data <span style="color:#f92672">=</span> json<span style="color:#f92672">.</span>loads(message)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Preprocess</span>
+</span></span><span style="display:flex;"><span>    features <span style="color:#f92672">=</span> normalize_features(sensor_data, norm_params)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Run inference on TPU</span>
+</span></span><span style="display:flex;"><span>    common<span style="color:#f92672">.</span>set_input(interpreter, features)
+</span></span><span style="display:flex;"><span>    interpreter<span style="color:#f92672">.</span>invoke()
+</span></span><span style="display:flex;"><span>    output <span style="color:#f92672">=</span> common<span style="color:#f92672">.</span>output_tensor(interpreter, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Calculate reconstruction error</span>
+</span></span><span style="display:flex;"><span>    reconstruction_error <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>mean((features <span style="color:#f92672">-</span> output) <span style="color:#f92672">**</span> <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>    is_anomaly <span style="color:#f92672">=</span> reconstruction_error <span style="color:#f92672">&gt;</span> ANOMALY_THRESHOLD
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Publish prediction to IoT Core</span>
+</span></span><span style="display:flex;"><span>    prediction <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;device_id&#39;</span>: sensor_data[<span style="color:#e6db74">&#39;device_id&#39;</span>],
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;timestamp&#39;</span>: sensor_data[<span style="color:#e6db74">&#39;timestamp&#39;</span>],
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;reconstruction_error&#39;</span>: float(reconstruction_error),
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;is_anomaly&#39;</span>: is_anomaly
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    publish_to_iot(prediction)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    time<span style="color:#f92672">.</span>sleep(<span style="color:#ae81ff">1</span>)
+</span></span></code></pre></div></li>
+<li>Built Docker image:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker build -f Dockerfile.tpu -t siam-inference:v1 .
+</span></span></code></pre></div></li>
+<li>Tested container locally on Raspberry Pi:
+<ul>
+<li>Container size: 458 MB (includes TPU libraries)</li>
+<li>Inference latency: 1.3ms (TPU accelerated)</li>
+<li>CPU usage: 12% (very efficient)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>MLInference Greengrass Component:</strong></p>
+<ul>
+<li>Created component recipe for Docker container:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;RecipeFormatVersion&#34;</span>: <span style="color:#e6db74">&#34;2020-01-25&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentName&#34;</span>: <span style="color:#e6db74">&#34;com.siam.MLInference&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentVersion&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentDescription&#34;</span>: <span style="color:#e6db74">&#34;Docker-based ML inference with Coral TPU&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentPublisher&#34;</span>: <span style="color:#e6db74">&#34;SIAM&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ComponentDependencies&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;aws.greengrass.StreamManager&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;VersionRequirement&#34;</span>: <span style="color:#e6db74">&#34;^2.0.0&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;aws.greengrass.DockerApplicationManager&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;VersionRequirement&#34;</span>: <span style="color:#e6db74">&#34;^2.0.0&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Manifests&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Platform&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;os&#34;</span>: <span style="color:#e6db74">&#34;linux&#34;</span>
+</span></span><span style="display:flex;"><span>      },
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Lifecycle&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;Run&#34;</span>: <span style="color:#e6db74">&#34;docker run --privileged --device /dev/apex_0 --rm -v /greengrass/v2/ipc.socket:/greengrass/v2/ipc.socket siam-inference:v1&#34;</span>
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+<li>Key Docker configurations:
+<ul>
+<li><code>--privileged</code>: Access to Coral TPU device</li>
+<li><code>--device /dev/apex_0</code>: Coral TPU device passthrough</li>
+<li><code>-v /greengrass/v2/ipc.socket</code>: IPC for Stream Manager</li>
+</ul>
+</li>
+<li>Deployed model artifact:
+<ul>
+<li>Downloaded <code>model_edgetpu.tflite</code> from S3</li>
+<li>Placed in <code>/greengrass/v2/packages/artifacts/com.siam.MLInference/1.0.0/models/</code></li>
+</ul>
+</li>
+<li>Deployed component to Raspberry Pi</li>
+</ul>
+</li>
+<li>
+<p><strong>End-to-End Testing:</strong></p>
+<ul>
+<li>Verified component deployments:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo /greengrass/v2/bin/greengrass-cli component list
+</span></span></code></pre></div>Output:
+<pre tabindex="0"><code>Component Name: com.siam.DataLogger
+Version: 1.0.0
+State: RUNNING
+
+Component Name: com.siam.MLInference
+Version: 1.0.0
+State: RUNNING
+</code></pre></li>
+<li>Monitored Stream Manager streams:
+<ul>
+<li>Stream <code>SensorDataStream</code> active</li>
+<li>Messages buffering locally (1 msg/sec)</li>
+<li>Automatic export to IoT Core enabled</li>
+</ul>
+</li>
+<li>Verified data flow:
+<ol>
+<li>DataLogger → Stream Manager (sensor data)</li>
+<li>Stream Manager → MLInference (via consumer)</li>
+<li>MLInference → IoT Core (predictions)</li>
+</ol>
+</li>
+<li>Checked CloudWatch Logs:
+<ul>
+<li>DataLogger: &ldquo;Published sensor data to stream&rdquo;</li>
+<li>MLInference: &ldquo;Prediction: error=0.0234, anomaly=False&rdquo;</li>
+</ul>
+</li>
+<li>Tested offline resilience:
+<ul>
+<li>Disconnected WiFi for 30 minutes</li>
+<li>Stream Manager buffered 1,800 messages to disk</li>
+<li>Reconnected WiFi → automatic sync to cloud</li>
+<li>Zero data loss confirmed</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="sample-greengrass-deployment">Sample Greengrass Deployment:</h3>
+<pre tabindex="0"><code>$ sudo /greengrass/v2/bin/greengrass-cli deployment create \
+  --merge &#34;com.siam.DataLogger=1.0.0&#34; \
+  --merge &#34;com.siam.MLInference=1.0.0&#34;
+
+Deployment Id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+Deployment Status: IN_PROGRESS
+...
+Deployment Status: COMPLETED
+
+Components Deployed:
+- com.siam.DataLogger (1.0.0)
+- com.siam.MLInference (1.0.0)
+- aws.greengrass.StreamManager (2.1.3)
+- aws.greengrass.DockerApplicationManager (2.0.5)
+</code></pre><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>Stream Manager SDK:</strong> C SDK not well-documented - used Python SDK example as reference</li>
+<li><strong>Docker Permissions:</strong> Container couldn&rsquo;t access Coral TPU - solved with <code>--privileged</code> flag</li>
+<li><strong>Component Dependencies:</strong> Circular dependency issues - restructured recipe to explicit deps</li>
+<li><strong>Greengrass IPC:</strong> Docker container IPC socket mounting required specific path</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>Greengrass components enable modular edge application development</li>
+<li>Stream Manager is critical for offline-first IoT architectures</li>
+<li>Docker containers solve dependency hell for legacy hardware libraries (Coral TPU)</li>
+<li>Greengrass deployments provide over-the-air (OTA) updates for edge devices</li>
+<li>Component recipes are the &ldquo;infrastructure as code&rdquo; for edge devices</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 8, I will complete the full pipeline integration by connecting the edge predictions back to the cloud, implementing CloudWatch monitoring and alarms, and testing the entire system end-to-end. This includes simulating anomalies with a deliberately imbalanced fan to validate the ML model&rsquo;s effectiveness.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

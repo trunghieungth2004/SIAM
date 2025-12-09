@@ -1,0 +1,152 @@
+SIAM - Smart Industrial Asset Longevity Monitor
+Business Presentation Outline (8 Minutes)
+
+===============================================================================
+SLIDE 1: TITLE SLIDE
+===============================================================================
+SIAM - Smart Industrial Asset Longevity Monitor
+Predictive Maintenance for Rotary Machines
+
+Presented by: [Your Name]
+AWS First Cloud Journey (FCJ) Internship Project
+Date: December 2025
+
+===============================================================================
+SLIDE 2: AGENDA
+===============================================================================
+Presentation Overview
+
+1. The Problem & Solution (1.5 min)
+2. Technical Architecture (1.5 min)
+3. Project Costs & Limitations (2 min)
+4. Future Improvements (1 min)
+5. Live Demo - Anomaly Detection (2 min)
+
+Estimated Duration: 8 minutes
+
+===============================================================================
+SLIDE 3: PROBLEM & SOLUTION
+===============================================================================
+THE PROBLEM - ROTARY MACHINE FAILURES:
+• Motors, pumps, fans, compressors critical to operations
+• Bearing failures, imbalance, misalignment cause 70% of issues
+• Unplanned downtime costs $260,000/hour (industry average, per Aberdeen Strategy & Research, "The True Cost of Downtime" report)
+    • Note: The same research shows 82% of companies experienced unplanned downtime in the last 3 years.
+• Traditional vibration analysis requires expensive specialists
+
+THE SOLUTION - SIAM:
+• AI-powered vibration monitoring for rotary equipment
+• Real-time edge processing (1.3ms inference)
+• Zero data loss (offline-first design)
+• Automated ML pipeline
+
+KEY BENEFITS:
+• Early detection of bearing wear, imbalance, misalignment
+• Potential 70-90% reduction in unplanned downtime
+• No vibration analysis expertise required
+
+===============================================================================
+SLIDE 4: TECHNICAL ARCHITECTURE
+===============================================================================
+Hybrid Edge-Cloud Platform
+
+EDGE LAYER:
+• Raspberry Pi 5 + Google Coral TPU (AI acceleration)
+• Sensors: MPU-6050 (vibration), INA219 (current), DS18B20 (temp)
+• AWS IoT Greengrass (secure edge runtime)
+• Docker containers (ML inference)
+• Stream Manager (offline buffering)
+
+CLOUD LAYER:
+• AWS IoT Core (device connectivity)
+• Lambda Functions (serverless processing)
+• DynamoDB (real-time data storage)
+• SageMaker (automated ML training)
+• API Gateway (secure REST API)
+• EventBridge (bi-weekly retraining)
+• SNS (notification service)
+• CloudWatch (monitoring & alarms)
+
+DATA FLOW: Vibration Sensors → Edge AI → Cloud Analytics → Dashboard
+ALERTS: CloudWatch Alarm → SNS Topic (requires email subscription)
+
+===============================================================================
+SLIDE 5: PROJECT COSTS & CURRENT LIMITATIONS
+===============================================================================
+SYSTEM COSTS:
+
+HARDWARE: $187 (Raspberry Pi 5, Coral TPU, Sensors)
+AWS: ~$2/month (first year), ~$16/month (production)
+
+CURRENT LIMITATIONS:
+
+SINGLE MACHINE TYPE ONLY:
+• Model trained specifically for rotary machines
+• Cannot monitor different equipment types simultaneously
+• Each machine type requires separate model training
+• Example: Cannot monitor both pumps AND conveyors
+
+POTENTIAL SAVINGS:
+• If prevents 1 failure: $260,000 (1 hour downtime)
+
+*Note: Actual savings require pilot validation*
+
+===============================================================================
+SLIDE 6: FUTURE IMPROVEMENTS - HUB & SPOKE MODEL
+===============================================================================
+Proposed Scalable Architecture
+
+CURRENT SETUP:
+• Pi directly connected to sensors on 1 machine
+• Cost: $187 per machine
+
+FUTURE (Hub & Spoke):
+• Multiple ESP32s with sensors (1 per machine)
+• Each ESP32 transmits data to central Pi hub
+• Pi aggregates all data and handles AWS communication
+• Single Pi serves entire facility
+
+ARCHITECTURE:
+ESP32 #1 (Motor) ──┐
+ESP32 #2 (Pump) ───┤
+ESP32 #3 (Fan)  ───┼──→ Raspberry Pi Hub ──→ AWS
+ESP32 #4 (Comp) ───┤
+ESP32 #5 (Motor) ──┘
+
+COST REDUCTION:
+• ESP32 + sensors: ~$10 each
+• 10 machines: $100 (ESP32s) + $187 (Pi) = $287 total
+• Current: $1,870 (10 × $187)
+• Savings: 85% reduction
+
+===============================================================================
+SLIDE 7: LIVE DEMONSTRATION
+===============================================================================
+Real-Time Rotary Machine Anomaly Detection
+
+[2-MINUTE DEMO]
+
+PROVEN CAPABILITIES:
+• 96.9% anomaly detection accuracy
+• 1.3ms inference latency (Coral TPU)
+• Zero data loss during network outages
+
+1. NORMAL OPERATION:
+   • Dashboard shows healthy fan metrics
+   • Vibration: 9.78 m/s², Current: 0.52A, Temp: 24°C
+
+2. SIMULATE IMBALANCE:
+   • Attach weight to fan blade
+   • AI detects anomaly in 2 minutes
+   • CloudWatch alarm triggers
+   • SNS notification sent (if subscribed to email notifications)
+
+3. OFFLINE RESILIENCE:
+   • Disconnect network
+   • System continues monitoring
+   • Reconnect → automatic sync
+   • Zero data loss
+
+Questions?
+
+===============================================================================

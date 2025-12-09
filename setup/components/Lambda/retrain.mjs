@@ -35,6 +35,8 @@ export const handler = async (event) => {
     
     // Aggregate new sensor data into training CSV
     console.log('Aggregating sensor data from S3...');
+    console.log('NOTE: Autoencoder training requires NORMAL operation data only');
+    console.log('      Filter out anomalous periods for best results');
     const listCmd = new ListObjectsV2Command({
         Bucket: bucket, 
         Prefix: 'sensor-data/', 
@@ -51,22 +53,25 @@ export const handler = async (event) => {
             const getCmd = new GetObjectCommand({Bucket: bucket, Key: obj.Key});
             const response = await s3.send(getCmd);
             const data = JSON.parse(await response.Body.transformToString());
+            
+            // For autoencoder: optionally filter out known anomalies
+            // This simple implementation includes all data - ideally filter based on ML predictions
             csvData += `${data.timestamp},${data.temp_c},${data.ax},${data.ay},${data.az},${data.gx},${data.gy},${data.gz},${data.current_a}\n`;
             count++;
-            if (count >= 500) break; // Limit to 500 samples
+            if (count >= 1000) break; // Increase sample size for autoencoder training
         } catch (e) { 
             console.log(`Skip ${obj.Key}: ${e.message}`); 
         }
     }
     
-    if (count < 10) {
-        console.log('Not enough data for retraining');
+    if (count < 100) {
+        console.log('Not enough data for autoencoder retraining');
         return {
             statusCode: 400, 
             body: JSON.stringify({
                 error: 'Insufficient data for training', 
                 count: count,
-                message: 'At least 10 samples required'
+                message: 'At least 100 samples required for autoencoder training'
             })
         };
     }

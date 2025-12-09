@@ -263,6 +263,19 @@ setup_api_gateway() {
     print_log -c "[info] " "For Swagger UI: Enter API key in the input box at the top-right of swagger.html"
     print_log -y "[security] " "Store this API key securely - it won't be shown again"
     
+    # Export OpenAPI specification
+    print_log -c "[export] " "Exporting OpenAPI specification..."
+    if aws apigateway get-export \
+        --rest-api-id "$API_ID" \
+        --stage-name prod \
+        --export-type swagger \
+        --accepts application/json \
+        openapi.json 2>/dev/null; then
+        print_log -g "[ok] " "OpenAPI spec exported to openapi.json"
+    else
+        print_log -y "[warn] " "Failed to export OpenAPI specification"
+    fi
+    
     # Export variables for other components
     export API_ID API_URL API_KEY_VALUE
     

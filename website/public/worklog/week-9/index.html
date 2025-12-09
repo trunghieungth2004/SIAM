@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 9 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 9 Worklog</h1>
+    <div class="content">
+        <h1 id="week-9-worklog">Week 9 Worklog</h1>
+<h3 id="week-9-objectives">Week 9 Objectives:</h3>
+<ul>
+<li>Implement EventBridge scheduled rules for automation</li>
+<li>Develop retrain Lambda for automated model retraining</li>
+<li>Create deploy Lambda for Greengrass component deployment</li>
+<li>Build automated MLOps pipeline (retrain → deploy → edge)</li>
+<li>Test bi-weekly retraining workflow</li>
+<li>Validate model versioning and rollback capabilities</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Learn Amazon EventBridge fundamentals: <br>  + Event-driven architecture <br>  + Scheduled rules (cron expressions) <br>  + Event patterns and targets <br>  + EventBridge vs CloudWatch Events</td>
+          <td>03/11/2025</td>
+          <td>03/11/2025</td>
+          <td><a href="https://docs.aws.amazon.com/eventbridge/">AWS EventBridge Documentation</a></td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Implement retrain Lambda (retrain.mjs): <br>  + Query S3 data lake for latest data <br>  + Aggregate training samples <br>  + Start SageMaker Training Job <br>  + Store job metadata in DynamoDB</td>
+          <td>04/11/2025</td>
+          <td>04/11/2025</td>
+          <td>SageMaker SDK</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Implement deploy Lambda (deploy.mjs): <br>  + Triggered by SageMaker job completion <br>  + Download model artifacts from S3 <br>  + Convert to TensorFlow Lite + EdgeTPU <br>  + Create Greengrass deployment <br>  + Update component version</td>
+          <td>05/11/2025</td>
+          <td>05/11/2025</td>
+          <td>Greengrass deployment SDK</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Implement EventBridge.sh component script: <br>  + Create bi-weekly retrain rule (cron) <br>  + Create SageMaker completion rule (event pattern) <br>  + Configure Lambda targets <br>  + Set up IAM permissions</td>
+          <td>06/11/2025</td>
+          <td>06/11/2025</td>
+          <td>EventBridge rule configuration</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Test automated MLOps pipeline: <br>  + Manually trigger retrain Lambda <br>  + Monitor SageMaker training job <br>  + Verify deploy Lambda triggers on completion <br>  + Confirm edge deployment <br>  + Validate new model on Raspberry Pi</td>
+          <td>07/11/2025</td>
+          <td>08/11/2025</td>
+          <td>Integration testing</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Implement model versioning: <br>  + S3 versioning for model artifacts <br>  + DynamoDB model registry table <br>  + Greengrass component versioning <br>  + Rollback procedure documentation</td>
+          <td>09/11/2025</td>
+          <td>09/11/2025</td>
+          <td>Versioning best practices</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-9-achievements">Week 9 Achievements:</h3>
+<ul>
+<li>
+<p><strong>Amazon EventBridge Fundamentals:</strong></p>
+<ul>
+<li>Mastered EventBridge architecture:
+<ul>
+<li><strong>Event Bus:</strong> Central event routing mechanism</li>
+<li><strong>Rules:</strong> Match events and route to targets</li>
+<li><strong>Scheduled Rules:</strong> Cron-based automation (like cron jobs)</li>
+<li><strong>Event Patterns:</strong> Filter events by JSON structure</li>
+<li><strong>Targets:</strong> Services that receive events (Lambda, SNS, SQS, etc.)</li>
+</ul>
+</li>
+<li>Understood EventBridge vs CloudWatch Events:
+<ul>
+<li>EventBridge is the evolution of CloudWatch Events</li>
+<li>Added custom event buses and schema registry</li>
+<li>Better third-party integration (Datadog, Zendesk, etc.)</li>
+</ul>
+</li>
+<li>Learned cron expression syntax:
+<ul>
+<li><code>cron(0 0 * * ? *)</code> - Daily at midnight UTC</li>
+<li><code>cron(0 2 ? * 1 *)</code> - Every Monday at 2 AM</li>
+<li><code>cron(0 0 1,15 * ? *)</code> - 1st and 15th of every month (bi-weekly)</li>
+</ul>
+</li>
+<li>Studied event-driven patterns:
+<ul>
+<li>Trigger workflows based on AWS service state changes</li>
+<li>Decouple services with asynchronous events</li>
+<li>Build reactive, scalable architectures</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Retrain Lambda Implementation (retrain.mjs):</strong></p>
+<ul>
+<li>Implemented automated retraining workflow:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handler</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">event</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;Starting automated model retraining...&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 1. Query S3 data lake for latest sensor data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">latestData</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">aggregateTrainingData</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">DATA_LAKE_BUCKET</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">prefix</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;raw/&#39;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">maxSamples</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">500000</span>  <span style="color:#75715e">// Last 500k samples (~5 days)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 2. Upload aggregated dataset to S3
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">trainingDataKey</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`training/retrain_</span><span style="color:#e6db74">${</span>Date.<span style="color:#a6e22e">now</span>()<span style="color:#e6db74">}</span><span style="color:#e6db74">.csv`</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">putObject</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">DATA_LAKE_BUCKET</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">trainingDataKey</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">latestData</span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 3. Start SageMaker Training Job
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">jobName</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`siam-retrain-</span><span style="color:#e6db74">${</span>Date.<span style="color:#a6e22e">now</span>()<span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">trainingJob</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">sagemaker</span>.<span style="color:#a6e22e">createTrainingJob</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">TrainingJobName</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">jobName</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">RoleArn</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">SAGEMAKER_ROLE_ARN</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">AlgorithmSpecification</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">TrainingImage</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">TRAINING_IMAGE_URI</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">TrainingInputMode</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;File&#39;</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">InputDataConfig</span><span style="color:#f92672">:</span> [{
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">ChannelName</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;training&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">DataSource</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">S3DataSource</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">S3DataType</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;S3Prefix&#39;</span>,
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">S3Uri</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`s3://</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">DATA_LAKE_BUCKET</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">trainingDataKey</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }],
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">OutputDataConfig</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">S3OutputPath</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`s3://</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">DATA_LAKE_BUCKET</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/models/`</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ResourceConfig</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">InstanceType</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;ml.m5.xlarge&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">InstanceCount</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">VolumeSizeInGB</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">StoppingCondition</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">MaxRuntimeInSeconds</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">3600</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 4. Store training job metadata in DynamoDB
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">dynamodb</span>.<span style="color:#a6e22e">putItem</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">TableName</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">MODEL_REGISTRY_TABLE</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Item</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">model_id</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">jobName</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">status</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Training&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">training_data_size</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">latestData</span>.<span style="color:#a6e22e">length</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">started_at</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">new</span> Date().<span style="color:#a6e22e">toISOString</span>()
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Training job started: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">jobName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> { <span style="color:#a6e22e">statusCode</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">200</span>, <span style="color:#a6e22e">jobName</span> };
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div></li>
+<li>Implemented data aggregation logic:
+<ul>
+<li>List all sensor data files in S3 data lake</li>
+<li>Filter by timestamp (last 14 days)</li>
+<li>Download and combine into single CSV</li>
+<li>Sample randomly if exceeds 500k records (performance optimization)</li>
+</ul>
+</li>
+<li>Added error handling and CloudWatch Logging</li>
+<li>Configured Lambda timeout: 15 minutes (max)</li>
+<li>Allocated memory: 512 MB</li>
+</ul>
+</li>
+<li>
+<p><strong>Deploy Lambda Implementation (deploy.mjs):</strong></p>
+<ul>
+<li>Implemented automated deployment workflow:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">EC2Client</span>, <span style="color:#a6e22e">RunInstancesCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-ec2&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">GreengrassV2Client</span>, <span style="color:#a6e22e">CreateDeploymentCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-greengrassv2&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handler</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">event</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Event triggered by SageMaker Training Job completion
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">trainingJobName</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">detail</span>.<span style="color:#a6e22e">TrainingJobName</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">status</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">detail</span>.<span style="color:#a6e22e">TrainingJobStatus</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">status</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;Completed&#39;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Training job </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">status</span><span style="color:#e6db74">}</span><span style="color:#e6db74">, skipping deployment`</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Deploying model from </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">trainingJobName</span><span style="color:#e6db74">}</span><span style="color:#e6db74">...`</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 1. Trigger EdgeTPU compilation via EC2 (EdgeTPUCompiler.sh logic)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">//    Launches t3.micro Ubuntu instance with edgetpu-compiler
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">//    Downloads SageMaker model, converts to TFLite + EdgeTPU
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">//    Uploads to S3: model_edgetpu_latest.tar.gz
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">//    Instance self-terminates after completion (~3-5 min)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">triggerEdgeTPUCompilation</span>(<span style="color:#a6e22e">trainingJobName</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 2. Wait for compilation to complete (poll S3 for model_edgetpu_latest.tar.gz)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">waitForCompiledModel</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 4. Upload to Greengrass component artifact S3 bucket
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">newVersion</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">generateVersion</span>();  <span style="color:#75715e">// e.g., &#34;1.1.0&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">putObject</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">GREENGRASS_ARTIFACTS_BUCKET</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`com.siam.MLInference/</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">newVersion</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/model_edgetpu.tflite`</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">edgetpuModel</span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 5. Create new Greengrass component version
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">greengrass</span>.<span style="color:#a6e22e">createComponentVersion</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">InlineRecipe</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">RecipeFormatVersion</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;2020-01-25&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">ComponentName</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;com.siam.MLInference&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">ComponentVersion</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">newVersion</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// ... recipe configuration
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        })
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 6. Create Greengrass deployment
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">greengrass</span>.<span style="color:#a6e22e">createDeployment</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">TargetArn</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">THING_GROUP_ARN</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DeploymentName</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`ModelUpdate-</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">newVersion</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Components</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;com.siam.MLInference&#39;</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">ComponentVersion</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">newVersion</span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 7. Update model registry
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">dynamodb</span>.<span style="color:#a6e22e">updateItem</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">TableName</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">MODEL_REGISTRY_TABLE</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">model_id</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">trainingJobName</span> },
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">UpdateExpression</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;SET #status = :deployed, deployed_at = :now, version = :ver&#39;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ExpressionAttributeNames</span><span style="color:#f92672">:</span> { <span style="color:#e6db74">&#39;#status&#39;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;status&#39;</span> },
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ExpressionAttributeValues</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;:deployed&#39;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Deployed&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;:now&#39;</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">new</span> Date().<span style="color:#a6e22e">toISOString</span>(),
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;:ver&#39;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">newVersion</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">`Model deployed successfully: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">newVersion</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> { <span style="color:#a6e22e">statusCode</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">200</span>, <span style="color:#a6e22e">version</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">newVersion</span> };
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div></li>
+<li>Integrated EdgeTPU Compiler:
+<ul>
+<li>Triggers EdgeTPUCompiler.sh workflow (EC2 t3.micro instance)</li>
+<li>Instance downloads model, compiles with <code>edgetpu_compiler</code>, uploads to S3</li>
+<li>Self-terminating instance (~3-5 minutes total)</li>
+</ul>
+</li>
+<li>Implemented version generation:
+<ul>
+<li>Semantic versioning: MAJOR.MINOR.PATCH</li>
+<li>Auto-increment MINOR version for automated retrains</li>
+</ul>
+</li>
+<li>Added deployment verification:
+<ul>
+<li>Query Greengrass deployment status</li>
+<li>Retry logic for deployment failures</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>EventBridge Component Implementation (EventBridge.sh):</strong></p>
+<ul>
+<li>
+<p>Created bi-weekly retrain scheduled rule:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>aws events put-rule <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --name <span style="color:#e6db74">&#34;SIAM-BiweeklyRetrain&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --description <span style="color:#e6db74">&#34;Trigger model retraining every 14 days&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --schedule-expression <span style="color:#e6db74">&#34;rate(14 days)&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --state ENABLED
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>aws events put-targets <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --rule <span style="color:#e6db74">&#34;SIAM-BiweeklyRetrain&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --targets <span style="color:#e6db74">&#34;Id=1,Arn=</span><span style="color:#e6db74">${</span>RETRAIN_LAMBDA_ARN<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</span></span></code></pre></div><ul>
+<li>Schedule: Every 14 days (rate-based rule, not cron)</li>
+<li>Target: Retrain Lambda function</li>
+</ul>
+</li>
+<li>
+<p>Created SageMaker completion event rule:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>aws events put-rule <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --name <span style="color:#e6db74">&#34;SIAM-ModelTrainingCompleted&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --description <span style="color:#e6db74">&#34;Trigger deployment when training completes&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --event-pattern <span style="color:#e6db74">&#39;{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;source&#34;: [&#34;aws.sagemaker&#34;],
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;detail-type&#34;: [&#34;SageMaker Training Job State Change&#34;],
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;detail&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      &#34;TrainingJobStatus&#34;: [&#34;Completed&#34;, &#34;Failed&#34;]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  }&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --state ENABLED
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>aws events put-targets <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --rule <span style="color:#e6db74">&#34;SIAM-ModelTrainingCompleted&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --targets <span style="color:#e6db74">&#34;Id=1,Arn=</span><span style="color:#e6db74">${</span>DEPLOY_LAMBDA_ARN<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</span></span></code></pre></div><ul>
+<li>Event pattern: SageMaker Training Job completion</li>
+<li>Target: Deploy Lambda function</li>
+</ul>
+</li>
+<li>
+<p>Configured Lambda permissions:</p>
+<ul>
+<li>Added EventBridge as invocation source</li>
+<li>Granted <code>lambda:InvokeFunction</code> permission</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>MLOps Pipeline End-to-End Testing:</strong></p>
+<ul>
+<li>
+<p><strong>Manual Trigger Test:</strong></p>
+<ol>
+<li>Invoked Retrain Lambda via AWS Console</li>
+<li>Verified S3 data aggregation (500k samples collected)</li>
+<li>Confirmed SageMaker Training Job started: <code>siam-retrain-1698768000</code></li>
+<li>Monitored CloudWatch Logs (training progress)</li>
+<li>Training completed in 22 minutes</li>
+<li>EventBridge rule triggered Deploy Lambda automatically</li>
+<li>Deploy Lambda executed TFLite conversion and EdgeTPU compilation</li>
+<li>Greengrass deployment created: <code>ModelUpdate-1.1.0</code></li>
+<li>Raspberry Pi downloaded new component version</li>
+<li>MLInference component restarted with new model</li>
+<li>Verified predictions using updated model</li>
+</ol>
+<ul>
+<li><strong>Total pipeline duration:</strong> 28 minutes (automated)</li>
+<li><strong>Result:</strong>  Full MLOps pipeline successful</li>
+</ul>
+</li>
+<li>
+<p><strong>Bi-weekly Schedule Simulation:</strong></p>
+<ul>
+<li>Temporarily changed cron to trigger in 5 minutes</li>
+<li>Verified EventBridge rule invoked Retrain Lambda</li>
+<li>Confirmed automated workflow without manual intervention</li>
+<li>Reverted cron to production schedule</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Model Versioning System:</strong></p>
+<ul>
+<li>Created DynamoDB Model Registry Table:
+<ul>
+<li>Table name: <code>SIAM-ModelRegistry</code></li>
+<li>Schema:
+<pre tabindex="0"><code>model_id (String, PK)  | version (String) | status (String) | training_data_size (Number)
+started_at (String)     | completed_at (String) | deployed_at (String) | metrics (Map)
+</code></pre></li>
+</ul>
+</li>
+<li>Enabled S3 versioning for model artifacts:
+<ul>
+<li>Bucket: <code>siam-demo-data-lake</code></li>
+<li>Prefix: <code>models/</code></li>
+<li>Retention: All versions kept (for rollback)</li>
+</ul>
+</li>
+<li>Implemented Greengrass component versioning:
+<ul>
+<li>Each retrain creates new component version (1.0.0 → 1.1.0 → 1.2.0)</li>
+<li>Component recipe references specific model artifact version</li>
+</ul>
+</li>
+<li>Documented rollback procedure:
+<ol>
+<li>Identify previous model version in DynamoDB registry</li>
+<li>Create Greengrass deployment with previous component version</li>
+<li>Greengrass downloads and installs previous model</li>
+<li>Validate predictions with test data</li>
+</ol>
+<ul>
+<li><strong>Rollback time:</strong> ~2 minutes</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Model Performance Comparison:</strong></p>
+<ul>
+<li>
+<p><strong>Original Model (v1.0.0):</strong></p>
+<ul>
+<li>Training data: 172,770 samples (48 hours)</li>
+<li>Validation loss: 0.0198</li>
+<li>Anomaly detection accuracy: 96.9%</li>
+</ul>
+</li>
+<li>
+<p><strong>Retrained Model (v1.1.0):</strong></p>
+<ul>
+<li>Training data: 500,000 samples (5 days)</li>
+<li>Validation loss: 0.0176 (11% improvement)</li>
+<li>Anomaly detection accuracy: 98.2% (1.3% improvement)</li>
+<li>Model learned subtle patterns from extended dataset</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="mlops-pipeline-diagram">MLOps Pipeline Diagram:</h3>
+<pre tabindex="0"><code>┌──────────────────────────────────────────────────────────────┐
+│ Automated MLOps Pipeline                                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  EventBridge        Retrain          SageMaker              │
+│  (Bi-weekly)  ────▶ Lambda    ────▶  Training   ────┐       │
+│  Cron Rule          (retrain.mjs)    Job          │       │
+│                         │                          │       │
+│                         │                          ▼       │
+│                         ▼                      EventBridge  │
+│                    Aggregate Data              (Completion) │
+│                    from S3 Lake                    │       │
+│                                                    ▼       │
+│                                               Deploy Lambda │
+│                                               (deploy.mjs)  │
+│                                                    │       │
+│                          ┌─────────────────────────┘       │
+│                          │                                 │
+│                          ▼                                 │
+│                   Convert to TFLite                        │
+│                   Compile for EdgeTPU                      │
+│                   Create Greengrass                        │
+│                   Deployment                               │
+│                          │                                 │
+│                          ▼                                 │
+│                   ┌──────────────┐                         │
+│                   │ Raspberry Pi │ (OTA Update)            │
+│                   │ Edge Device  │                         │
+│                   └──────────────┘                         │
+└──────────────────────────────────────────────────────────────┘
+</code></pre><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>Lambda Timeout:</strong> Retrain Lambda exceeded 3min timeout during data aggregation - increased to 15min</li>
+<li><strong>EdgeTPU Compiler in Lambda:</strong> Compiler binary not available in Lambda - created Lambda Layer</li>
+<li><strong>Event Rule Permissions:</strong> Lambda invocation failed initially - added EventBridge as trusted service</li>
+<li><strong>S3 Versioning Costs:</strong> Many model versions accumulated - implemented lifecycle policy (delete after 90 days)</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>EventBridge enables truly serverless automation at scale</li>
+<li>Automated MLOps eliminates manual model deployment toil</li>
+<li>Model versioning is critical for production ML systems</li>
+<li>Lambda is powerful for orchestration workflows</li>
+<li>Greengrass OTA updates enable seamless edge model updates</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 10, I will focus on API Gateway security enhancements, implementing the monthly API key rotation automation, and building the frontend web dashboard with real-time data visualization and Swagger API documentation.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

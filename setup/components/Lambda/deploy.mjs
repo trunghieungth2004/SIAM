@@ -385,8 +385,8 @@ if [ ! -f "model.tflite" ]; then
     exit 1
 fi
 
-if [ ! -f "days_scaler.pkl" ]; then
-    echo "[ERROR] days_scaler.pkl not found in archive"
+if [ ! -f "thresholds.json" ]; then
+    echo "[ERROR] thresholds.json not found in archive"
     ls -la
     ${vpcCleanupScript}
     aws ec2 terminate-instances --instance-ids "\${INSTANCE_ID}" --region "\${AWS_REGION}"
@@ -410,7 +410,7 @@ fi
 
 echo "[6/7] Uploading compiled model..."
 cp model_edgetpu.tflite model.tflite
-tar -czf model_compiled.tar.gz model.tflite scaler.pkl days_scaler.pkl features.txt
+tar -czf model_compiled.tar.gz model.tflite scaler.pkl thresholds.json features.txt
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 COMPILED_S3="s3://\${S3_BUCKET}/models/model_edgetpu_\${TIMESTAMP}.tar.gz"
 LATEST_S3="s3://\${S3_BUCKET}/models/model_edgetpu_latest.tar.gz"

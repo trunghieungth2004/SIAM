@@ -197,13 +197,21 @@ This proposal is based on a high-performance edge device. The following tiers ar
   - Data transfer and overhead: ~$1.98
   - Cost: ~$2.00
 
-- **Amazon SageMaker**: ~$4.80
+- **Amazon SageMaker**: ~$0.50
   - Bi-weekly training (2 jobs/month)
-  - ml.m5.xlarge instance: $0.269/hour
+  - ml.m5.large instance: $0.192/hour
   - Training duration: ~30 minutes per job
-  - Cost: 2 jobs × 0.5 hours × $0.269 = $0.27
-  - Data processing and storage: ~$4.50
-  - Cost: ~$4.80
+  - Cost: 2 jobs × 0.5 hours × $0.192 = $0.19
+  - Data processing and storage: ~$0.30
+  - Cost: ~$0.50
+
+- **Edge TPU Compiler (EC2)**: ~$0.50
+  - t3.micro instance for model compilation
+  - Bi-weekly compilation (2 jobs/month)
+  - Compilation duration: ~5 minutes per job
+  - Cost: 2 jobs × 0.083 hours × $0.0104 = $0.002
+  - Data transfer and overhead: ~$0.50
+  - Cost: ~$0.50
 
 - **Amazon EventBridge**: ~$0.10
   - 3 scheduled rules (retrain bi-weekly, rotate monthly, deploy on completion)
@@ -219,7 +227,7 @@ This proposal is based on a high-performance edge device. The following tiers ar
   - ~100 notifications/month (alerts, automation)
   - Cost: 100 × $0.50/million + overhead = ~$0.15
 
-- **Total Monthly Cloud Cost**: ~$18.50 - $20.00
+- **Total Monthly Cloud Cost**: ~$15.00 - $17.00
 
 ### AWS Free Tier (First 12 Months):
 
@@ -252,10 +260,14 @@ For new AWS accounts, the first year costs are significantly reduced:
   - Usage: 5,000 calls/month (~0.5% of free tier)
   - Fully covered
 
-- **Amazon SageMaker**: ~$0.27
+- **Amazon SageMaker**: ~$0.19
   - Free tier: 250 hours ml.t3.medium/month (first 2 months)
-  - Usage: ml.m5.xlarge (not covered by free tier)
-  - Cost: 2 jobs × 0.5 hours × $0.269 = $0.27/month
+  - Usage: ml.m5.large (not covered by free tier)
+  - Cost: 2 jobs × 0.5 hours × $0.192 = $0.19/month
+
+- **Edge TPU Compiler (EC2)**: ~$0.50
+  - No free tier for t3.micro compilation instances
+  - Cost: ~$0.50/month
 
 - **Amazon CloudWatch**: $0.00
   - Free tier: 5 GB log ingestion + 10 custom metrics (always free)
@@ -266,13 +278,13 @@ For new AWS accounts, the first year costs are significantly reduced:
   - Free tier covers low usage volumes
   - Fully covered
 
-- **Total Monthly Cost (First 12 Months)**: ~$1.00 - $2.00
+- **Total Monthly Cost (First 12 Months)**: ~$1.50 - $2.50
 
 ### Annual Cost Summary:
 
-- **Production Cost**: ~$20.00/month per device (~$240/year)
-- **First Year with Free Tier**: ~$1.50/month per device (~$18/year for first 12 months, then $240/year)
-- **Cost Breakdown**: IoT Core (13%), DynamoDB (19%), SageMaker (24%), CloudWatch (13%), Lambda (6%), S3 (8%), API Gateway (10%), Other (7%)
+- **Production Cost**: ~$16.00/month per device (~$192/year)
+- **First Year with Free Tier**: ~$2.00/month per device (~$24/year for first 12 months, then $192/year)
+- **Cost Breakdown**: IoT Core (16%), DynamoDB (23%), CloudWatch (16%), Lambda (8%), S3 (9%), API Gateway (13%), SageMaker (3%), EdgeTPU Compiler (3%), Other (9%)
 
 ## 7. Risk Assessment & Mitigation
 

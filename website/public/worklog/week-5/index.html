@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 5 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 5 Worklog</h1>
+    <div class="content">
+        <h1 id="week-5-worklog">Week 5 Worklog</h1>
+<h3 id="week-5-objectives">Week 5 Objectives:</h3>
+<ul>
+<li>Analyze local sensor data collected from Raspberry Pi</li>
+<li>Implement Lambda functions for data ingestion and querying</li>
+<li>Complete API Gateway setup with authentication</li>
+<li>Prepare dataset for machine learning training</li>
+<li>Learn AWS Lambda best practices and Node.js development</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Analyze 48-hour local sensor data collection <br> - Identify data patterns and anomalies <br> - Calculate statistics (mean, std, min, max) <br> - Visualize time-series data with Python <br> - Clean and validate sensor readings</td>
+          <td>06/10/2025</td>
+          <td>06/10/2025</td>
+          <td>Python (pandas, matplotlib)</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Learn AWS Lambda fundamentals: <br>  + Lambda execution model <br>  + Event-driven architecture <br>  + Cold start vs warm start <br>  + Memory and timeout configuration <br> - Study Node.js for Lambda development</td>
+          <td>07/10/2025</td>
+          <td>07/10/2025</td>
+          <td><a href="https://docs.aws.amazon.com/lambda/">AWS Lambda Documentation</a></td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Implement Lambda.sh component script: <br>  + Create IAM roles for Lambda <br>  + Package Lambda deployment artifacts <br>  + Deploy ingestion Lambda function <br>  + Deploy query Lambda function <br> - Test Lambda functions locally</td>
+          <td>08/10/2025</td>
+          <td>08/10/2025</td>
+          <td>AWS Lambda best practices</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Implement Ingestion Lambda (ingestion.js): <br>  + Parse IoT Core messages <br>  + Validate sensor data <br>  + Write to DynamoDB <br>  + Upload raw data to S3 data lake <br> - Test with sample IoT messages</td>
+          <td>09/10/2025</td>
+          <td>09/10/2025</td>
+          <td>DynamoDB JavaScript SDK</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Implement Query Lambda (query.mjs): <br>  + Parse API Gateway requests <br>  + Query DynamoDB by device_id and time range <br>  + Return JSON response with CORS headers <br> - Implement error handling and logging</td>
+          <td>10/10/2025</td>
+          <td>10/10/2025</td>
+          <td>API Gateway integration</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Complete API Gateway setup (APIGateway.sh): <br>  + Create REST API <br>  + Configure x-api-key authentication <br>  + Set up rate limiting (10 req/s, 10k daily) <br>  + Deploy API stages <br> - Test API endpoints with Postman</td>
+          <td>11/10/2025</td>
+          <td>12/10/2025</td>
+          <td><a href="https://docs.aws.amazon.com/apigateway/">AWS API Gateway Documentation</a></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-5-achievements">Week 5 Achievements:</h3>
+<ul>
+<li>
+<p><strong>Local Data Collection Analysis:</strong></p>
+<ul>
+<li>Successfully collected 48 hours of continuous sensor data:
+<ul>
+<li>172,800 data points (1 reading/second)</li>
+<li>File size: ~450 MB CSV format</li>
+</ul>
+</li>
+<li>Performed statistical analysis using Python pandas:
+<ul>
+<li>MPU-6050 accelerometer (baseline): Mean Z-axis = 9.78 m/s² (expected ~9.81)</li>
+<li>Temperature sensor: Range 22.1°C - 26.3°C (normal room variance)</li>
+<li>Current sensor: Mean = 0.52A, Std = 0.03A (stable motor operation)</li>
+</ul>
+</li>
+<li>Visualized time-series data:
+<ul>
+<li>Created plots for acceleration, current, and temperature</li>
+<li>Identified periodic patterns (fan vibration frequency ~60 Hz)</li>
+<li>No significant anomalies detected (healthy &ldquo;normal&rdquo; dataset)</li>
+</ul>
+</li>
+<li>Cleaned dataset:
+<ul>
+<li>Removed 23 outliers (sensor read errors)</li>
+<li>Interpolated 7 missing timestamps</li>
+<li>Final dataset: 172,770 valid samples</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>AWS Lambda Fundamentals:</strong></p>
+<ul>
+<li>Mastered Lambda execution model:
+<ul>
+<li>Event-driven serverless compute</li>
+<li>Automatic scaling (0 to 1000s of concurrent executions)</li>
+<li>Pay-per-invocation pricing (first 1M requests free)</li>
+</ul>
+</li>
+<li>Understood Lambda lifecycle:
+<ul>
+<li>INIT phase: Load code, initialize SDK clients</li>
+<li>INVOKE phase: Execute handler function</li>
+<li>Cold start: ~200-500ms for Node.js</li>
+<li>Warm start: ~10-20ms (reused execution environment)</li>
+</ul>
+</li>
+<li>Learned Lambda configuration:
+<ul>
+<li>Memory: 128 MB - 10 GB (CPU scales proportionally)</li>
+<li>Timeout: Default 3s, max 15 minutes</li>
+<li>Environment variables for configuration</li>
+</ul>
+</li>
+<li>Studied best practices:
+<ul>
+<li>Initialize SDK clients outside handler (reuse)</li>
+<li>Use async/await for better error handling</li>
+<li>Enable X-Ray tracing for debugging</li>
+<li>Use CloudWatch Logs for monitoring</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Lambda Component Implementation (Lambda.sh):</strong></p>
+<ul>
+<li>Created automated Lambda deployment script</li>
+<li>Implemented IAM role creation with policies:
+<ul>
+<li><code>AWSLambdaBasicExecutionRole</code> - CloudWatch Logs</li>
+<li>DynamoDB PutItem/Query permissions</li>
+<li>S3 PutObject for data lake</li>
+<li>SNS Publish for alerts</li>
+</ul>
+</li>
+<li>Built Lambda packaging system:
+<ul>
+<li>Install dependencies: <code>npm install @aws-sdk/client-dynamodb @aws-sdk/client-s3</code></li>
+<li>Create deployment ZIP with code + node_modules</li>
+<li>Upload to S3 for versioning</li>
+</ul>
+</li>
+<li>Deployed multiple Lambda functions:
+<ul>
+<li><code>ingestion</code> - IoT data processing</li>
+<li><code>query</code> - API data retrieval</li>
+<li><code>retrain</code> - SageMaker training trigger</li>
+<li><code>deploy</code> - Greengrass deployment</li>
+<li><code>rotate</code> - API key rotation</li>
+</ul>
+</li>
+<li>Added Lambda layer for shared dependencies</li>
+</ul>
+</li>
+<li>
+<p><strong>Ingestion Lambda Function (ingestion.js):</strong></p>
+<ul>
+<li>Implemented IoT Core message handler:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">DynamoDBClient</span>, <span style="color:#a6e22e">PutItemCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-dynamodb&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">S3Client</span>, <span style="color:#a6e22e">PutObjectCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-s3&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dynamodb</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">DynamoDBClient</span>({});
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">s3</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">S3Client</span>({});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handler</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">event</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sensorData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">parse</span>(<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">payload</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Validate sensor data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">sensorData</span>.<span style="color:#a6e22e">device_id</span> <span style="color:#f92672">||</span> <span style="color:#f92672">!</span><span style="color:#a6e22e">sensorData</span>.<span style="color:#a6e22e">timestamp</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">&#39;Invalid sensor data&#39;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Write to DynamoDB
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">dynamodb</span>.<span style="color:#a6e22e">send</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">PutItemCommand</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">TableName</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">DYNAMODB_TABLE</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Item</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">device_id</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">S</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">sensorData</span>.<span style="color:#a6e22e">device_id</span> },
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">timestamp</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">N</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">sensorData</span>.<span style="color:#a6e22e">timestamp</span>.<span style="color:#a6e22e">toString</span>() },
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">S</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">sensorData</span>) }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Upload to S3 data lake
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">s3</span>.<span style="color:#a6e22e">send</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">PutObjectCommand</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Bucket</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">DATA_LAKE_BUCKET</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Key</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`raw/</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">sensorData</span>.<span style="color:#a6e22e">device_id</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">${</span>Date.<span style="color:#a6e22e">now</span>()<span style="color:#e6db74">}</span><span style="color:#e6db74">.json`</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">sensorData</span>)
+</span></span><span style="display:flex;"><span>    }));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> { <span style="color:#a6e22e">statusCode</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">200</span> };
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div></li>
+<li>Added data validation logic</li>
+<li>Implemented error handling and retry logic</li>
+<li>Configured CloudWatch Logs for debugging</li>
+<li>Tested with mock IoT Core events</li>
+</ul>
+</li>
+<li>
+<p><strong>Query Lambda Function (query.mjs):</strong></p>
+<ul>
+<li>Implemented API Gateway request handler:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">DynamoDBClient</span>, <span style="color:#a6e22e">QueryCommand</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/client-dynamodb&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">unmarshall</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;@aws-sdk/util-dynamodb&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">dynamodb</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">DynamoDBClient</span>({});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">handler</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">async</span> (<span style="color:#a6e22e">event</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">device_id</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">queryStringParameters</span>.<span style="color:#a6e22e">device_id</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">start_time</span> <span style="color:#f92672">=</span> parseInt(<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">queryStringParameters</span>.<span style="color:#a6e22e">start_time</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">end_time</span> <span style="color:#f92672">=</span> parseInt(<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">queryStringParameters</span>.<span style="color:#a6e22e">end_time</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">dynamodb</span>.<span style="color:#a6e22e">send</span>(<span style="color:#66d9ef">new</span> <span style="color:#a6e22e">QueryCommand</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">TableName</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">process</span>.<span style="color:#a6e22e">env</span>.<span style="color:#a6e22e">DYNAMODB_TABLE</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">KeyConditionExpression</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;device_id = :id AND #ts BETWEEN :start AND :end&#39;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ExpressionAttributeNames</span><span style="color:#f92672">:</span> { <span style="color:#e6db74">&#39;#ts&#39;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;timestamp&#39;</span> },
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ExpressionAttributeValues</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;:id&#39;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">device_id</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;:start&#39;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">start_time</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;:end&#39;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">end_time</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">statusCode</span><span style="color:#f92672">:</span> <span style="color:#ae81ff">200</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;Access-Control-Allow-Origin&#39;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;*&#39;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;Content-Type&#39;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;application/json&#39;</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">Items</span>.<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">item</span> =&gt; <span style="color:#a6e22e">unmarshall</span>(<span style="color:#a6e22e">item</span>)))
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div></li>
+<li>Added CORS headers for web dashboard</li>
+<li>Implemented pagination for large datasets</li>
+<li>Optimized DynamoDB queries with GSI</li>
+</ul>
+</li>
+<li>
+<p><strong>API Gateway Setup (APIGateway.sh):</strong></p>
+<ul>
+<li>Created REST API: <code>SIAM-API</code></li>
+<li>Configured resources and methods:
+<ul>
+<li><code>GET /data</code> - Query sensor data (integrated with Query Lambda)</li>
+<li><code>GET /health</code> - Health check endpoint</li>
+</ul>
+</li>
+<li>Implemented x-api-key authentication:
+<ul>
+<li>Created API key: <code>siam-api-key-[timestamp]</code></li>
+<li>Associated with usage plan</li>
+<li>Configured automatic rotation (monthly)</li>
+</ul>
+</li>
+<li>Set up rate limiting:
+<ul>
+<li>Throttle: 10 requests/second</li>
+<li>Burst: 20 requests</li>
+<li>Quota: 10,000 requests/day</li>
+</ul>
+</li>
+<li>Deployed API to <code>prod</code> stage:
+<ul>
+<li>Endpoint: <code>https://abc123xyz.execute-api.us-east-1.amazonaws.com/prod</code></li>
+</ul>
+</li>
+<li>Enabled CloudWatch Logs for API Gateway</li>
+<li>Configured CORS for cross-origin requests</li>
+</ul>
+</li>
+<li>
+<p><strong>API Testing with Postman:</strong></p>
+<ul>
+<li>Created Postman collection for SIAM API</li>
+<li>Tested endpoints:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -X GET <span style="color:#e6db74">&#39;https://abc123xyz.execute-api.us-east-1.amazonaws.com/prod/data?device_id=RaspberryPi_5_Core&amp;start_time=1728000000&amp;end_time=1728100000&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;x-api-key: your-api-key-here&#39;</span>
+</span></span></code></pre></div></li>
+<li>Verified rate limiting (429 Too Many Requests after threshold)</li>
+<li>Tested CORS preflight requests</li>
+<li>Validated error responses (400, 401, 500)</li>
+</ul>
+</li>
+<li>
+<p><strong>Dataset Preparation for ML:</strong></p>
+<ul>
+<li>Exported cleaned sensor data from local logs</li>
+<li>Converted to CSV format for SageMaker:
+<ul>
+<li>Columns: timestamp, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, current, voltage, temperature</li>
+<li>172,770 rows × 10 columns</li>
+</ul>
+</li>
+<li>Uploaded training dataset to S3:
+<ul>
+<li>Bucket: <code>siam-demo-data-lake</code></li>
+<li>Key: <code>training/normal_baseline_v1.csv</code></li>
+</ul>
+</li>
+<li>Split dataset:
+<ul>
+<li>Training: 80% (138,216 samples)</li>
+<li>Validation: 20% (34,554 samples)</li>
+</ul>
+</li>
+<li>Calculated normalization parameters:
+<ul>
+<li>Mean and standard deviation for each feature</li>
+<li>Stored in <code>normalization_params.json</code> for inference</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="sample-api-response">Sample API Response:</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;statusCode&#34;</span>: <span style="color:#ae81ff">200</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;data&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;device_id&#34;</span>: <span style="color:#e6db74">&#34;RaspberryPi_5_Core&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;timestamp&#34;</span>: <span style="color:#ae81ff">1728012345</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;accel_x&#34;</span>: <span style="color:#ae81ff">0.02</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;accel_y&#34;</span>: <span style="color:#ae81ff">-0.03</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;accel_z&#34;</span>: <span style="color:#ae81ff">9.78</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;gyro_x&#34;</span>: <span style="color:#ae81ff">0.01</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;gyro_y&#34;</span>: <span style="color:#ae81ff">0.00</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;gyro_z&#34;</span>: <span style="color:#ae81ff">-0.01</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;current&#34;</span>: <span style="color:#ae81ff">0.52</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;voltage&#34;</span>: <span style="color:#ae81ff">12.4</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;temperature&#34;</span>: <span style="color:#ae81ff">24.2</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ],
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;count&#34;</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>Lambda Cold Starts:</strong> Initial API requests slow (~500ms) - solved by using provisioned concurrency</li>
+<li><strong>DynamoDB Throttling:</strong> Hit write capacity limits during bulk testing - switched to on-demand billing</li>
+<li><strong>CORS Issues:</strong> Browser blocked API requests - added proper CORS headers in Lambda response</li>
+<li><strong>API Key Security:</strong> Hardcoding key in frontend is insecure - implemented automatic rotation</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>Lambda is ideal for sporadic, event-driven workloads</li>
+<li>DynamoDB on-demand billing is cost-effective for unpredictable traffic</li>
+<li>API Gateway rate limiting prevents abuse and controls costs</li>
+<li>x-api-key authentication is simple but requires key rotation</li>
+<li>CloudWatch Logs are essential for serverless debugging</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 6, I will implement the SageMaker component script, prepare the training job configuration, and train the first version of the anomaly detection model using the &ldquo;normal&rdquo; baseline dataset. This marks the beginning of the ML pipeline development.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

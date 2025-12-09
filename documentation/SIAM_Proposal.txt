@@ -245,7 +245,7 @@ This project is a **Production-Ready Prototype**. To move to a full production d
 - **Amazon SNS**: ~$0.15
   - ~100 notifications/month (alerts, automation)
 
-**Total Monthly Cloud Cost**: ~$18.50 - $20.00
+**Total Monthly Cloud Cost**: ~$15.00 - $17.00
 
 **AWS Free Tier (First 12 Months):**
 

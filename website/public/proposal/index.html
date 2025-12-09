@@ -19,6 +19,32 @@
                 <ul>
                     <li><a href="//localhost:1313/">Home</a></li>
                     
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
                     <li><a href="//localhost:1313/proposal/">Proposal</a></li>
                     
                 </ul>
@@ -37,7 +63,7 @@
         <h1 id="project-proposal-siam-smart-industrial-assets-longevity-monitor">Project Proposal: SIAM (Smart Industrial Asset&rsquo;s longevity Monitor)</h1>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
   <h2 style="margin: 0;">A Hybrid Edge-Cloud Platform for Predictive Maintenance</h2>
-  <a href="https://docs.google.com/document/d/12bvQSINqd7WSUqMcmQEpyZAupk5yrO_X/edit?usp=sharing&ouid=108415462704163997970&rtpof=true&sd=true" download style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 2px solid #0078d4; text-decoration: none; border-radius: 5px; font-size: 24px;" title="Download Proposal (Word Document)">📄</a>
+  <a href="https://github.com/trunghieungth2004/SIAM/releases/download/proposal-20251204-201648/SIAM_Proposal.docx" download style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 2px solid #0078d4; text-decoration: none; border-radius: 5px; font-size: 24px;" title="Download Proposal (Word Document)">📄</a>
 </div>
 <h2 id="1-executive-summary">1. Executive Summary</h2>
 <p>This proposal outlines the development of a high-performance, resilient predictive maintenance platform, SIAM (Smart Industrial Asset&rsquo;s longevity Monitor). The system is designed to monitor industrial equipment (represented by a demo fan machine) in real-time, detect anomalous behavior, and predict equipment health.</p>
@@ -46,7 +72,7 @@
 <li>A native C-based datalogger that reads directly from hardware sensors (MPU-6050, INA219, DS18B20) and writes data to Greengrass Stream Manager.</li>
 <li>A Docker-containerized Python ML inference application that reads from Stream Manager, performs real-time anomaly detection using the Coral TPU, and publishes predictions back to the cloud.</li>
 </ol>
-<p>The cloud backend, built on a secure AWS VPC, uses AWS IoT Core to ingest data, which is then processed by an AWS Lambda function and stored in DynamoDB and an S3 Data Lake. The system is fully automated with an MLOps pipeline using Amazon EventBridge and Amazon SageMaker to retrain and redeploy new models weekly. A public web-based dashboard, hosted on S3, provides real-time monitoring and alert status.</p>
+<p>The cloud backend uses Greengrass Stream Manager to buffer sensor data locally and publish to AWS IoT Core. Data is ingested via an IoT Rule triggering a Lambda function that stores records in DynamoDB and S3 Data Lake. The system features a REST API via API Gateway with x-api-key authentication, rate limiting, and automatic monthly key rotation. A fully automated MLOps pipeline using EventBridge and SageMaker retrains models bi-weekly and redeploys to the edge. A public web dashboard hosted on S3 provides real-time monitoring with Swagger/OpenAPI documentation for the REST API.</p>
 <h2 id="2-problem-statement">2. Problem Statement</h2>
 <h3 id="whats-the-problem">What&rsquo;s the Problem?</h3>
 <p>Traditional equipment maintenance is reactive; operators fix machines after they break, leading to costly unplanned downtime. Existing monitoring systems often lack offline capability (causing data loss) and fail to adapt to changing equipment behavior (&ldquo;model drift&rdquo;).</p>
@@ -55,11 +81,12 @@
 <ol>
 <li><strong>Edge-First Data Collection</strong>: A native C application on the Raspberry Pi collects high-resolution data from sensors (MPU-6050, INA219, DS18B20).</li>
 <li><strong>Offline Resilience &amp; Local Pub/Sub</strong>: The C datalogger publishes sensor data to Greengrass Stream Manager. This stream acts as a local, persistent buffer, ensuring zero data loss during network outages and decoupling the data collection from its consumption.</li>
-<li><strong>Cloud Ingestion</strong>: Stream Manager automatically syncs this data to AWS IoT Core, which triggers an Ingestion Lambda. This function logs data to DynamoDB and S3. A SQS Dead-Letter Queue (DLQ) captures any failed ingestion.</li>
-<li><strong>Automated ML Pipeline</strong>: An EventBridge rule schedules a weekly Retrain Lambda, which starts a SageMaker Training Job on the latest data from the S3 data lake.</li>
+<li><strong>Cloud Ingestion</strong>: Stream Manager automatically syncs this data to AWS IoT Core, which triggers an Ingestion Lambda. This function logs data to DynamoDB and S3.</li>
+<li><strong>Secure REST API</strong>: API Gateway provides a REST endpoint with x-api-key authentication, rate limiting (10 req/s, burst 20, 10k daily quota), and CORS support. API keys are automatically rotated monthly via EventBridge Lambda for enhanced security.</li>
+<li><strong>Automated ML Pipeline</strong>: An EventBridge rule schedules a bi-weekly Retrain Lambda, which starts a SageMaker Training Job on the latest data from the S3 data lake. Another rule triggers deployment when training completes.</li>
 <li><strong>Intelligent Edge Deployment</strong>: The newly trained model is automatically deployed back to the Raspberry Pi as a Greengrass component.</li>
 <li><strong>Decoupled Edge Inference</strong>: A separate Docker container running a Python application reads the sensor data from the local Stream Manager, loads the deployed model, and performs TPU-accelerated inference. This containerized approach is a key design choice, solving the &ldquo;dependency hell&rdquo; that often occurs when edge ML hardware (like the Coral TPU) has its software support abandoned by the manufacturer, which normally prevents host OS upgrades.</li>
-<li><strong>Real-Time Monitoring</strong>: A web application, hosted on S3, queries live data from DynamoDB via an API Gateway to display real-time sensor graphs and alert status.</li>
+<li><strong>Real-Time Monitoring</strong>: A web application hosted on S3 queries live data from DynamoDB via the secured API Gateway to display real-time sensor graphs and alert status. Interactive API documentation is provided via Swagger UI with built-in request testing.</li>
 </ol>
 <h3 id="benefits-and-return-on-investment">Benefits and Return on Investment</h3>
 <ul>
@@ -75,12 +102,12 @@
 <ul>
 <li><strong>Edge</strong>: AWS IoT Greengrass (Core, Stream Manager, Component Deployments)</li>
 <li><strong>Ingestion</strong>: AWS IoT Core (MQTT Broker, Rules)</li>
-<li><strong>Compute</strong>: AWS Lambda (Ingestion, Query, Retrain-Trigger, Deploy)</li>
+<li><strong>Compute</strong>: AWS Lambda (Ingestion, Query, Retrain, Deploy, Rotate)</li>
 <li><strong>Storage</strong>: Amazon DynamoDB, Amazon S3 (Data Lake, Model Artifacts, Web Hosting)</li>
-<li><strong>Networking</strong>: AWS VPC (Private/Public Subnets), NAT Gateway, VPC Endpoints, API Gateway</li>
-<li><strong>Machine Learning</strong>: Amazon SageMaker (Training Jobs), Amazon EventBridge (Scheduler)</li>
-<li><strong>Security</strong>: AWS Secrets Manager, IAM</li>
-<li><strong>Reliability &amp; Monitoring</strong>: Amazon SQS (Dead-Letter Queue), Amazon CloudWatch, Amazon SNS</li>
+<li><strong>API &amp; Security</strong>: API Gateway (REST API, x-api-key auth, rate limiting), IAM</li>
+<li><strong>Machine Learning</strong>: Amazon SageMaker (Training Jobs)</li>
+<li><strong>Automation</strong>: Amazon EventBridge (Bi-weekly retraining, Monthly key rotation, Deployment triggers)</li>
+<li><strong>Monitoring</strong>: Amazon CloudWatch, Amazon SNS</li>
 </ul>
 <h3 id="component-design">Component Design</h3>
 <ul>
@@ -92,13 +119,16 @@
 </ol>
 </li>
 <li>
-<p><strong>Cloud Pipeline</strong>: Greengrass Stream Manager -&gt; IoT Core -&gt; IoT Rule -&gt; Ingestion Lambda. The Lambda (in a private subnet) writes to DynamoDB and S3.</p>
+<p><strong>Cloud Pipeline</strong>: Greengrass Stream Manager -&gt; IoT Core -&gt; IoT Rule -&gt; Ingestion Lambda. The Lambda writes to DynamoDB and S3.</p>
 </li>
 <li>
-<p><strong>Web Application</strong>: A React app on S3 Static Website. The app fetches data from API Gateway, which triggers the Query Lambda (in a private subnet) to read from DynamoDB. The endpoint can be secured via IP restrictions or an API key.</p>
+<p><strong>Web Application</strong>: A vanilla JavaScript app on S3 Static Website. The app fetches data from API Gateway (with x-api-key authentication), which triggers the Query Lambda to read from DynamoDB. The endpoint is secured with rate limiting and automatic monthly key rotation. Interactive API documentation is provided via Swagger UI.</p>
 </li>
 <li>
-<p><strong>MLOps Pipeline</strong>: An EventBridge rule runs weekly, triggering the Retrain Lambda (which runs outside the VPC). This Lambda starts the SageMaker Training Job. Upon the job&rsquo;s completion, it triggers a separate Deploy Lambda (in the VPC) which creates a new Greengrass Deployment. This deployment is triggered to send the new, updated model to the Pi.</p>
+<p><strong>MLOps Pipeline</strong>: An EventBridge rule runs bi-weekly (every 14 days), triggering the Retrain Lambda. This Lambda aggregates up to 500 samples from S3 and starts a SageMaker Training Job. Upon job completion, EventBridge triggers a Deploy Lambda which creates a new Greengrass Deployment to send the updated model to the Pi.</p>
+</li>
+<li>
+<p><strong>Security Automation</strong>: An EventBridge rule runs monthly (every 30 days), triggering the Rotate Lambda. This Lambda creates a new API key, updates the usage plan, deletes the old key, and updates the frontend files in S3 with the new key.</p>
 </li>
 </ul>
 <h2 id="4-technical-implementation">4. Technical Implementation</h2>
@@ -115,8 +145,8 @@
 <li>
 <p><strong>Phase 1: Cloud Foundation (Week 3)</strong></p>
 <ul>
-<li>Deploy the entire AWS backend infrastructure using automated scripts.</li>
-<li>Test and validate cloud resources, cleaning up after each session to prevent cost accumulation during development.</li>
+<li>Deploy the entire AWS backend infrastructure using automated scripts (S3, DynamoDB, SNS, SQS, Lambda, API Gateway, SageMaker, Greengrass, CloudWatch, EventBridge).</li>
+<li>Test and validate cloud resources, ensuring API Gateway authentication and rate limiting work correctly.</li>
 </ul>
 </li>
 <li>
@@ -151,7 +181,7 @@
 <li><strong>Cloud Software</strong>: AWS CLI (for management), Python (for SageMaker scripts), Node.js (for Lambda functions).</li>
 </ul>
 <h3 id="setup-implementation">Setup Implementation</h3>
-<p>All infrastructure is deployed through the <code>AWS.sh</code> orchestration script, which provisions VPC, IoT Core, Greengrass, Lambda functions, DynamoDB, S3, SageMaker, and EventBridge. Two Greengrass components are deployed to the edge: a native C DataLogger and a Dockerized Python ML inference service with Coral TPU support.</p>
+<p>All infrastructure is deployed through the <code>AWS.sh</code> orchestration script, which provisions 10 AWS components in the correct dependency order: S3, DynamoDB, SNS, SQS, Lambda, API Gateway, SageMaker, Greengrass, CloudWatch, and EventBridge. The setup uses AWS service discovery patterns (no resource files) and includes duration tracking. Two Greengrass components are deployed to the edge: a native C DataLogger and a Dockerized Python ML inference service with Coral TPU support.</p>
 <h3 id="hardware-considerations">Hardware Considerations</h3>
 <p>This proposal is based on a high-performance edge device. The following tiers are possible:</p>
 <ol>
@@ -168,8 +198,8 @@
 <li>
 <p><strong>Mid-Range</strong>: Pi 5 (no TPU).</p>
 <ul>
-<li>Pros: All-in-one solution with a powerful CPU and integrated GPU for high-performance ML inference. No need for a separate TPU.</li>
-<li>Cons: Significantly higher cost and power consumption. Greengrass setup is different.</li>
+<li>Pros: All-in-one solution with a powerful CPU for ML inference. No need for a separate TPU.</li>
+<li>Cons: Higher cost and power consumption. Inference would be slower than TPU-accelerated.</li>
 </ul>
 </li>
 <li>
@@ -200,36 +230,206 @@
 <li>
 <p><strong>Month 3: Automation, Dashboard &amp; Validation (Weeks 9-12)</strong></p>
 <ul>
-<li>Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge -&gt; Retrain Lambda -&gt; SageMaker).</li>
-<li>Milestone 7 (Wk 10): Build the S3/API Gateway web application for monitoring.</li>
-<li>Milestone 8 (Wk 11): Perform system-wide stress testing and model validation using a second &ldquo;failure&rdquo; device (a fan with an imbalance) to prove the anomaly detection loop.</li>
+<li>Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge -&gt; Retrain Lambda -&gt; SageMaker with bi-weekly retraining).</li>
+<li>Milestone 7 (Wk 10): Build the S3/API Gateway web application with Swagger documentation and x-api-key authentication.</li>
+<li>Milestone 8 (Wk 11): Implement monthly API key rotation automation. Perform system-wide stress testing and model validation using a second &ldquo;failure&rdquo; device (a fan with an imbalance) to prove the anomaly detection loop.</li>
 <li>Milestone 9 (Wk 12): Final documentation, code cleanup, and project handover.</li>
 </ul>
 </li>
 </ul>
 <h2 id="6-budget-estimation">6. Budget Estimation</h2>
-<h3 id="infrastructure-costs-monthly-single-device-prototype">Infrastructure Costs (Monthly, Single-Device Prototype):</h3>
+<h3 id="infrastructure-costs-monthly-production-single-device-deployment">Infrastructure Costs (Monthly, Production Single-Device Deployment):</h3>
 <ul>
-<li><strong>AWS Lambda</strong>: ~$0.00 (All 3 functions will fall within the 1 million free requests/month).</li>
-<li><strong>AWS IoT Greengrass</strong>: $0.00 (Free for up to 10 devices).</li>
-<li><strong>AWS IoT Core</strong>: ~$0.00 (1 device sending 1 msg/min is ~43,200 msgs/month, well under the 500,000 free tier).</li>
-<li><strong>Amazon DynamoDB</strong>: ~$0.00 (Will fall within the 25 GB / 25 WCU free tier).</li>
-<li><strong>Amazon S3</strong>: ~$0.10 (Negligible cost for data lake storage and hosting).</li>
-<li><strong>API Gateway, SQS, EventBridge</strong>: ~$0.00 (All covered by generous free tiers).</li>
-<li><strong>Total Monthly Cloud Cost</strong>: Effectively $0.00 - $0.20 (for the first 12 months).</li>
-</ul>
-<h3 id="on-demand--hardware-costs">On-Demand &amp; Hardware Costs:</h3>
+<li>
+<p><strong>AWS Lambda</strong>: ~$1.20</p>
 <ul>
-<li><strong>Amazon SageMaker</strong>: ~$0.20/month (for four 10-minute training jobs on an ml.m5.large). This is the primary on-demand cost.</li>
-<li><strong>Hardware (One-Time Cost)</strong>:
-<ul>
-<li>Raspberry Pi 5 (8GB): ~$80</li>
-<li>Official 27W Power Supply: ~$12</li>
-<li>Google Coral TPU (USB): ~$60</li>
-<li>Sensors (MPU, INA, DS18B20), OLED, etc.: ~$25</li>
-<li><strong>Estimated Total Hardware Cost</strong>: ~$177 per device</li>
+<li>5 Lambda functions (Ingestion, Query, Retrain, Deploy, Rotate)</li>
+<li>Estimated 50,000 invocations/month (Ingestion: 43,200, Query: 5,000, Automation: 1,800)</li>
+<li>~500 GB-seconds compute time</li>
+<li>Cost: $0.20 (requests) + $1.00 (compute) = $1.20</li>
 </ul>
 </li>
+<li>
+<p><strong>AWS IoT Greengrass</strong>: $0.00 (Free for up to 10 devices)</p>
+</li>
+<li>
+<p><strong>AWS IoT Core</strong>: ~$2.50</p>
+<ul>
+<li>1 device sending 1 msg/min = ~43,200 msgs/month</li>
+<li>Connectivity: 720 hours × $0.00225/hour = $1.62</li>
+<li>Messaging: 43,200 msgs × $1.00/million = $0.04</li>
+<li>Rules Engine: 43,200 actions × $0.15/million = $0.01</li>
+<li>Additional prediction publishes: ~$0.83</li>
+<li>Cost: ~$2.50</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon DynamoDB</strong>: ~$3.75</p>
+<ul>
+<li>On-demand pricing for 43,200 writes/month (1/min)</li>
+<li>~5,000 reads/month (dashboard queries)</li>
+<li>Write Request Units: 43,200 × $1.25/million = $0.05</li>
+<li>Read Request Units: 5,000 × $0.25/million = $0.001</li>
+<li>Storage: 5 GB × $0.25/GB = $1.25</li>
+<li>Data retention and growth: ~$2.50</li>
+<li>Cost: ~$3.75</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon S3</strong>: ~$1.50</p>
+<ul>
+<li>Data Lake: 10 GB storage × $0.023/GB = $0.23</li>
+<li>Model artifacts: 2 GB × $0.023/GB = $0.05</li>
+<li>Static website hosting: negligible</li>
+<li>PUT requests (data ingestion): 43,200 × $0.005/1000 = $0.22</li>
+<li>GET requests (training, queries): ~$0.50</li>
+<li>Data transfer out: ~$0.50</li>
+<li>Cost: ~$1.50</li>
+</ul>
+</li>
+<li>
+<p><strong>API Gateway</strong>: ~$2.00</p>
+<ul>
+<li>REST API with 5,000 requests/month</li>
+<li>First 333 million requests: $3.50/million</li>
+<li>Cost: 5,000 × $3.50/million = $0.02</li>
+<li>Data transfer and overhead: ~$1.98</li>
+<li>Cost: ~$2.00</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon SageMaker</strong>: ~$0.50</p>
+<ul>
+<li>Bi-weekly training (2 jobs/month)</li>
+<li>ml.m5.large instance: $0.192/hour</li>
+<li>Training duration: ~30 minutes per job</li>
+<li>Cost: 2 jobs × 0.5 hours × $0.192 = $0.19</li>
+<li>Data processing and storage: ~$0.30</li>
+<li>Cost: ~$0.50</li>
+</ul>
+</li>
+<li>
+<p><strong>Edge TPU Compiler (EC2)</strong>: ~$0.50</p>
+<ul>
+<li>t3.micro instance for model compilation</li>
+<li>Bi-weekly compilation (2 jobs/month)</li>
+<li>Compilation duration: ~5 minutes per job</li>
+<li>Cost: 2 jobs × 0.083 hours × $0.0104 = $0.002</li>
+<li>Data transfer and overhead: ~$0.50</li>
+<li>Cost: ~$0.50</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon EventBridge</strong>: ~$0.10</p>
+<ul>
+<li>3 scheduled rules (retrain bi-weekly, rotate monthly, deploy on completion)</li>
+<li>~10 invocations/month</li>
+<li>Cost: negligible, ~$0.10 overhead</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon CloudWatch</strong>: ~$2.50</p>
+<ul>
+<li>Log ingestion: ~5 GB/month × $0.50/GB = $2.50</li>
+<li>Metrics: covered by free tier (10 custom metrics)</li>
+<li>Cost: ~$2.50</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon SNS</strong>: ~$0.15</p>
+<ul>
+<li>~100 notifications/month (alerts, automation)</li>
+<li>Cost: 100 × $0.50/million + overhead = ~$0.15</li>
+</ul>
+</li>
+<li>
+<p><strong>Total Monthly Cloud Cost</strong>: ~$15.00 - $17.00</p>
+</li>
+</ul>
+<h3 id="aws-free-tier-first-12-months">AWS Free Tier (First 12 Months):</h3>
+<p>For new AWS accounts, the first year costs are significantly reduced:</p>
+<ul>
+<li>
+<p><strong>AWS Lambda</strong>: $0.00</p>
+<ul>
+<li>Free tier: 1 million requests/month + 400,000 GB-seconds compute</li>
+<li>Usage: 50,000 requests/month (~5% of free tier)</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>AWS IoT Core</strong>: ~$0.00 - $0.50</p>
+<ul>
+<li>Free tier: 500,000 messages/month (first 12 months)</li>
+<li>Usage: ~86,400 msgs/month (43,200 sensor + 43,200 predictions)</li>
+<li>Connectivity still charged: 720 hours × $0.00225 = ~$1.62</li>
+<li>After free messaging: ~$1.60/month, During free tier: ~$0.50/month</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon DynamoDB</strong>: $0.00</p>
+<ul>
+<li>Free tier: 25 GB storage + 25 WCU + 25 RCU (always free)</li>
+<li>Usage: ~5 GB storage, low write/read units</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon S3</strong>: ~$0.10</p>
+<ul>
+<li>Free tier: 5 GB storage + 20,000 GET + 2,000 PUT requests</li>
+<li>Usage: ~12 GB storage (exceeds by 7 GB × $0.023 = $0.16)</li>
+<li>Requests mostly covered</li>
+<li>Cost: ~$0.10 - $0.20/month</li>
+</ul>
+</li>
+<li>
+<p><strong>API Gateway</strong>: $0.00</p>
+<ul>
+<li>Free tier: 1 million API calls/month (first 12 months)</li>
+<li>Usage: 5,000 calls/month (~0.5% of free tier)</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon SageMaker</strong>: ~$0.19</p>
+<ul>
+<li>Free tier: 250 hours ml.t3.medium/month (first 2 months)</li>
+<li>Usage: ml.m5.large (not covered by free tier)</li>
+<li>Cost: 2 jobs × 0.5 hours × $0.192 = $0.19/month</li>
+</ul>
+</li>
+<li>
+<p><strong>Edge TPU Compiler (EC2)</strong>: ~$0.50</p>
+<ul>
+<li>No free tier for t3.micro compilation instances</li>
+<li>Cost: ~$0.50/month</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon CloudWatch</strong>: $0.00</p>
+<ul>
+<li>Free tier: 5 GB log ingestion + 10 custom metrics (always free)</li>
+<li>Usage: ~5 GB logs/month</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>EventBridge &amp; SNS</strong>: $0.00</p>
+<ul>
+<li>Free tier covers low usage volumes</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>Total Monthly Cost (First 12 Months)</strong>: ~$1.50 - $2.50</p>
+</li>
+</ul>
+<h3 id="annual-cost-summary">Annual Cost Summary:</h3>
+<ul>
+<li><strong>Production Cost</strong>: <del>$16.00/month per device (</del>$192/year)</li>
+<li><strong>First Year with Free Tier</strong>: <del>$2.00/month per device (</del>$24/year for first 12 months, then $192/year)</li>
+<li><strong>Cost Breakdown</strong>: IoT Core (16%), DynamoDB (23%), CloudWatch (16%), Lambda (8%), S3 (9%), API Gateway (13%), SageMaker (3%), EdgeTPU Compiler (3%), Other (9%)</li>
 </ul>
 <h2 id="7-risk-assessment--mitigation">7. Risk Assessment &amp; Mitigation</h2>
 <ul>
@@ -255,19 +455,20 @@
 </ul>
 </li>
 <li>
-<p><strong>Risk 4: Ingestion Failure (Low)</strong></p>
+<p><strong>Risk 4: API Key Compromise (Medium)</strong></p>
 <ul>
-<li>Impact: A malformed data packet or transient error causes data loss.</li>
-<li>Mitigation: The SQS Dead-Letter Queue (DLQ). Failed messages are captured for inspection and reprocessing.</li>
+<li>Impact: Unauthorized access to the API could lead to data exposure or quota exhaustion.</li>
+<li>Mitigation: Automated monthly key rotation via EventBridge Lambda. Rate limiting (10 req/s, 10k daily quota) prevents abuse. CloudWatch monitoring detects anomalous usage patterns.</li>
 </ul>
 </li>
 </ul>
 <h2 id="8-expected-outcomes">8. Expected Outcomes</h2>
 <ol>
-<li>A fully functional, end-to-end predictive maintenance platform prototype.</li>
-<li>A resilient edge device that reliably logs data and performs local inference, even when offline.</li>
-<li>A working, real-time dashboard for visualizing sensor data and predictions.</li>
-<li>A &ldquo;hands-off&rdquo; automated MLOps pipeline that continuously improves the system&rsquo;s intelligence without human intervention.</li>
+<li>A fully functional, end-to-end predictive maintenance platform with production-grade security and automation.</li>
+<li>A resilient edge device that reliably logs data and performs local inference, even when offline, with zero data loss.</li>
+<li>A working, real-time dashboard for visualizing sensor data and predictions, with interactive Swagger API documentation.</li>
+<li>A &ldquo;hands-off&rdquo; automated MLOps pipeline that retrains models bi-weekly and rotates API keys monthly without human intervention.</li>
+<li>A scalable, serverless architecture with AWS service discovery patterns, enabling easy deployment of additional devices.</li>
 </ol>
 
     </div>

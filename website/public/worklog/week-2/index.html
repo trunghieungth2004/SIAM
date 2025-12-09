@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 2 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 2 Worklog</h1>
+    <div class="content">
+        <h1 id="week-2-worklog">Week 2 Worklog</h1>
+<h3 id="week-2-objectives">Week 2 Objectives:</h3>
+<ul>
+<li>Learn AWS IoT Core fundamentals and MQTT protocol</li>
+<li>Understand AWS IoT device connectivity and security</li>
+<li>Begin hardware prototyping with ESP32 microcontroller</li>
+<li>Design the initial SIAM system architecture</li>
+<li>Start sensor integration and testing</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Learn AWS IoT Core fundamentals: <br>  + IoT Things, Device Shadow <br>  + MQTT protocol basics <br>  + IoT Rules and Actions <br> - Study AWS IoT security model <br> - Understand X.509 certificates</td>
+          <td>15/09/2025</td>
+          <td>15/09/2025</td>
+          <td><a href="https://docs.aws.amazon.com/iot/">AWS IoT Core Documentation</a> <br> <a href="https://cloudjourney.awsstudygroup.com/">https://cloudjourney.awsstudygroup.com/</a></td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- <strong>Practice:</strong> Create first IoT Thing <br> - Generate device certificates <br> - Configure IoT policies <br> - Test MQTT connectivity with test client <br> - Learn about IoT Core message broker</td>
+          <td>16/09/2025</td>
+          <td>16/09/2025</td>
+          <td><a href="https://docs.aws.amazon.com/iot/latest/developerguide/">AWS IoT Core Getting Started</a></td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Set up ESP32 development environment: <br>  + Install Arduino IDE / PlatformIO <br>  + Install ESP32 board support <br>  + Install required libraries (PubSubClient, WiFi) <br> - Test ESP32 WiFi connectivity</td>
+          <td>17/09/2025</td>
+          <td>17/09/2025</td>
+          <td><a href="https://docs.espressif.com/projects/esp-idf/">ESP32 Documentation</a></td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Connect ESP32 to AWS IoT Core: <br>  + Configure X.509 certificates on ESP32 <br>  + Establish MQTT connection <br>  + Publish test messages to IoT Core <br> - Monitor messages in AWS console</td>
+          <td>18/09/2025</td>
+          <td>18/09/2025</td>
+          <td>ESP32 AWS IoT examples</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Begin sensor integration: <br>  + Wire MPU-6050 (accelerometer/gyroscope) to ESP32 <br>  + Wire INA219 (current/voltage sensor) to ESP32 <br>  + Wire DS18B20 (temperature sensor) to ESP32 <br> - Test individual sensor readings <br> - Publish sensor data to AWS IoT Core</td>
+          <td>19/09/2025</td>
+          <td>20/09/2025</td>
+          <td>Sensor datasheets <br> Arduino libraries</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Design SIAM system architecture: <br>  + Sketch edge-to-cloud data flow <br>  + Identify AWS services needed <br>  + Plan data ingestion pipeline <br> - Create initial architecture diagram <br> - Document design decisions</td>
+          <td>21/09/2025</td>
+          <td>21/09/2025</td>
+          <td>Project proposal requirements</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-2-achievements">Week 2 Achievements:</h3>
+<ul>
+<li>
+<p><strong>AWS IoT Core Mastery:</strong></p>
+<ul>
+<li>Gained deep understanding of AWS IoT Core architecture</li>
+<li>Learned MQTT protocol fundamentals (QoS levels, topics, pub/sub pattern)</li>
+<li>Understood AWS IoT Thing Registry and Device Shadow concepts</li>
+<li>Mastered IoT Rules Engine for routing messages to other AWS services</li>
+<li>Studied IoT Core security model and certificate-based authentication</li>
+</ul>
+</li>
+<li>
+<p><strong>AWS IoT Hands-on Experience:</strong></p>
+<ul>
+<li>Created first IoT Thing in AWS IoT Core named <code>ESP32_Prototype_01</code></li>
+<li>Generated and downloaded X.509 device certificates and private keys</li>
+<li>Created and attached IoT policy with appropriate permissions:
+<ul>
+<li><code>iot:Connect</code> - Allow device connections</li>
+<li><code>iot:Publish</code> - Publish to sensor data topics</li>
+<li><code>iot:Subscribe</code> - Subscribe to command topics</li>
+<li><code>iot:Receive</code> - Receive messages</li>
+</ul>
+</li>
+<li>Successfully tested MQTT connectivity using AWS IoT Test Client</li>
+<li>Published test messages and verified receipt in AWS Console</li>
+</ul>
+</li>
+<li>
+<p><strong>ESP32 Development Setup:</strong></p>
+<ul>
+<li>Installed Arduino IDE 2.0 and configured for ESP32 development</li>
+<li>Installed ESP32 board support package via Board Manager</li>
+<li>Installed required libraries:
+<ul>
+<li><code>PubSubClient</code> - MQTT client library</li>
+<li><code>WiFi</code> - ESP32 WiFi management</li>
+<li><code>Adafruit_MPU6050</code> - Accelerometer/gyroscope</li>
+<li><code>Adafruit_INA219</code> - Current/voltage sensor</li>
+<li><code>OneWire</code> &amp; <code>DallasTemperature</code> - DS18B20 temperature sensor</li>
+</ul>
+</li>
+<li>Successfully tested WiFi connectivity on ESP32</li>
+</ul>
+</li>
+<li>
+<p><strong>ESP32 to AWS IoT Integration:</strong></p>
+<ul>
+<li>Embedded X.509 certificates in ESP32 code securely</li>
+<li>Configured MQTT broker endpoint and port (8883 for TLS)</li>
+<li>Established secure TLS connection from ESP32 to AWS IoT Core</li>
+<li>Implemented MQTT publish/subscribe in ESP32 firmware</li>
+<li>Successfully published sensor readings to topic <code>siam/sensors/data</code></li>
+<li>Verified end-to-end connectivity: ESP32 → MQTT → AWS IoT Core</li>
+</ul>
+</li>
+<li>
+<p><strong>Sensor Hardware Integration:</strong></p>
+<ul>
+<li>Successfully wired MPU-6050 accelerometer/gyroscope to ESP32 via I2C:
+<ul>
+<li>VCC → 3.3V</li>
+<li>GND → GND</li>
+<li>SCL → GPIO 22</li>
+<li>SDA → GPIO 21</li>
+</ul>
+</li>
+<li>Integrated INA219 current/voltage sensor via I2C (shared bus with MPU-6050)</li>
+<li>Wired DS18B20 temperature sensor with 4.7kΩ pull-up resistor:
+<ul>
+<li>VCC → 3.3V</li>
+<li>GND → GND</li>
+<li>Data → GPIO 4</li>
+</ul>
+</li>
+<li>Tested individual sensor readings and verified data accuracy</li>
+<li>Combined all sensor readings into single JSON payload</li>
+<li>Published multi-sensor data to AWS IoT Core every 5 seconds</li>
+</ul>
+</li>
+<li>
+<p><strong>Sample Sensor Data Published:</strong></p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;device_id&#34;</span>: <span style="color:#e6db74">&#34;ESP32_Prototype_01&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;timestamp&#34;</span>: <span style="color:#ae81ff">1726000800</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;mpu6050&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;accel_x&#34;</span>: <span style="color:#ae81ff">0.12</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;accel_y&#34;</span>: <span style="color:#ae81ff">-0.05</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;accel_z&#34;</span>: <span style="color:#ae81ff">9.81</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;gyro_x&#34;</span>: <span style="color:#ae81ff">0.01</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;gyro_y&#34;</span>: <span style="color:#ae81ff">-0.02</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;gyro_z&#34;</span>: <span style="color:#ae81ff">0.00</span>
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ina219&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;voltage&#34;</span>: <span style="color:#ae81ff">12.3</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;current&#34;</span>: <span style="color:#ae81ff">0.45</span>
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;ds18b20&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;temperature&#34;</span>: <span style="color:#ae81ff">23.5</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>
+<p><strong>SIAM Architecture Design:</strong></p>
+<ul>
+<li>Created initial system architecture diagram using draw.io</li>
+<li>Designed hybrid edge-cloud architecture:
+<ul>
+<li><strong>Edge Layer:</strong> Raspberry Pi 5 with Coral TPU</li>
+<li><strong>IoT Layer:</strong> AWS IoT Greengrass for edge runtime</li>
+<li><strong>Ingestion Layer:</strong> AWS IoT Core with Rules Engine</li>
+<li><strong>Compute Layer:</strong> AWS Lambda for serverless processing</li>
+<li><strong>Storage Layer:</strong> DynamoDB for real-time data, S3 for data lake</li>
+<li><strong>ML Layer:</strong> Amazon SageMaker for model training</li>
+<li><strong>API Layer:</strong> API Gateway for web dashboard</li>
+<li><strong>Automation Layer:</strong> EventBridge for scheduled retraining</li>
+</ul>
+</li>
+<li>Documented architecture decisions and rationale</li>
+<li>Identified data flow: Sensor → Edge → IoT Core → Lambda → DynamoDB/S3</li>
+</ul>
+</li>
+<li>
+<p><strong>IoT Rules Engine Configuration:</strong></p>
+<ul>
+<li>Created first IoT Rule to route sensor data</li>
+<li>Configured SQL query: <code>SELECT * FROM 'siam/sensors/data'</code></li>
+<li>Added Lambda action to process incoming sensor messages</li>
+<li>Tested rule activation and message routing</li>
+</ul>
+</li>
+<li>
+<p><strong>FCJ Mentor Interactions:</strong></p>
+<ul>
+<li>Received guidance on AWS IoT best practices</li>
+<li>Clarified questions about AWS Free Tier limits for IoT Core</li>
+</ul>
+</li>
+</ul>
+<h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>ESP32 Certificate Storage:</strong> Limited flash memory for storing large X.509 certificates - solved by using SPIFFS filesystem</li>
+<li><strong>I2C Address Conflicts:</strong> MPU-6050 and INA219 initially had I2C addressing issues - resolved by checking addresses with I2C scanner</li>
+<li><strong>MQTT Reconnection Logic:</strong> ESP32 would not auto-reconnect on WiFi drops - implemented exponential backoff retry mechanism</li>
+<li><strong>Sensor Noise:</strong> MPU-6050 accelerometer showed significant noise - applied simple moving average filter</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>MQTT is lightweight and ideal for IoT devices with limited bandwidth</li>
+<li>X.509 certificate-based authentication provides strong device security</li>
+<li>ESP32 is powerful for prototyping but not suitable for production (lacks offline buffer, limited processing)</li>
+<li>AWS IoT Core pricing is based on message count - need to optimize publish frequency</li>
+<li>Sensor calibration and noise filtering are critical for accurate ML model training</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 3, I will begin setting up the cloud infrastructure using automated shell scripts. This includes creating S3 buckets, DynamoDB tables, Lambda functions, and the foundational components of the SIAM backend. I&rsquo;ll also start learning about Infrastructure as Code principles.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

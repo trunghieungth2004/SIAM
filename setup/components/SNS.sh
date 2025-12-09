@@ -8,6 +8,15 @@
 # Source common utilities
 source "$(dirname "$0")/common.sh"
 
+validate_email() {
+    local email="$1"
+    if [[ "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 setup_sns() {
     print_log -b "[messaging] " "Setting up SNS..."
     validate_inputs
@@ -58,6 +67,63 @@ setup_sns() {
             return 1
         fi
         print_log -g "[verified] " "Existing SNS topic is accessible."
+    fi
+
+    # Use email addresses from environment variable
+    local email_input="$SNS_EMAIL_ADDRESSES"
+    
+    # Skip if empty
+    if [ -z "$email_input" ]; then
+        print_log -y "[skip] " "No email addresses provided. Skipping subscriptions."
+    else
+        print_log -c "[subscribe] " "Email subscription setup"
+        
+        local emails_valid=false
+        
+        while [ "$emails_valid" = false ]; do
+        
+        # Split by comma and validate each email
+        IFS=',' read -ra EMAIL_ARRAY <<< "$email_input"
+        local all_valid=true
+        local invalid_emails=()
+        
+        for email in "${EMAIL_ARRAY[@]}"; do
+            # Trim whitespace
+            email=$(echo "$email" | xargs)
+            
+            if ! validate_email "$email"; then
+                all_valid=false
+                invalid_emails+=("$email")
+            fi
+        done
+        
+            if [ "$all_valid" = true ]; then
+                emails_valid=true
+                
+                # Subscribe each email
+                print_log -c "[subscribe] " "Subscribing ${#EMAIL_ARRAY[@]} email(s) to SNS topic..."
+                
+                for email in "${EMAIL_ARRAY[@]}"; do
+                    email=$(echo "$email" | xargs)
+                    print_log -c "[email] " "Subscribing: $email"
+                    
+                    if aws sns subscribe \
+                        --topic-arn "$SNS_TOPIC_ARN" \
+                        --protocol email \
+                        --notification-endpoint "$email" > /dev/null 2>&1; then
+                        print_log -g "[ok] " "Subscription request sent to $email"
+                    else
+                        print_log -r "[error] " "Failed to subscribe $email"
+                    fi
+                done
+                
+                print_log -y "[action] " "Check email inbox(es) and confirm subscription(s) to receive alerts"
+            else
+                print_log -r "[error] " "Invalid email address(es): ${invalid_emails[*]}"
+                print_log -r "[error] " "SNS setup failed due to invalid email addresses"
+                return 1
+            fi
+        done
     fi
 
     print_log -g "[ok] " "SNS setup complete!"

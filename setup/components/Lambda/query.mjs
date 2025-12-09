@@ -61,10 +61,12 @@ async function queryAllDevices(type, startTime, limit, hours) {
                 prediction: item.prediction,
                 confidence: item.confidence,
                 score: item.score,
+                reconstruction_error: item.reconstruction_error,
+                threshold_warning: item.threshold_warning,
+                threshold_critical: item.threshold_critical,
                 inference_type: item.inference_type,
                 inference_time_ms: item.inference_time_ms,
                 days_until_maintenance: item.days_until_maintenance,
-                estimated_days_to_failure: item.estimated_days_to_failure,
                 datetime: new Date(item.timestamp * 1000).toISOString()
             });
         }
@@ -173,10 +175,12 @@ export const handler = async (event) => {
                 prediction: item.prediction,
                 confidence: item.confidence,
                 score: item.score,
+                reconstruction_error: item.reconstruction_error,
+                threshold_warning: item.threshold_warning,
+                threshold_critical: item.threshold_critical,
                 inference_type: item.inference_type,
                 inference_time_ms: item.inference_time_ms,
                 days_until_maintenance: item.days_until_maintenance,
-                estimated_days_to_failure: item.estimated_days_to_failure,
                 datetime: new Date(item.timestamp * 1000).toISOString()
             }));
         }

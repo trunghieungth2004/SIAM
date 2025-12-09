@@ -67,10 +67,12 @@ async function handleMLPrediction(payload) {
             prediction: payload.prediction,
             confidence: Number(payload.confidence || 0.5),
             score: Number(payload.score || 0),
+            reconstruction_error: Number(payload.reconstruction_error || 0),  // Autoencoder metric
             inference_type: payload.inference_type,
             inference_time_ms: Number(payload.inference_time_ms || 0),
             days_until_maintenance: Number(payload.days_until_maintenance || 0),
-            estimated_days_to_failure: Number(payload.estimated_days_to_failure || 0),
+            threshold_warning: Number(payload.threshold_warning || 0),  // Anomaly threshold
+            threshold_critical: Number(payload.threshold_critical || 0),  // Anomaly threshold
             ttl: timestamp + (86400 * 90) // 90 days retention
         }
     };
@@ -94,21 +96,23 @@ async function handleMLPrediction(payload) {
     await s3Client.send(new PutObjectCommand(s3Params));
     console.log("Successfully wrote ML prediction to S3.");
     
-    // Send alert if maintenance required
-    if (payload.prediction === 'Maintenance Required') {
-        const alertMessage = `MAINTENANCE ALERT for Device ${device_id}:\n` +
-            `Prediction: ${payload.prediction}\n` +
+    // Send alert if anomaly detected
+    if (payload.prediction === 'Anomaly Detected' || payload.prediction === 'Warning') {
+        const alertMessage = `ANOMALY ALERT for Device ${device_id}:\n` +
+            `Status: ${payload.prediction}\n` +
             `Confidence: ${(payload.confidence * 100).toFixed(1)}%\n` +
-            `Score: ${payload.score.toFixed(1)}\n` +
+            `Anomaly Score: ${payload.score.toFixed(1)}/100\n` +
+            `Reconstruction Error: ${payload.reconstruction_error?.toFixed(6) || 'N/A'}\n` +
+            `Days Until Maintenance: ${payload.days_until_maintenance || 'Unknown'}\n` +
             `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
         
         const snsParams = {
             TopicArn: SNS_TOPIC_ARN,
             Message: alertMessage,
-            Subject: `Maintenance Required: ${device_id}`
+            Subject: `Anomaly Alert: ${device_id} - ${payload.prediction}`
         };
         await snsClient.send(new PublishCommand(snsParams));
-        console.log("Sent maintenance alert to SNS.");
+        console.log("Sent anomaly alert to SNS.");
     }
     
     return {

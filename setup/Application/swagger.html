@@ -177,13 +177,15 @@
                                                     "prediction_data": [
                                                         {
                                                             "timestamp": 1732550400,
-                                                            "prediction": "Good",
-                                                            "confidence": 0.92,
-                                                            "score": 25.3,
-                                                            "inference_type": "tpu",
+                                                            "prediction": "Normal",
+                                                            "confidence": 0.95,
+                                                            "score": 18.5,
+                                                            "reconstruction_error": 0.0045,
+                                                            "threshold_warning": 0.012,
+                                                            "threshold_critical": 0.025,
+                                                            "inference_type": "tpu-autoencoder",
                                                             "inference_time_ms": 8.5,
                                                             "days_until_maintenance": 90,
-                                                            "estimated_days_to_failure": 365,
                                                             "datetime": "2024-11-25T12:00:00.000Z"
                                                         }
                                                     ]
@@ -342,9 +344,17 @@
                                 "type": "integer",
                                 "description": "Estimated days until maintenance needed"
                             },
-                            "estimated_days_to_failure": {
-                                "type": "integer",
-                                "description": "Estimated days to potential failure"
+                            "reconstruction_error": {
+                                "type": "number",
+                                "description": "Autoencoder reconstruction error (anomaly metric)"
+                            },
+                            "threshold_warning": {
+                                "type": "number",
+                                "description": "Warning threshold for anomaly detection"
+                            },
+                            "threshold_critical": {
+                                "type": "number",
+                                "description": "Critical threshold for anomaly detection"
                             },
                             "datetime": {
                                 "type": "string",

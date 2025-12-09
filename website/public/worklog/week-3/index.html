@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 Worklog - SIAM</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="Search...">
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="//localhost:1313/">Home</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-1/">Week 1 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/">Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-2/">Week 2 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-3/">Week 3 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-4/">Week 4 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-5/">Week 5 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-6/">Week 6 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-7/">Week 7 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-8/">Week 8 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-9/">Week 9 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-10/">Week 10 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-11/">Week 11 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/worklog/week-12/">Week 12 Worklog</a></li>
+                    
+                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
+                    
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+        <main class="content">
+            
+<article>
+    <h1>Week 3 Worklog</h1>
+    <div class="content">
+        <h1 id="week-3-worklog">Week 3 Worklog</h1>
+<h3 id="week-3-objectives">Week 3 Objectives:</h3>
+<ul>
+<li>Learn Infrastructure as Code (IaC) principles and shell scripting</li>
+<li>Design and implement automated AWS infrastructure deployment scripts</li>
+<li>Set up cloud foundation: S3, DynamoDB, SNS, SQS</li>
+<li>Understand AWS service discovery patterns and resource management</li>
+<li>Learn VPC fundamentals and networking concepts</li>
+</ul>
+<h3 id="tasks-to-be-carried-out-this-week">Tasks to be carried out this week:</h3>
+<table>
+  <thead>
+      <tr>
+          <th>Day</th>
+          <th>Task</th>
+          <th>Start Date</th>
+          <th>Completion Date</th>
+          <th>Reference Material</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>- Learn shell scripting best practices <br> - Study AWS CLI for automation <br> - Understand Infrastructure as Code concepts <br> - Review AWS resource tagging strategies <br> - Plan modular script structure</td>
+          <td>22/09/2025</td>
+          <td>22/09/2025</td>
+          <td><a href="https://awscli.amazonaws.com/v2/documentation/api/latest/index.html">AWS CLI Command Reference</a></td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>- Design AWS.sh orchestration script: <br>  + Component selection menu <br>  + Dependency ordering <br>  + Error handling <br> - Create common.sh utility functions <br> - Implement logging and color output</td>
+          <td>23/09/2025</td>
+          <td>23/09/2025</td>
+          <td>Bash scripting guides</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>- Implement S3 component script: <br>  + Create data lake bucket <br>  + Create frontend hosting bucket <br>  + Configure static website hosting <br>  + Set up bucket policies <br> - Test S3 setup and cleanup</td>
+          <td>24/09/2025</td>
+          <td>24/09/2025</td>
+          <td><a href="https://docs.aws.amazon.com/s3/">AWS S3 Documentation</a></td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>- Implement DynamoDB component script: <br>  + Create sensor data table <br>  + Configure partition and sort keys <br>  + Set up on-demand billing <br> - Learn about DynamoDB best practices <br> - Test table creation and deletion</td>
+          <td>25/09/2025</td>
+          <td>25/09/2025</td>
+          <td><a href="https://docs.aws.amazon.com/dynamodb/">AWS DynamoDB Documentation</a></td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>- Implement SNS and SQS component scripts: <br>  + Create SNS topics for alerts <br>  + Create SQS queues for message buffering <br>  + Configure dead-letter queues <br> - Learn about pub/sub messaging patterns</td>
+          <td>26/09/2025</td>
+          <td>26/09/2025</td>
+          <td><a href="https://docs.aws.amazon.com/sns/">AWS SNS</a> <br> <a href="https://docs.aws.amazon.com/sqs/">AWS SQS</a></td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>- Learn VPC fundamentals: <br>  + Subnets (public/private) <br>  + Route tables <br>  + Internet Gateway <br>  + NAT Gateway <br>  + Security Groups vs NACLs <br> - Understand VPC endpoints</td>
+          <td>27/09/2025</td>
+          <td>28/09/2025</td>
+          <td><a href="https://docs.aws.amazon.com/vpc/">AWS VPC Documentation</a> <br> FCJ VPC workshops</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="week-3-achievements">Week 3 Achievements:</h3>
+<ul>
+<li>
+<p><strong>Infrastructure as Code (IaC) Mastery:</strong></p>
+<ul>
+<li>Learned IaC principles and benefits (repeatability, version control, disaster recovery)</li>
+<li>Mastered bash scripting for AWS automation</li>
+<li>Understood the importance of idempotent operations</li>
+<li>Learned AWS CLI JSON output parsing with <code>jq</code></li>
+<li>Studied resource tagging strategies for cost allocation and management</li>
+</ul>
+</li>
+<li>
+<p><strong>AWS.sh Orchestration Framework:</strong></p>
+<ul>
+<li>Designed and implemented main orchestration script <code>AWS.sh</code></li>
+<li>Created modular component-based architecture:
+<ul>
+<li>S3, DynamoDB, SNS, SQS, Lambda, API Gateway</li>
+<li>SageMaker, Greengrass, CloudWatch, EventBridge</li>
+</ul>
+</li>
+<li>Implemented interactive component selection menu:
+<ul>
+<li>Individual selection (e.g., &ldquo;1 2 3&rdquo;)</li>
+<li>Range selection (e.g., &ldquo;1-5&rdquo;)</li>
+<li>Exclusion selection (e.g., &ldquo;^4&rdquo;)</li>
+<li>Default &ldquo;all&rdquo; option</li>
+</ul>
+</li>
+<li>Built dependency-aware deployment ordering:
+<ul>
+<li>Setup: S3 → DynamoDB → SNS → SQS → Lambda → API Gateway → SageMaker → Greengrass → CloudWatch → EventBridge</li>
+<li>Cleanup: Reverse order to prevent dependency failures</li>
+</ul>
+</li>
+<li>Added comprehensive error handling and exit on failure</li>
+<li>Implemented execution time tracking (minutes and seconds)</li>
+</ul>
+</li>
+<li>
+<p><strong>common.sh Utility Library:</strong></p>
+<ul>
+<li>Created shared utility functions for all component scripts</li>
+<li>Implemented color-coded logging system:
+<ul>
+<li><code>print_log -g</code> - Green for success</li>
+<li><code>print_log -r</code> - Red for errors</li>
+<li><code>print_log -y</code> - Yellow for warnings</li>
+<li><code>print_log -b</code> - Blue for info</li>
+<li><code>print_log -m</code> - Magenta for highlights</li>
+<li><code>print_log -c</code> - Cyan for headers</li>
+</ul>
+</li>
+<li>Added input validation functions</li>
+<li>Created AWS CLI error checking wrappers</li>
+</ul>
+</li>
+<li>
+<p><strong>S3 Component Implementation (S3.sh):</strong></p>
+<ul>
+<li>Created automated S3 bucket provisioning script</li>
+<li>Implemented data lake bucket with versioning:
+<ul>
+<li>Bucket name: <code>${PROJECT_NAME}-siam-data-lake</code></li>
+<li>Lifecycle policies for data retention</li>
+<li>Server-side encryption enabled</li>
+</ul>
+</li>
+<li>Configured frontend hosting bucket:
+<ul>
+<li>Bucket name: <code>${PROJECT_NAME}-siam-frontend</code></li>
+<li>Static website hosting enabled</li>
+<li>Public read access via bucket policy</li>
+<li>Automatic upload of web application files (HTML, CSS, JS)</li>
+</ul>
+</li>
+<li>Deployed Swagger UI for API documentation</li>
+<li>Implemented S3 cleanup with forced empty-and-delete logic</li>
+<li>Added error handling for existing buckets</li>
+</ul>
+</li>
+<li>
+<p><strong>DynamoDB Component Implementation (DynamoDB.sh):</strong></p>
+<ul>
+<li>Created automated DynamoDB table provisioning</li>
+<li>Configured sensor data table schema:
+<ul>
+<li>Table name: <code>${PROJECT_NAME}-SensorData</code></li>
+<li>Partition key: <code>device_id</code> (String)</li>
+<li>Sort key: <code>timestamp</code> (Number)</li>
+<li>On-demand billing mode for cost optimization</li>
+<li>Point-in-time recovery enabled</li>
+</ul>
+</li>
+<li>Implemented table existence checking</li>
+<li>Added cleanup script for table deletion</li>
+<li>Configured CloudWatch metrics integration</li>
+</ul>
+</li>
+<li>
+<p><strong>SNS Component Implementation (SNS.sh):</strong></p>
+<ul>
+<li>Created SNS topics for system notifications:
+<ul>
+<li><code>${PROJECT_NAME}-siam-alerts</code> - Anomaly detection alerts</li>
+<li><code>${PROJECT_NAME}-siam-system-events</code> - System events</li>
+</ul>
+</li>
+<li>Configured email subscriptions for alerts</li>
+<li>Implemented SNS publish permissions for Lambda</li>
+<li>Added topic deletion in cleanup script</li>
+</ul>
+</li>
+<li>
+<p><strong>SQS Component Implementation (SQS.sh):</strong></p>
+<ul>
+<li>Created SQS queues for message buffering:
+<ul>
+<li><code>${PROJECT_NAME}-siam-sensor-queue</code> - Main queue</li>
+<li><code>${PROJECT_NAME}-siam-dlq</code> - Dead-letter queue</li>
+</ul>
+</li>
+<li>Configured dead-letter queue (DLQ) for failed messages:
+<ul>
+<li>Max receive count: 3</li>
+<li>Message retention: 14 days</li>
+</ul>
+</li>
+<li>Set visibility timeout: 300 seconds</li>
+<li>Added queue purge and deletion in cleanup</li>
+</ul>
+</li>
+<li>
+<p><strong>VPC Networking Fundamentals:</strong></p>
+<ul>
+<li>Learned VPC architecture and CIDR notation</li>
+<li>Understood public vs. private subnet design:
+<ul>
+<li>Public subnets: Internet-facing resources (NAT Instance, ALB)</li>
+<li>Private subnets: Backend resources (EC2, RDS)</li>
+</ul>
+</li>
+<li>Mastered route table configuration:
+<ul>
+<li>Public route: 0.0.0.0/0 → Internet Gateway</li>
+<li>Private route: 0.0.0.0/0 → NAT Instance (t3.nano for cost optimization)</li>
+</ul>
+</li>
+<li>Learned Security Groups (stateful firewall):
+<ul>
+<li>Inbound/outbound rules</li>
+<li>Protocol, port, source/destination</li>
+</ul>
+</li>
+<li>Studied Network ACLs (stateless firewall)</li>
+<li>Understood VPC endpoints:
+<ul>
+<li>Gateway endpoints (S3, DynamoDB)</li>
+<li>Interface endpoints (other AWS services)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>VPC.sh Component Skeleton:</strong></p>
+<ul>
+<li>Created VPC component script structure (for future EC2 use)</li>
+<li>Planned VPC configuration:
+<ul>
+<li>CIDR: 10.0.0.0/16</li>
+<li>Public subnet: 10.0.1.0/24</li>
+<li>Private subnet: 10.0.2.0/24</li>
+</ul>
+</li>
+<li>Designed security group for future EC2 instances</li>
+</ul>
+</li>
+<li>
+<p><strong>Script Testing and Validation:</strong></p>
+<ul>
+<li>Tested full setup workflow: <code>./AWS.sh setup</code></li>
+<li>Validated all component scripts individually</li>
+<li>Tested cleanup workflow: <code>./AWS.sh cleanup</code></li>
+<li>Verified idempotency (running setup twice doesn&rsquo;t fail)</li>
+<li>Confirmed proper error handling and rollback</li>
+</ul>
+</li>
+<li>
+<p><strong>AWS Service Discovery Pattern:</strong></p>
+<ul>
+<li>Implemented resource lookup without hardcoded ARNs</li>
+<li>Used AWS CLI queries to discover resources dynamically:
+<ul>
+<li><code>aws s3api list-buckets --query &quot;Buckets[?contains(Name, 'siam')]&quot;</code></li>
+<li><code>aws dynamodb list-tables</code></li>
+<li><code>aws sns list-topics</code></li>
+</ul>
+</li>
+<li>Benefits: No resource files, self-documenting, resilient</li>
+</ul>
+</li>
+</ul>
+<h3 id="sample-awssh-execution-output">Sample AWS.sh Execution Output:</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ ./AWS.sh setup
+</span></span><span style="display:flex;"><span>Enter a project name <span style="color:#f92672">(</span>e.g., <span style="color:#e6db74">&#39;myiotapp&#39;</span><span style="color:#f92672">)</span>: siam-demo
+</span></span><span style="display:flex;"><span>Enter a name <span style="color:#66d9ef">for</span> your IoT device <span style="color:#f92672">(</span>Thing Name<span style="color:#f92672">)</span>: RaspberryPi_5_Core
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>AWS Infrastructure Components
+</span></span><span style="display:flex;"><span>:: Choose which components to setup:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">1</span>  S3              <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> S3 Buckets <span style="color:#66d9ef">for</span> data storage and web hosting
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">2</span>  DynamoDB        <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> DynamoDB tables <span style="color:#66d9ef">for</span> sensor data
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">3</span>  SNS             <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> SNS topics <span style="color:#66d9ef">for</span> notifications
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">4</span>  SQS             <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> SQS queues <span style="color:#66d9ef">for</span> message handling
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">5</span>  APIGateway      <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> REST API <span style="color:#66d9ef">for</span> data queries and dashboard
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">6</span>  Lambda          <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> Lambda functions and IAM roles
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">7</span>  SageMaker       <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> ML model training <span style="color:#66d9ef">for</span> predictive maintenance
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">8</span>  Greengrass      <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> IoT Greengrass Core <span style="color:#66d9ef">for</span> edge computing
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">9</span>  CloudWatch      <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> Monitoring, alarms, and dashboards
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">10</span>  EventBridge     <span style="color:#f92672">[</span>Cloud<span style="color:#f92672">]</span> Automated ML pipeline and edge deployment
+</span></span><span style="display:flex;"><span><span style="color:#f92672">==</span>&gt; Components to setup: <span style="color:#f92672">(</span>eg: <span style="color:#e6db74">&#34;1 2 3&#34;</span>, <span style="color:#e6db74">&#34;1-3&#34;</span>, <span style="color:#e6db74">&#34;^4&#34;</span> to exclude, or <span style="color:#e6db74">&#34;all&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span> -&gt; setup all components by default <span style="color:#66d9ef">if</span> no selection made
+</span></span><span style="display:flex;"><span><span style="color:#f92672">==</span>&gt; <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">2</span> <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">4</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>setup<span style="color:#f92672">]</span> Setting up S3...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>ok<span style="color:#f92672">]</span> S3 setup completed successfully.
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>setup<span style="color:#f92672">]</span> Setting up DynamoDB...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>ok<span style="color:#f92672">]</span> DynamoDB setup completed successfully.
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>setup<span style="color:#f92672">]</span> Setting up SNS...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>ok<span style="color:#f92672">]</span> SNS setup completed successfully.
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>setup<span style="color:#f92672">]</span> Setting up SQS...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>ok<span style="color:#f92672">]</span> SQS setup completed successfully.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>--------------------------------------
+</span></span><span style="display:flex;"><span>  AWS INFRASTRUCTURE SETUP COMPLETE
+</span></span><span style="display:flex;"><span>--------------------------------------
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Project Name<span style="color:#f92672">]</span> siam-demo
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Thing Name<span style="color:#f92672">]</span> RaspberryPi_5_Core
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Duration<span style="color:#f92672">]</span> 2m 34s
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Web Dashboard<span style="color:#f92672">]</span> http://siam-demo-frontend.s3-website-us-east-1.amazonaws.com
+</span></span></code></pre></div><h3 id="challenges-encountered">Challenges Encountered:</h3>
+<ul>
+<li><strong>Bucket Naming Conflicts:</strong> S3 bucket names must be globally unique - solved by using project name prefix</li>
+<li><strong>Script Permissions:</strong> Initial permission errors - fixed with <code>chmod +x</code> on all component scripts</li>
+<li><strong>AWS CLI Output Parsing:</strong> Complex JSON filtering - learned <code>jq</code> and <code>--query</code> parameter</li>
+<li><strong>Cleanup Dependencies:</strong> S3 buckets must be empty before deletion - implemented forced empty logic</li>
+</ul>
+<h3 id="key-learnings">Key Learnings:</h3>
+<ul>
+<li>Automation saves time and reduces human error</li>
+<li>Modular script design improves maintainability</li>
+<li>Proper error handling is critical for production scripts</li>
+<li>AWS service discovery eliminates hardcoded values</li>
+<li>Infrastructure as Code enables rapid environment recreation</li>
+</ul>
+<h3 id="next-week-preview">Next Week Preview:</h3>
+<p>In Week 4, I will dive deeper into EC2 and VPC networking, set up the Raspberry Pi 5 hardware, install Raspberry Pi OS, and provision AWS IoT Greengrass Core software on the device. This will prepare the edge device for local data collection.</p>
+
+    </div>
+</article>
+
+        </main>
+    </div>
+    <script src="/js/darkmode.js"></script>
+</body>
+</html>

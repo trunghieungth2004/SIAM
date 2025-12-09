@@ -139,7 +139,7 @@ run_component() {
     
     chmod +x "$script_path"
     
-    export PROJECT_NAME THING_NAME PI_SSH_TARGET
+    export PROJECT_NAME THING_NAME PI_SSH_TARGET SNS_EMAIL_ADDRESSES
     
     if "$script_path" "$action"; then
         print_log -g "[ok] " "${component} ${action} completed successfully."
@@ -193,6 +193,15 @@ run_setup() {
             exit 1
         fi
         print_log -g "[pi] " "Using PI SSH target: ${PI_SSH_TARGET}"
+    fi
+    
+    # Prompt for email addresses if SNS is selected
+    if [[ " ${selected_components[*]} " =~ " SNS " ]]; then
+        read -p "Enter email addresses for alerts (comma-separated, or press Enter to skip): " SNS_EMAIL_ADDRESSES
+        export SNS_EMAIL_ADDRESSES
+        if [ -n "$SNS_EMAIL_ADDRESSES" ]; then
+            print_log -g "[sns] " "Email addresses will be subscribed to SNS topic"
+        fi
     fi
     
     if [ ${#selected_components[@]} -eq 0 ]; then

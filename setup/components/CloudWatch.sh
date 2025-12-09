@@ -71,6 +71,20 @@ setup_cloudwatch() {
         --comparison-operator GreaterThanThreshold \
         --evaluation-periods 1 \
         --alarm-actions "$SNS_TOPIC_ARN" > /dev/null 2>&1 || true
+    
+    # Create API usage anomaly alarm
+    print_log -c "[alarm] " "Creating API usage anomaly alarm..."
+    aws cloudwatch put-metric-alarm \
+        --alarm-name "${PROJECT_NAME}-api-usage-anomaly" \
+        --alarm-description "Unusual API request volume detected" \
+        --metric-name Count \
+        --namespace AWS/ApiGateway \
+        --statistic Sum \
+        --period 300 \
+        --threshold 100 \
+        --comparison-operator GreaterThanThreshold \
+        --evaluation-periods 2 \
+        --alarm-actions "$SNS_TOPIC_ARN" > /dev/null 2>&1 || true
 
     # Create CloudWatch dashboard
     print_log -c "[dashboard] " "Creating CloudWatch dashboard..."
@@ -165,7 +179,8 @@ cleanup_cloudwatch() {
     aws cloudwatch delete-alarms --alarm-names \
         "${PROJECT_NAME}-ingestion-errors" \
         "${PROJECT_NAME}-query-errors" \
-        "${PROJECT_NAME}-high-maintenance-score" 2>/dev/null || true
+        "${PROJECT_NAME}-high-maintenance-score" \
+        "${PROJECT_NAME}-api-usage-anomaly" 2>/dev/null || true
     
     # Delete dashboard
     print_log -c "[delete] " "Deleting CloudWatch dashboard..."

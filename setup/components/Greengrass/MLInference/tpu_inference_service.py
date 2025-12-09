@@ -47,11 +47,12 @@ class TPUInferenceService:
             return False
     
     def load_tpu_model(self):
-        """Load TensorFlow Lite model for TPU"""
+        """Load TensorFlow Lite autoencoder model for TPU"""
         try:
             import tflite_runtime.interpreter as tflite
             from pycoral.utils import edgetpu
             import pickle
+            import json
             
             # Look for .tflite model file
             tflite_files = list(self.model_path.glob("*.tflite"))
@@ -60,7 +61,7 @@ class TPUInferenceService:
                 return False
             
             model_file = tflite_files[0]
-            logger.info(f"Loading TPU model: {model_file}")
+            logger.info(f"Loading TPU autoencoder model: {model_file}")
             
             # Create Edge TPU interpreter
             self.tpu_interpreter = tflite.Interpreter(
@@ -73,9 +74,9 @@ class TPUInferenceService:
             self.input_details = self.tpu_interpreter.get_input_details()
             self.output_details = self.tpu_interpreter.get_output_details()
             
-            # Load scalers (required from SageMaker)
+            # Load scaler and thresholds (required from SageMaker)
             scaler_file = self.model_path / "scaler.pkl"
-            days_scaler_file = self.model_path / "days_scaler.pkl"
+            thresholds_file = self.model_path / "thresholds.json"
             
             if scaler_file.exists():
                 with open(scaler_file, 'rb') as f:
@@ -85,15 +86,15 @@ class TPUInferenceService:
                 logger.error("No scaler.pkl found - SageMaker scaler required")
                 return False
             
-            if days_scaler_file.exists():
-                with open(days_scaler_file, 'rb') as f:
-                    self.days_scaler = pickle.load(f)
-                logger.info("Loaded days scaler for TPU model")
+            if thresholds_file.exists():
+                with open(thresholds_file, 'r') as f:
+                    self.thresholds = json.load(f)
+                logger.info(f"Loaded anomaly thresholds: warning={self.thresholds['threshold_warning']:.6f}, critical={self.thresholds['threshold_critical']:.6f}")
             else:
-                logger.error("No days_scaler.pkl found - SageMaker scaler required")
+                logger.error("No thresholds.json found - SageMaker thresholds required")
                 return False
             
-            logger.info("TPU model loaded successfully")
+            logger.info("TPU autoencoder model loaded successfully")
             return True
             
         except Exception as e:
@@ -152,7 +153,7 @@ class TPUInferenceService:
             return None
     
     def predict_tpu(self, features):
-        """Run inference on TPU"""
+        """Run anomaly detection on TPU using autoencoder reconstruction error"""
         try:
             # Scale features with SageMaker scaler
             features_scaled = self.scaler.transform(features).astype(np.float32)
@@ -165,57 +166,51 @@ class TPUInferenceService:
             else:
                 self.tpu_interpreter.set_tensor(self.input_details[0]['index'], features_scaled)
             
-            # Run inference
+            # Run autoencoder inference (reconstruct input)
             self.tpu_interpreter.invoke()
             
-            # Multi-output model: [maintenance_score, days_to_failure]
-            # Output 0: Maintenance score
-            score_data = self.tpu_interpreter.get_tensor(self.output_details[0]['index'])
+            # Get reconstructed output
+            reconstructed_data = self.tpu_interpreter.get_tensor(self.output_details[0]['index'])
+            
+            # Dequantize output if model uses INT8
             if self.output_details[0]['dtype'] == np.uint8:
                 output_scale, output_zero_point = self.output_details[0]['quantization']
-                maintenance_score = float((score_data[0][0].astype(np.float32) - output_zero_point) * output_scale)
+                reconstructed = (reconstructed_data.astype(np.float32) - output_zero_point) * output_scale
             else:
-                maintenance_score = float(score_data[0][0])
+                reconstructed = reconstructed_data.astype(np.float32)
             
-            # Output 1: Days to failure (scaled)
-            days_data = self.tpu_interpreter.get_tensor(self.output_details[1]['index'])
-            if self.output_details[1]['dtype'] == np.uint8:
-                output_scale, output_zero_point = self.output_details[1]['quantization']
-                days_scaled = float((days_data[0][0].astype(np.float32) - output_zero_point) * output_scale)
+            # Calculate reconstruction error (MSE)
+            reconstruction_error = float(np.mean(np.square(features_scaled - reconstructed)))
+            
+            # Anomaly detection based on reconstruction error thresholds
+            threshold_warning = self.thresholds['threshold_warning']
+            threshold_critical = self.thresholds['threshold_critical']
+            
+            if reconstruction_error < threshold_warning:
+                status = "Normal"
+                anomaly_score = (reconstruction_error / threshold_warning) * 30  # 0-30 range
+                confidence = 0.95
+                days_until_maintenance = 90
+            elif reconstruction_error < threshold_critical:
+                status = "Warning"
+                anomaly_score = 30 + ((reconstruction_error - threshold_warning) / (threshold_critical - threshold_warning)) * 40  # 30-70 range
+                confidence = 0.80
+                days_until_maintenance = 30
             else:
-                days_scaled = float(days_data[0][0])
-            
-            # Denormalize days prediction
-            days_to_failure = float(self.days_scaler.inverse_transform([[days_scaled]])[0][0])
-            days_to_failure = max(1, int(days_to_failure))  # Ensure positive
-            
-            # Convert maintenance score to status
-            if maintenance_score < 30:
-                status = "Good"
-                confidence = 0.9
-                days_until_maintenance = min(90, days_to_failure)
-            elif maintenance_score < 60:
-                status = "Monitor" 
-                confidence = 0.7
-                days_until_maintenance = min(30, days_to_failure)
-            else:
-                status = "Maintenance Required"
-                confidence = 0.8
-                # Maintenance threshold at score 80
-                maintenance_threshold = 80.0
-                if maintenance_score < maintenance_threshold:
-                    degradation_rate = (100 - maintenance_score) / days_to_failure if days_to_failure > 0 else 0.8
-                    days_until_maintenance = int((maintenance_threshold - maintenance_score) / degradation_rate) if degradation_rate > 0 else 0
-                else:
-                    days_until_maintenance = 0
+                status = "Anomaly Detected"
+                anomaly_score = min(100, 70 + ((reconstruction_error - threshold_critical) / threshold_critical) * 30)  # 70-100 range
+                confidence = 0.90
+                days_until_maintenance = 7
             
             return {
                 'prediction': status,
                 'confidence': confidence,
-                'score': maintenance_score,
+                'score': anomaly_score,
+                'reconstruction_error': reconstruction_error,
                 'days_until_maintenance': days_until_maintenance,
-                'estimated_days_to_failure': days_to_failure,
-                'inference_type': 'tpu'
+                'threshold_warning': threshold_warning,
+                'threshold_critical': threshold_critical,
+                'inference_type': 'tpu-autoencoder'
             }
             
         except Exception as e:

@@ -153,13 +153,22 @@ function createDeviceRow(deviceId, data) {
     if (latestPrediction) {
         let badgeClass = 'healthy';
         const pred = latestPrediction.prediction;
-        if (pred === 'Maintenance Required') {
+        if (pred === 'Anomaly Detected') {
             badgeClass = 'maintenance';
-        } else if (pred === 'Monitor') {
+        } else if (pred === 'Warning') {
             badgeClass = 'monitor';
-        } else if (pred === 'Good') {
+        } else if (pred === 'Normal') {
+            badgeClass = 'healthy';
+        } else if (pred === 'Maintenance Required') {  // Backward compatibility
+            badgeClass = 'maintenance';
+        } else if (pred === 'Monitor') {  // Backward compatibility
+            badgeClass = 'monitor';
+        } else if (pred === 'Good') {  // Backward compatibility
             badgeClass = 'healthy';
         }
+        
+        const reconError = latestPrediction.reconstruction_error ? 
+            `Recon Error: ${latestPrediction.reconstruction_error.toFixed(6)}` : '';
         
         predictionHtml = `
             <div class="ml-prediction">
@@ -167,6 +176,7 @@ function createDeviceRow(deviceId, data) {
                 <span class="prediction-details">
                     Confidence: ${(latestPrediction.confidence * 100).toFixed(1)}% | 
                     Score: ${latestPrediction.score.toFixed(1)} | 
+                    ${reconError ? reconError + ' | ' : ''}
                     Days to Maintenance: ${latestPrediction.days_until_maintenance || 'N/A'}
                 </span>
             </div>
@@ -238,7 +248,7 @@ function createDeviceRow(deviceId, data) {
                 </div>
             </div>
             <div class="chart-card">
-                <div class="chart-title">ML Prediction Score</div>
+                <div class="chart-title">Anomaly Detection Score</div>
                 <div class="chart-wrapper">
                     <canvas id="ml-chart-${deviceId}"></canvas>
                 </div>
@@ -375,7 +385,7 @@ function createCharts(deviceId, data) {
                 data: {
                     labels: mlLabels,
                     datasets: [{
-                        label: 'Maintenance Score',
+                        label: 'Anomaly Score',
                         data: reversedPrediction.map(d => d.score),
                         borderColor: '#f44336',
                         backgroundColor: 'rgba(244, 67, 54, 0.1)',

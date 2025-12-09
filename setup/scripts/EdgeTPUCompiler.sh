@@ -169,8 +169,8 @@ if [ ! -f "model.tflite" ]; then
     exit 1
 fi
 
-if [ ! -f "days_scaler.pkl" ]; then
-    echo "[ERROR] days_scaler.pkl not found in archive"
+if [ ! -f "thresholds.json" ]; then
+    echo "[ERROR] thresholds.json not found in archive"
     ls -la
     aws ec2 terminate-instances --instance-ids "${INSTANCE_ID}" --region "${AWS_REGION}"
     exit 1
@@ -191,7 +191,7 @@ fi
 
 echo "[6/7] Uploading compiled model..."
 cp model_edgetpu.tflite model.tflite
-tar -czf model_compiled.tar.gz model.tflite scaler.pkl days_scaler.pkl features.txt
+tar -czf model_compiled.tar.gz model.tflite scaler.pkl thresholds.json features.txt
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 COMPILED_S3="s3://${S3_BUCKET}/models/model_edgetpu_${TIMESTAMP}.tar.gz"
 LATEST_S3="s3://${S3_BUCKET}/models/model_edgetpu_latest.tar.gz"
@@ -238,9 +238,32 @@ USERDATA_EOF
     print_log -y "[info] " "Instance will self-terminate after compilation (~3-5 minutes)"
     print_log -m "[Compiled Model] " "s3://${S3_DATA_BUCKET}/models/model_edgetpu_latest.tar.gz"
     
+    # Validate compiled model
+    print_log -c "[validate] " "Validating compiled model..."
+    COMPILED_MODEL_S3="s3://${S3_DATA_BUCKET}/models/model_edgetpu_latest.tar.gz"
+    
+    # Wait a moment for S3 eventual consistency
+    sleep 5
+    
+    if aws s3 ls "${COMPILED_MODEL_S3}" > /dev/null 2>&1; then
+        # Download and verify contents
+        aws s3 cp "${COMPILED_MODEL_S3}" /tmp/verify_model.tar.gz 2>/dev/null
+        if tar -tzf /tmp/verify_model.tar.gz 2>/dev/null | grep -q "model.tflite"; then
+            print_log -g "[ok] " "Compiled model validated successfully"
+        else
+            print_log -r "[error] " "Compiled model validation failed - model.tflite not found in archive"
+            rm -f /tmp/verify_model.tar.gz
+            return 1
+        fi
+        rm -f /tmp/verify_model.tar.gz
+    else
+        print_log -r "[error] " "Compiled model not found in S3"
+        return 1
+    fi
+    
     # Save info
     echo "COMPILER_INSTANCE_ID=${INSTANCE_ID}" > /tmp/compiler_info.txt
-    echo "COMPILED_MODEL_S3=s3://${S3_DATA_BUCKET}/models/model_edgetpu_latest.tar.gz" >> /tmp/compiler_info.txt
+    echo "COMPILED_MODEL_S3=${COMPILED_MODEL_S3}" >> /tmp/compiler_info.txt
     
     # Monitor instance with system console output
     print_log -y "[monitor] " "Monitoring compilation progress via EC2 system log..."
