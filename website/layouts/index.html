@@ -1,10 +1,93 @@
 {{ define "main" }}
-<h1>Welcome</h1>
-<ul>
-    {{ range .Site.RegularPages }}
-    <li>
-        <a href="{{ .Permalink }}">{{ .Title }}</a>
-    </li>
-    {{ end }}
-</ul>
+<div class="home-content">
+  <h1>Internship Report</h1>
+  
+  <div class="student-info" style="background: var(--card-bg); padding: 24px; border-radius: 8px; margin: 24px 0; display: flex; gap: 24px; align-items: flex-start;">
+    <div style="flex-shrink: 0;">
+      <img src="/avatar/AVATAR.png" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
+    </div>
+    <div style="flex-grow: 1;">
+      <h2>Student Information</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Full Name:</td>
+          <td style="padding: 8px;">Nguyễn Trung Hiếu</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Phone Number:</td>
+          <td style="padding: 8px;">0395053713</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Email:</td>
+          <td style="padding: 8px;">hieuntse184626@fpt.edu.vn</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">University:</td>
+          <td style="padding: 8px;">FPT University</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Major:</td>
+          <td style="padding: 8px;">Software Engineer</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Class:</td>
+          <td style="padding: 8px;"></td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Internship Company:</td>
+          <td style="padding: 8px;">Amazon Web Services Vietnam Co., Ltd.</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Internship Position:</td>
+          <td style="padding: 8px;">FCJ Cloud Intern</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Internship Duration:</td>
+          <td style="padding: 8px;">From August 8, 2025 to December 30, 2025</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="report-sections" style="margin: 32px 0;">
+    <h2>Report Content</h2>
+    <ul style="list-style: none; padding: 0;">
+      <li style="padding: 12px; margin: 8px 0; background: var(--card-bg); border-radius: 4px;">
+        <a href="/worklog/" style="text-decoration: none; color: var(--text-color); display: block;">
+          <strong>1. Worklog</strong> - Weekly progress and activities
+        </a>
+      </li>
+      <li style="padding: 12px; margin: 8px 0; background: var(--card-bg); border-radius: 4px;">
+        <a href="/proposal/" style="text-decoration: none; color: var(--text-color); display: block;">
+          <strong>2. Proposal</strong> - Project proposal and planning
+        </a>
+      </li>
+      <li style="padding: 12px; margin: 8px 0; background: var(--card-bg); border-radius: 4px;">
+        <a href="/blog/" style="text-decoration: none; color: var(--text-color); display: block;">
+          <strong>3. Translated Blogs</strong> - Technical blog translations
+        </a>
+      </li>
+      <li style="padding: 12px; margin: 8px 0; background: var(--card-bg); border-radius: 4px;">
+        <a href="/event/" style="text-decoration: none; color: var(--text-color); display: block;">
+          <strong>4. Events Participated</strong> - AWS workshops and events
+        </a>
+      </li>
+      <li style="padding: 12px; margin: 8px 0; background: var(--card-bg); border-radius: 4px;">
+        <a href="/workshop/" style="text-decoration: none; color: var(--text-color); display: block;">
+          <strong>5. Workshop</strong> - Hands-on AWS CLI workshops
+        </a>
+      </li>
+      <li style="padding: 12px; margin: 8px 0; background: var(--card-bg); border-radius: 4px;">
+        <a href="/self-assessment/" style="text-decoration: none; color: var(--text-color); display: block;">
+          <strong>6. Self-Assessment</strong> - Performance evaluation
+        </a>
+      </li>
+      <li style="padding: 12px; margin: 8px 0; background: var(--card-bg); border-radius: 4px;">
+        <a href="/sharing-and-feedback/" style="text-decoration: none; color: var(--text-color); display: block;">
+          <strong>7. Sharing and Feedback</strong> - Program feedback and suggestions
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
 {{ end }}

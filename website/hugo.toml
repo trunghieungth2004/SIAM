@@ -6,113 +6,107 @@ title = 'SIAM'
   home = ["HTML", "RSS", "JSON"]
 
 [[menu.main]]
-  name = "Home"
-  url = "/"
+  name = "Proposal"
+  url = "/proposal/"
   weight = 1
   pre = "1."
 
 [[menu.main]]
-  name = "Proposal"
-  url = "/proposal/"
-  weight = 2
-  pre = "2."
-
-[[menu.main]]
   name = "Worklog"
   url = "/worklog/"
-  weight = 3
-  pre = "3."
+  weight = 2
+  pre = "2."
   identifier = "worklog"
 
 [[menu.main]]
   name = "Week 1"
   url = "/worklog/week-1/"
   weight = 1
-  pre = "3.1"
+  pre = "2.1"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 2"
   url = "/worklog/week-2/"
   weight = 2
-  pre = "3.2"
+  pre = "2.2"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 3"
   url = "/worklog/week-3/"
   weight = 3
-  pre = "3.3"
+  pre = "2.3"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 4"
   url = "/worklog/week-4/"
   weight = 4
-  pre = "3.4"
+  pre = "2.4"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 5"
   url = "/worklog/week-5/"
   weight = 5
-  pre = "3.5"
+  pre = "2.5"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 6"
   url = "/worklog/week-6/"
   weight = 6
-  pre = "3.6"
+  pre = "2.6"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 7"
   url = "/worklog/week-7/"
   weight = 7
-  pre = "3.7"
+  pre = "2.7"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 8"
   url = "/worklog/week-8/"
   weight = 8
-  pre = "3.8"
+  pre = "2.8"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 9"
   url = "/worklog/week-9/"
   weight = 9
-  pre = "3.9"
+  pre = "2.9"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 10"
   url = "/worklog/week-10/"
   weight = 10
-  pre = "3.10"
+  pre = "2.10"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 11"
   url = "/worklog/week-11/"
   weight = 11
-  pre = "3.11"
+  pre = "2.11"
   parent = "worklog"
 
 [[menu.main]]
   name = "Week 12"
   url = "/worklog/week-12/"
   weight = 12
-  pre = "3.12"
+  pre = "2.12"
   parent = "worklog"
 
 [[menu.main]]
   name = "Translated Blogs"
   url = "/blog/"
-  weight = 4
-  pre = "4."
+  weight = 3
+  pre = "3."
   identifier = "blog"
 
 [[menu.main]]
@@ -139,43 +133,43 @@ title = 'SIAM'
 [[menu.main]]
   name = "Events Participated"
   url = "/event/"
-  weight = 5
-  pre = "5."
+  weight = 4
+  pre = "4."
   identifier = "event"
 
 [[menu.main]]
-  name = "Kick-off AWS FCJ Workforce - FPTU OJT FALL 2025"
+  name = "Kick-off AWS FCJ Workforce Development Program 2025"
   url = "/event/event-1/"
   weight = 1
-  pre = "5.1"
+  pre = "4.1"
   parent = "event"
 
 [[menu.main]]
-  name = "AWS Cloud Mastery Series #1 - AI/ML/GenAI on AWS"
+  name = "AWS Cloud Mastery #1 - AI/ML/GenAI on AWS"
   url = "/event/event-2/"
   weight = 2
-  pre = "5.2"
+  pre = "4.2"
   parent = "event"
 
 [[menu.main]]
-  name = "AWS Cloud Mastery Series #2 - DevOps on AWS"
+  name = "AWS Cloud Mastery #2 - DevOps on AWS"
   url = "/event/event-3/"
   weight = 3
-  pre = "5.3"
+  pre = "4.3"
   parent = "event"
 
 [[menu.main]]
-  name = "AWS Cloud Mastery Series #3 - Security on AWS"
+  name = "AWS Cloud Mastery #3 - Security on AWS"
   url = "/event/event-4/"
   weight = 4
-  pre = "5.4"
+  pre = "4.4"
   parent = "event"
 
 [[menu.main]]
-  name = "Building Agentic AI - Context Optimization with Amazon Bedrock"
+  name = "Building Agentic AI Applications with Amazon Bedrock"
   url = "/event/event-5/"
   weight = 5
-  pre = "5.5"
+  pre = "4.5"
   parent = "event"
 
 [[menu.main]]
@@ -188,35 +182,35 @@ title = 'SIAM'
 [[menu.main]]
   name = "Workshop"
   url = "/workshop/"
-  weight = 6
-  pre = "6."
+  weight = 5
+  pre = "5."
   identifier = "workshop"
 
 [[menu.main]]
   name = "Deploy and Configure EC2 Instances with AWS CLI"
   url = "/workshop/workshop-1/"
   weight = 1
-  pre = "6.1"
+  pre = "5.1"
   parent = "workshop"
 
 [[menu.main]]
   name = "Build and Deploy Machine Learning Models with Amazon SageMaker CLI"
   url = "/workshop/workshop-2/"
   weight = 2
-  pre = "6.2"
+  pre = "5.2"
   parent = "workshop"
 
 [[menu.main]]
   name = "Self-Assessment"
   url = "/self-assessment/"
-  weight = 7
-  pre = "7."
+  weight = 6
+  pre = "6."
 
 [[menu.main]]
   name = "Sharing and Feedback"
   url = "/sharing-and-feedback/"
-  weight = 8
-  pre = "8."
+  weight = 7
+  pre = "7."
 
 [markup]
   [markup.goldmark]
