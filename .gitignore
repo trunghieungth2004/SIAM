@@ -4,7 +4,7 @@
 .vscode/launch.json
 .vscode/ipch
 .cache
-.csv
+*.csv
 *.log
 
 AWS_KEY.h
