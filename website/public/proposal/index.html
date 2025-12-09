@@ -1,35 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="js csstransforms3d">
 <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="description" content="">
+    <meta name="author" content="">
     <title>Proposal - SIAM</title>
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    
+    
     <link rel="stylesheet" href="/css/style.css">
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <style>
+      :root #header + #content > #left > #rlblock_left{
+          display:none !important;
+      }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <img src="/aws-logo.svg" alt="AWS" class="aws-logo">
-                <div class="search-container">
-                    <input type="text" class="search-box" placeholder="Search...">
+<body class="" data-url="/">
+    <nav id="sidebar" class="showVisitedLinks">
+        <div id="header-wrapper">
+            <div id="header">
+                <a id="logo" href="//localhost:1313/">
+                    <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="30%">
+                        <defs>
+                            <style>
+                                .cls-1 { fill: #fff; }
+                                .cls-2 { fill: #f90; fill-rule: evenodd; }
+                            </style>
+                        </defs>
+                        <title>AWS-Logo_White-Color</title>
+                        <path class="cls-1" d="M14.09,10.85a4.7,4.7,0,0,0,.19,1.48,7.73,7.73,0,0,0,.54,1.19.77.77,0,0,1,.12.38.64.64,0,0,1-.32.49l-1,.7a.83.83,0,0,1-.44.15.69.69,0,0,1-.49-.23,3.8,3.8,0,0,1-.6-.77q-.25-.42-.51-1a6.14,6.14,0,0,1-4.89,2.3,4.54,4.54,0,0,1-3.32-1.19,4.27,4.27,0,0,1-1.22-3.2A4.28,4.28,0,0,1,3.61,7.75,6.06,6.06,0,0,1,7.69,6.46a12.47,12.47,0,0,1,1.76.13q.92.13,1.91.36V5.73a3.65,3.65,0,0,0-.79-2.66A3.81,3.81,0,0,0,7.86,2.3a7.71,7.71,0,0,0-1.79.22,12.78,12.78,0,0,0-1.79.57,4.55,4.55,0,0,1-.58.22l-.26,0q-.35,0-.35-.52V2a1.09,1.09,0,0,1,.12-.58,1.2,1.2,0,0,1,.47-.35A10.88,10.88,0,0,1,5.77.32,10.19,10.19,0,0,1,8.36,0a6,6,0,0,1,4.35,1.35,5.49,5.49,0,0,1,1.38,4.09ZM7.34,13.38a5.36,5.36,0,0,0,1.72-.31A3.63,3.63,0,0,0,10.63,12,2.62,2.62,0,0,0,11.19,11a5.63,5.63,0,0,0,.16-1.44v-.7a14.35,14.35,0,0,0-1.53-.28,12.37,12.37,0,0,0-1.56-.1,3.84,3.84,0,0,0-2.47.67A2.34,2.34,0,0,0,5,11a2.35,2.35,0,0,0,.61,1.76A2.4,2.4,0,0,0,7.34,13.38Zm13.35,1.8a1,1,0,0,1-.64-.16,1.3,1.3,0,0,1-.35-.65L15.81,1.51a3,3,0,0,1-.15-.67.36.36,0,0,1,.41-.41H17.7a1,1,0,0,1,.65.16,1.4,1.4,0,0,1,.33.65l2.79,11,2.59-11A1.17,1.17,0,0,1,24.39.6a1.1,1.1,0,0,1,.67-.16H26.4a1.1,1.1,0,0,1,.67.16,1.17,1.17,0,0,1,.32.65L30,12.39,32.88,1.25A1.39,1.39,0,0,1,33.22.6a1,1,0,0,1,.65-.16h1.54a.36.36,0,0,1,.41.41,1.36,1.36,0,0,1,0,.26,3.64,3.64,0,0,1-.12.41l-4,12.86a1.3,1.3,0,0,1-.35.65,1,1,0,0,1-.64.16H29.25a1,1,0,0,1-.67-.17,1.26,1.26,0,0,1-.32-.67L25.67,3.64,23.11,14.34a1.26,1.26,0,0,1-.32.67,1,1,0,0,1-.67.17Zm21.36.44a11.28,11.28,0,0,1-2.56-.29,7.44,7.44,0,0,1-1.92-.67,1,1,0,0,1-.61-.93v-.84q0-.52.38-.52a.9.9,0,0,1,.31.06l.42.17a8.77,8.77,0,0,0,1.83.58,9.78,9.78,0,0,0,2,.2,4.48,4.48,0,0,0,2.43-.55,1.76,1.76,0,0,0,.86-1.57,1.61,1.61,0,0,0-.45-1.16A4.29,4.29,0,0,0,43,9.22l-2.41-.76A5.15,5.15,0,0,1,38,6.78a3.94,3.94,0,0,1-.83-2.41,3.7,3.7,0,0,1,.45-1.85,4.47,4.47,0,0,1,1.19-1.37A5.27,5.27,0,0,1,40.51.29,7.4,7.4,0,0,1,42.6,0a8.87,8.87,0,0,1,1.12.07q.57.07,1.08.19t.95.26a4.27,4.27,0,0,1,.7.29,1.59,1.59,0,0,1,.49.41.94.94,0,0,1,.15.55v.79q0,.52-.38.52a1.76,1.76,0,0,1-.64-.2,7.74,7.74,0,0,0-3.2-.64,4.37,4.37,0,0,0-2.21.47,1.6,1.6,0,0,0-.79,1.48,1.58,1.58,0,0,0,.49,1.18,4.94,4.94,0,0,0,1.83.92L44.55,7a5.08,5.08,0,0,1,2.57,1.6A3.76,3.76,0,0,1,47.9,11a4.21,4.21,0,0,1-.44,1.93,4.4,4.4,0,0,1-1.21,1.47,5.43,5.43,0,0,1-1.85.93A8.25,8.25,0,0,1,42.05,15.62Z"></path>
+                        <path class="cls-2" d="M45.19,23.81C39.72,27.85,31.78,30,25,30A36.64,36.64,0,0,1,.22,20.57c-.51-.46-.06-1.09.56-.74A49.78,49.78,0,0,0,25.53,26.4,49.23,49.23,0,0,0,44.4,22.53C45.32,22.14,46.1,23.14,45.19,23.81Z"></path>
+                        <path class="cls-2" d="M47.47,21.21c-.7-.9-4.63-.42-6.39-.21-.53.06-.62-.4-.14-.74,3.13-2.2,8.27-1.57,8.86-.83s-.16,5.89-3.09,8.35c-.45.38-.88.18-.68-.32C46.69,25.8,48.17,22.11,47.47,21.21Z"></path>
+                    </svg>
+                </a>
+            </div>
+            <div class="searchbox">
+                <label for="search-by"><i class="fas fa-search"></i></label>
+                <input data-search-input id="search-by" type="search" placeholder="Search...">
+                <span data-search-clear=""><i class="fas fa-times"></i></span>
+            </div>
+        </div>
+        
+        <div class="highlightable">
+            <ul class="topics">
+                
+                <li data-nav-id="/" class="dd-item">
+                    <a href="/">
+                        <b>1.</b> Home
+                        <i class="fas fa-check read-icon"></i>
+                    </a>
+                    
+                </li>
+                
+                <li data-nav-id="/proposal/" class="dd-item">
+                    <a href="/proposal/">
+                        <b>2.</b> Proposal
+                        <i class="fas fa-check read-icon"></i>
+                    </a>
+                    
+                </li>
+                
+            </ul>
+            
+            <div class="sidebar-footer-sections">
+                <section id="shortcuts">
+                    <h3>More</h3>
+                    <ul>
+                        <li>
+                            <a class="padding" href="https://www.facebook.com/groups/awsstudygroupfcj/">
+                                <i class='fab fa-facebook'></i> AWS Study Group
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                
+                <section id="prefooter">
+                    <ul>
+                        <li>
+                            <a class="padding">
+                                <i class="fas fa-language fa-fw"></i>
+                                <div class="select-style">
+                                    <select id="select-language" onchange="location = this.value;">
+                                        <option id="en" value="//localhost:1313/" selected>English</option>
+                                    </select>
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="255px" height="255px" viewBox="0 0 255 255" style="enable-background: new 0 0 255 255">
+                                        <g><g id="arrow-drop-down"><polygon points="0,63.75 127.5,191.25 255,63.75" /></g></g>
+                                    </svg>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="padding" href="#" data-clear-history-toggle="">
+                                <i class="fas fa-history fa-fw"></i> Clear History
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                
+                <div id="footer" class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showFooter">
+                    <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon"></i>
+                        <span class="toggle-text">Dark Mode</span>
+                    </button>
+                    <div id="prefooter">
+                        <h5 class="copyright">© 2025 Your Name</h5>
+                    </div>
                 </div>
             </div>
-            <nav>
-                <ul>
-                    <li><a href="//localhost:1313/">Home</a></li>
-                    
-                    <li><a href="//localhost:1313/proposal/">Proposal</a></li>
-                    
-                </ul>
-            </nav>
-            <div class="sidebar-footer">
-                <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
-                    <span class="toggle-icon">🌙</span>
+        </div>
+    </nav>
+    
+    <section id="body">
+        <div id="overlay"></div>
+        <div class="padding highlightable">
+            <div id="top-bar" class="menu">
+                <button id="sidebar-toggle-span" class="btn btn-sm btn-default">
+                    <i class="fas fa-bars"></i>
                 </button>
             </div>
-        </aside>
-        <main class="content">
             
 <article>
     <h1>Proposal</h1>
@@ -37,7 +133,7 @@
         <h1 id="project-proposal-siam-smart-industrial-assets-longevity-monitor">Project Proposal: SIAM (Smart Industrial Asset&rsquo;s longevity Monitor)</h1>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
   <h2 style="margin: 0;">A Hybrid Edge-Cloud Platform for Predictive Maintenance</h2>
-  <a href="https://docs.google.com/document/d/12bvQSINqd7WSUqMcmQEpyZAupk5yrO_X/edit?usp=sharing&ouid=108415462704163997970&rtpof=true&sd=true" download style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 2px solid #0078d4; text-decoration: none; border-radius: 5px; font-size: 24px;" title="Download Proposal (Word Document)">📄</a>
+  <a href="https://github.com/trunghieungth2004/SIAM/releases/download/proposal-20251204-201648/SIAM_Proposal.docx" download style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 2px solid #0078d4; text-decoration: none; border-radius: 5px; font-size: 24px;" title="Download Proposal (Word Document)">📄</a>
 </div>
 <h2 id="1-executive-summary">1. Executive Summary</h2>
 <p>This proposal outlines the development of a high-performance, resilient predictive maintenance platform, SIAM (Smart Industrial Asset&rsquo;s longevity Monitor). The system is designed to monitor industrial equipment (represented by a demo fan machine) in real-time, detect anomalous behavior, and predict equipment health.</p>
@@ -46,7 +142,7 @@
 <li>A native C-based datalogger that reads directly from hardware sensors (MPU-6050, INA219, DS18B20) and writes data to Greengrass Stream Manager.</li>
 <li>A Docker-containerized Python ML inference application that reads from Stream Manager, performs real-time anomaly detection using the Coral TPU, and publishes predictions back to the cloud.</li>
 </ol>
-<p>The cloud backend, built on a secure AWS VPC, uses AWS IoT Core to ingest data, which is then processed by an AWS Lambda function and stored in DynamoDB and an S3 Data Lake. The system is fully automated with an MLOps pipeline using Amazon EventBridge and Amazon SageMaker to retrain and redeploy new models weekly. A public web-based dashboard, hosted on S3, provides real-time monitoring and alert status.</p>
+<p>The cloud backend uses Greengrass Stream Manager to buffer sensor data locally and publish to AWS IoT Core. Data is ingested via an IoT Rule triggering a Lambda function that stores records in DynamoDB and S3 Data Lake. The system features a REST API via API Gateway with x-api-key authentication, rate limiting, and automatic monthly key rotation. A fully automated MLOps pipeline using EventBridge and SageMaker retrains models bi-weekly and redeploys to the edge. A public web dashboard hosted on S3 provides real-time monitoring with Swagger/OpenAPI documentation for the REST API.</p>
 <h2 id="2-problem-statement">2. Problem Statement</h2>
 <h3 id="whats-the-problem">What&rsquo;s the Problem?</h3>
 <p>Traditional equipment maintenance is reactive; operators fix machines after they break, leading to costly unplanned downtime. Existing monitoring systems often lack offline capability (causing data loss) and fail to adapt to changing equipment behavior (&ldquo;model drift&rdquo;).</p>
@@ -55,11 +151,12 @@
 <ol>
 <li><strong>Edge-First Data Collection</strong>: A native C application on the Raspberry Pi collects high-resolution data from sensors (MPU-6050, INA219, DS18B20).</li>
 <li><strong>Offline Resilience &amp; Local Pub/Sub</strong>: The C datalogger publishes sensor data to Greengrass Stream Manager. This stream acts as a local, persistent buffer, ensuring zero data loss during network outages and decoupling the data collection from its consumption.</li>
-<li><strong>Cloud Ingestion</strong>: Stream Manager automatically syncs this data to AWS IoT Core, which triggers an Ingestion Lambda. This function logs data to DynamoDB and S3. A SQS Dead-Letter Queue (DLQ) captures any failed ingestion.</li>
-<li><strong>Automated ML Pipeline</strong>: An EventBridge rule schedules a weekly Retrain Lambda, which starts a SageMaker Training Job on the latest data from the S3 data lake.</li>
+<li><strong>Cloud Ingestion</strong>: Stream Manager automatically syncs this data to AWS IoT Core, which triggers an Ingestion Lambda. This function logs data to DynamoDB and S3.</li>
+<li><strong>Secure REST API</strong>: API Gateway provides a REST endpoint with x-api-key authentication, rate limiting (10 req/s, burst 20, 10k daily quota), and CORS support. API keys are automatically rotated monthly via EventBridge Lambda for enhanced security.</li>
+<li><strong>Automated ML Pipeline</strong>: An EventBridge rule schedules a bi-weekly Retrain Lambda, which starts a SageMaker Training Job on the latest data from the S3 data lake. Another rule triggers deployment when training completes.</li>
 <li><strong>Intelligent Edge Deployment</strong>: The newly trained model is automatically deployed back to the Raspberry Pi as a Greengrass component.</li>
 <li><strong>Decoupled Edge Inference</strong>: A separate Docker container running a Python application reads the sensor data from the local Stream Manager, loads the deployed model, and performs TPU-accelerated inference. This containerized approach is a key design choice, solving the &ldquo;dependency hell&rdquo; that often occurs when edge ML hardware (like the Coral TPU) has its software support abandoned by the manufacturer, which normally prevents host OS upgrades.</li>
-<li><strong>Real-Time Monitoring</strong>: A web application, hosted on S3, queries live data from DynamoDB via an API Gateway to display real-time sensor graphs and alert status.</li>
+<li><strong>Real-Time Monitoring</strong>: A web application hosted on S3 queries live data from DynamoDB via the secured API Gateway to display real-time sensor graphs and alert status. Interactive API documentation is provided via Swagger UI with built-in request testing.</li>
 </ol>
 <h3 id="benefits-and-return-on-investment">Benefits and Return on Investment</h3>
 <ul>
@@ -75,12 +172,12 @@
 <ul>
 <li><strong>Edge</strong>: AWS IoT Greengrass (Core, Stream Manager, Component Deployments)</li>
 <li><strong>Ingestion</strong>: AWS IoT Core (MQTT Broker, Rules)</li>
-<li><strong>Compute</strong>: AWS Lambda (Ingestion, Query, Retrain-Trigger, Deploy)</li>
+<li><strong>Compute</strong>: AWS Lambda (Ingestion, Query, Retrain, Deploy, Rotate)</li>
 <li><strong>Storage</strong>: Amazon DynamoDB, Amazon S3 (Data Lake, Model Artifacts, Web Hosting)</li>
-<li><strong>Networking</strong>: AWS VPC (Private/Public Subnets), NAT Gateway, VPC Endpoints, API Gateway</li>
-<li><strong>Machine Learning</strong>: Amazon SageMaker (Training Jobs), Amazon EventBridge (Scheduler)</li>
-<li><strong>Security</strong>: AWS Secrets Manager, IAM</li>
-<li><strong>Reliability &amp; Monitoring</strong>: Amazon SQS (Dead-Letter Queue), Amazon CloudWatch, Amazon SNS</li>
+<li><strong>API &amp; Security</strong>: API Gateway (REST API, x-api-key auth, rate limiting), IAM</li>
+<li><strong>Machine Learning</strong>: Amazon SageMaker (Training Jobs)</li>
+<li><strong>Automation</strong>: Amazon EventBridge (Bi-weekly retraining, Monthly key rotation, Deployment triggers)</li>
+<li><strong>Monitoring</strong>: Amazon CloudWatch, Amazon SNS</li>
 </ul>
 <h3 id="component-design">Component Design</h3>
 <ul>
@@ -92,13 +189,16 @@
 </ol>
 </li>
 <li>
-<p><strong>Cloud Pipeline</strong>: Greengrass Stream Manager -&gt; IoT Core -&gt; IoT Rule -&gt; Ingestion Lambda. The Lambda (in a private subnet) writes to DynamoDB and S3.</p>
+<p><strong>Cloud Pipeline</strong>: Greengrass Stream Manager -&gt; IoT Core -&gt; IoT Rule -&gt; Ingestion Lambda. The Lambda writes to DynamoDB and S3.</p>
 </li>
 <li>
-<p><strong>Web Application</strong>: A React app on S3 Static Website. The app fetches data from API Gateway, which triggers the Query Lambda (in a private subnet) to read from DynamoDB. The endpoint can be secured via IP restrictions or an API key.</p>
+<p><strong>Web Application</strong>: A vanilla JavaScript app on S3 Static Website. The app fetches data from API Gateway (with x-api-key authentication), which triggers the Query Lambda to read from DynamoDB. The endpoint is secured with rate limiting and automatic monthly key rotation. Interactive API documentation is provided via Swagger UI.</p>
 </li>
 <li>
-<p><strong>MLOps Pipeline</strong>: An EventBridge rule runs weekly, triggering the Retrain Lambda (which runs outside the VPC). This Lambda starts the SageMaker Training Job. Upon the job&rsquo;s completion, it triggers a separate Deploy Lambda (in the VPC) which creates a new Greengrass Deployment. This deployment is triggered to send the new, updated model to the Pi.</p>
+<p><strong>MLOps Pipeline</strong>: An EventBridge rule runs bi-weekly (every 14 days), triggering the Retrain Lambda. This Lambda aggregates up to 500 samples from S3 and starts a SageMaker Training Job. Upon job completion, EventBridge triggers a Deploy Lambda which creates a new Greengrass Deployment to send the updated model to the Pi.</p>
+</li>
+<li>
+<p><strong>Security Automation</strong>: An EventBridge rule runs monthly (every 30 days), triggering the Rotate Lambda. This Lambda creates a new API key, updates the usage plan, deletes the old key, and updates the frontend files in S3 with the new key.</p>
 </li>
 </ul>
 <h2 id="4-technical-implementation">4. Technical Implementation</h2>
@@ -115,8 +215,8 @@
 <li>
 <p><strong>Phase 1: Cloud Foundation (Week 3)</strong></p>
 <ul>
-<li>Deploy the entire AWS backend infrastructure using automated scripts.</li>
-<li>Test and validate cloud resources, cleaning up after each session to prevent cost accumulation during development.</li>
+<li>Deploy the entire AWS backend infrastructure using automated scripts (S3, DynamoDB, SNS, SQS, Lambda, API Gateway, SageMaker, Greengrass, CloudWatch, EventBridge).</li>
+<li>Test and validate cloud resources, ensuring API Gateway authentication and rate limiting work correctly.</li>
 </ul>
 </li>
 <li>
@@ -151,7 +251,7 @@
 <li><strong>Cloud Software</strong>: AWS CLI (for management), Python (for SageMaker scripts), Node.js (for Lambda functions).</li>
 </ul>
 <h3 id="setup-implementation">Setup Implementation</h3>
-<p>All infrastructure is deployed through the <code>AWS.sh</code> orchestration script, which provisions VPC, IoT Core, Greengrass, Lambda functions, DynamoDB, S3, SageMaker, and EventBridge. Two Greengrass components are deployed to the edge: a native C DataLogger and a Dockerized Python ML inference service with Coral TPU support.</p>
+<p>All infrastructure is deployed through the <code>AWS.sh</code> orchestration script, which provisions 10 AWS components in the correct dependency order: S3, DynamoDB, SNS, SQS, Lambda, API Gateway, SageMaker, Greengrass, CloudWatch, and EventBridge. The setup uses AWS service discovery patterns (no resource files) and includes duration tracking. Two Greengrass components are deployed to the edge: a native C DataLogger and a Dockerized Python ML inference service with Coral TPU support.</p>
 <h3 id="hardware-considerations">Hardware Considerations</h3>
 <p>This proposal is based on a high-performance edge device. The following tiers are possible:</p>
 <ol>
@@ -168,8 +268,8 @@
 <li>
 <p><strong>Mid-Range</strong>: Pi 5 (no TPU).</p>
 <ul>
-<li>Pros: All-in-one solution with a powerful CPU and integrated GPU for high-performance ML inference. No need for a separate TPU.</li>
-<li>Cons: Significantly higher cost and power consumption. Greengrass setup is different.</li>
+<li>Pros: All-in-one solution with a powerful CPU for ML inference. No need for a separate TPU.</li>
+<li>Cons: Higher cost and power consumption. Inference would be slower than TPU-accelerated.</li>
 </ul>
 </li>
 <li>
@@ -200,36 +300,188 @@
 <li>
 <p><strong>Month 3: Automation, Dashboard &amp; Validation (Weeks 9-12)</strong></p>
 <ul>
-<li>Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge -&gt; Retrain Lambda -&gt; SageMaker).</li>
-<li>Milestone 7 (Wk 10): Build the S3/API Gateway web application for monitoring.</li>
-<li>Milestone 8 (Wk 11): Perform system-wide stress testing and model validation using a second &ldquo;failure&rdquo; device (a fan with an imbalance) to prove the anomaly detection loop.</li>
+<li>Milestone 6 (Wk 9): Implement the full MLOps pipeline (EventBridge -&gt; Retrain Lambda -&gt; SageMaker with bi-weekly retraining).</li>
+<li>Milestone 7 (Wk 10): Build the S3/API Gateway web application with Swagger documentation and x-api-key authentication.</li>
+<li>Milestone 8 (Wk 11): Implement monthly API key rotation automation. Perform system-wide stress testing and model validation using a second &ldquo;failure&rdquo; device (a fan with an imbalance) to prove the anomaly detection loop.</li>
 <li>Milestone 9 (Wk 12): Final documentation, code cleanup, and project handover.</li>
 </ul>
 </li>
 </ul>
 <h2 id="6-budget-estimation">6. Budget Estimation</h2>
-<h3 id="infrastructure-costs-monthly-single-device-prototype">Infrastructure Costs (Monthly, Single-Device Prototype):</h3>
+<h3 id="infrastructure-costs-monthly-production-single-device-deployment">Infrastructure Costs (Monthly, Production Single-Device Deployment):</h3>
 <ul>
-<li><strong>AWS Lambda</strong>: ~$0.00 (All 3 functions will fall within the 1 million free requests/month).</li>
-<li><strong>AWS IoT Greengrass</strong>: $0.00 (Free for up to 10 devices).</li>
-<li><strong>AWS IoT Core</strong>: ~$0.00 (1 device sending 1 msg/min is ~43,200 msgs/month, well under the 500,000 free tier).</li>
-<li><strong>Amazon DynamoDB</strong>: ~$0.00 (Will fall within the 25 GB / 25 WCU free tier).</li>
-<li><strong>Amazon S3</strong>: ~$0.10 (Negligible cost for data lake storage and hosting).</li>
-<li><strong>API Gateway, SQS, EventBridge</strong>: ~$0.00 (All covered by generous free tiers).</li>
-<li><strong>Total Monthly Cloud Cost</strong>: Effectively $0.00 - $0.20 (for the first 12 months).</li>
-</ul>
-<h3 id="on-demand--hardware-costs">On-Demand &amp; Hardware Costs:</h3>
+<li>
+<p><strong>AWS Lambda</strong>: ~$1.20</p>
 <ul>
-<li><strong>Amazon SageMaker</strong>: ~$0.20/month (for four 10-minute training jobs on an ml.m5.large). This is the primary on-demand cost.</li>
-<li><strong>Hardware (One-Time Cost)</strong>:
-<ul>
-<li>Raspberry Pi 5 (8GB): ~$80</li>
-<li>Official 27W Power Supply: ~$12</li>
-<li>Google Coral TPU (USB): ~$60</li>
-<li>Sensors (MPU, INA, DS18B20), OLED, etc.: ~$25</li>
-<li><strong>Estimated Total Hardware Cost</strong>: ~$177 per device</li>
+<li>5 Lambda functions (Ingestion, Query, Retrain, Deploy, Rotate)</li>
+<li>Estimated 50,000 invocations/month (Ingestion: 43,200, Query: 5,000, Automation: 1,800)</li>
+<li>~500 GB-seconds compute time</li>
+<li>Cost: $0.20 (requests) + $1.00 (compute) = $1.20</li>
 </ul>
 </li>
+<li>
+<p><strong>AWS IoT Greengrass</strong>: $0.00 (Free for up to 10 devices)</p>
+</li>
+<li>
+<p><strong>AWS IoT Core</strong>: ~$2.50</p>
+<ul>
+<li>1 device sending 1 msg/min = ~43,200 msgs/month</li>
+<li>Connectivity: 720 hours × $0.00225/hour = $1.62</li>
+<li>Messaging: 43,200 msgs × $1.00/million = $0.04</li>
+<li>Rules Engine: 43,200 actions × $0.15/million = $0.01</li>
+<li>Additional prediction publishes: ~$0.83</li>
+<li>Cost: ~$2.50</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon DynamoDB</strong>: ~$3.75</p>
+<ul>
+<li>On-demand pricing for 43,200 writes/month (1/min)</li>
+<li>~5,000 reads/month (dashboard queries)</li>
+<li>Write Request Units: 43,200 × $1.25/million = $0.05</li>
+<li>Read Request Units: 5,000 × $0.25/million = $0.001</li>
+<li>Storage: 5 GB × $0.25/GB = $1.25</li>
+<li>Data retention and growth: ~$2.50</li>
+<li>Cost: ~$3.75</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon S3</strong>: ~$1.50</p>
+<ul>
+<li>Data Lake: 10 GB storage × $0.023/GB = $0.23</li>
+<li>Model artifacts: 2 GB × $0.023/GB = $0.05</li>
+<li>Static website hosting: negligible</li>
+<li>PUT requests (data ingestion): 43,200 × $0.005/1000 = $0.22</li>
+<li>GET requests (training, queries): ~$0.50</li>
+<li>Data transfer out: ~$0.50</li>
+<li>Cost: ~$1.50</li>
+</ul>
+</li>
+<li>
+<p><strong>API Gateway</strong>: ~$2.00</p>
+<ul>
+<li>REST API with 5,000 requests/month</li>
+<li>First 333 million requests: $3.50/million</li>
+<li>Cost: 5,000 × $3.50/million = $0.02</li>
+<li>Data transfer and overhead: ~$1.98</li>
+<li>Cost: ~$2.00</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon SageMaker</strong>: ~$4.80</p>
+<ul>
+<li>Bi-weekly training (2 jobs/month)</li>
+<li>ml.m5.xlarge instance: $0.269/hour</li>
+<li>Training duration: ~30 minutes per job</li>
+<li>Cost: 2 jobs × 0.5 hours × $0.269 = $0.27</li>
+<li>Data processing and storage: ~$4.50</li>
+<li>Cost: ~$4.80</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon EventBridge</strong>: ~$0.10</p>
+<ul>
+<li>3 scheduled rules (retrain bi-weekly, rotate monthly, deploy on completion)</li>
+<li>~10 invocations/month</li>
+<li>Cost: negligible, ~$0.10 overhead</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon CloudWatch</strong>: ~$2.50</p>
+<ul>
+<li>Log ingestion: ~5 GB/month × $0.50/GB = $2.50</li>
+<li>Metrics: covered by free tier (10 custom metrics)</li>
+<li>Cost: ~$2.50</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon SNS</strong>: ~$0.15</p>
+<ul>
+<li>~100 notifications/month (alerts, automation)</li>
+<li>Cost: 100 × $0.50/million + overhead = ~$0.15</li>
+</ul>
+</li>
+<li>
+<p><strong>Total Monthly Cloud Cost</strong>: ~$18.50 - $20.00</p>
+</li>
+</ul>
+<h3 id="aws-free-tier-first-12-months">AWS Free Tier (First 12 Months):</h3>
+<p>For new AWS accounts, the first year costs are significantly reduced:</p>
+<ul>
+<li>
+<p><strong>AWS Lambda</strong>: $0.00</p>
+<ul>
+<li>Free tier: 1 million requests/month + 400,000 GB-seconds compute</li>
+<li>Usage: 50,000 requests/month (~5% of free tier)</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>AWS IoT Core</strong>: ~$0.00 - $0.50</p>
+<ul>
+<li>Free tier: 500,000 messages/month (first 12 months)</li>
+<li>Usage: ~86,400 msgs/month (43,200 sensor + 43,200 predictions)</li>
+<li>Connectivity still charged: 720 hours × $0.00225 = ~$1.62</li>
+<li>After free messaging: ~$1.60/month, During free tier: ~$0.50/month</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon DynamoDB</strong>: $0.00</p>
+<ul>
+<li>Free tier: 25 GB storage + 25 WCU + 25 RCU (always free)</li>
+<li>Usage: ~5 GB storage, low write/read units</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon S3</strong>: ~$0.10</p>
+<ul>
+<li>Free tier: 5 GB storage + 20,000 GET + 2,000 PUT requests</li>
+<li>Usage: ~12 GB storage (exceeds by 7 GB × $0.023 = $0.16)</li>
+<li>Requests mostly covered</li>
+<li>Cost: ~$0.10 - $0.20/month</li>
+</ul>
+</li>
+<li>
+<p><strong>API Gateway</strong>: $0.00</p>
+<ul>
+<li>Free tier: 1 million API calls/month (first 12 months)</li>
+<li>Usage: 5,000 calls/month (~0.5% of free tier)</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon SageMaker</strong>: ~$0.27</p>
+<ul>
+<li>Free tier: 250 hours ml.t3.medium/month (first 2 months)</li>
+<li>Usage: ml.m5.xlarge (not covered by free tier)</li>
+<li>Cost: 2 jobs × 0.5 hours × $0.269 = $0.27/month</li>
+</ul>
+</li>
+<li>
+<p><strong>Amazon CloudWatch</strong>: $0.00</p>
+<ul>
+<li>Free tier: 5 GB log ingestion + 10 custom metrics (always free)</li>
+<li>Usage: ~5 GB logs/month</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>EventBridge &amp; SNS</strong>: $0.00</p>
+<ul>
+<li>Free tier covers low usage volumes</li>
+<li>Fully covered</li>
+</ul>
+</li>
+<li>
+<p><strong>Total Monthly Cost (First 12 Months)</strong>: ~$1.00 - $2.00</p>
+</li>
+</ul>
+<h3 id="annual-cost-summary">Annual Cost Summary:</h3>
+<ul>
+<li><strong>Production Cost</strong>: <del>$20.00/month per device (</del>$240/year)</li>
+<li><strong>First Year with Free Tier</strong>: <del>$1.50/month per device (</del>$18/year for first 12 months, then $240/year)</li>
+<li><strong>Cost Breakdown</strong>: IoT Core (13%), DynamoDB (19%), SageMaker (24%), CloudWatch (13%), Lambda (6%), S3 (8%), API Gateway (10%), Other (7%)</li>
 </ul>
 <h2 id="7-risk-assessment--mitigation">7. Risk Assessment &amp; Mitigation</h2>
 <ul>
@@ -255,26 +507,117 @@
 </ul>
 </li>
 <li>
-<p><strong>Risk 4: Ingestion Failure (Low)</strong></p>
+<p><strong>Risk 4: API Key Compromise (Medium)</strong></p>
 <ul>
-<li>Impact: A malformed data packet or transient error causes data loss.</li>
-<li>Mitigation: The SQS Dead-Letter Queue (DLQ). Failed messages are captured for inspection and reprocessing.</li>
+<li>Impact: Unauthorized access to the API could lead to data exposure or quota exhaustion.</li>
+<li>Mitigation: Automated monthly key rotation via EventBridge Lambda. Rate limiting (10 req/s, 10k daily quota) prevents abuse. CloudWatch monitoring detects anomalous usage patterns.</li>
 </ul>
 </li>
 </ul>
 <h2 id="8-expected-outcomes">8. Expected Outcomes</h2>
 <ol>
-<li>A fully functional, end-to-end predictive maintenance platform prototype.</li>
-<li>A resilient edge device that reliably logs data and performs local inference, even when offline.</li>
-<li>A working, real-time dashboard for visualizing sensor data and predictions.</li>
-<li>A &ldquo;hands-off&rdquo; automated MLOps pipeline that continuously improves the system&rsquo;s intelligence without human intervention.</li>
+<li>A fully functional, end-to-end predictive maintenance platform with production-grade security and automation.</li>
+<li>A resilient edge device that reliably logs data and performs local inference, even when offline, with zero data loss.</li>
+<li>A working, real-time dashboard for visualizing sensor data and predictions, with interactive Swagger API documentation.</li>
+<li>A &ldquo;hands-off&rdquo; automated MLOps pipeline that retrains models bi-weekly and rotates API keys monthly without human intervention.</li>
+<li>A scalable, serverless architecture with AWS service discovery patterns, enabling easy deployment of additional devices.</li>
 </ol>
 
     </div>
 </article>
 
-        </main>
-    </div>
+            <div id="navigation">
+                
+                
+            </div>
+        </div>
+    </section>
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js"></script>
+    
+    
+    <script src="/js/search.js"></script>
     <script src="/js/darkmode.js"></script>
+    <script>
+        var baseurl = "\/\/localhost:1313\/";
+        
+        
+        $(document).ready(function() {
+            
+            initLunr();
+            
+            hljs.highlightAll();
+            
+            
+            $('pre code').each(function() {
+                var code = $(this);
+                var btn = $('<button class="copy-btn" title="Copy to clipboard"><i class="fas fa-copy"></i></button>');
+                code.parent().css('position', 'relative').prepend(btn);
+                
+                btn.on('click', function() {
+                    var text = code.text();
+                    navigator.clipboard.writeText(text).then(function() {
+                        btn.html('<i class="fas fa-check"></i>');
+                        setTimeout(function() {
+                            btn.html('<i class="fas fa-copy"></i>');
+                        }, 2000);
+                    });
+                });
+            });
+            
+            
+            $('#body img').each(function() {
+                var img = $(this);
+                img.css('cursor', 'pointer').on('click', function() {
+                    var modal = $('<div class="image-modal"><img src="' + img.attr('src') + '"></div>');
+                    $('body').append(modal);
+                    modal.on('click', function() { modal.remove(); });
+                });
+            });
+            
+            
+            $('#body h1, #body h2, #body h3, #body h4, #body h5, #body h6').filter('[id]').each(function() {
+                var heading = $(this);
+                var anchor = $('<a class="anchor-link" href="#' + heading.attr('id') + '"><i class="fas fa-link"></i></a>');
+                heading.append(anchor);
+            });
+            
+            
+            var visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]');
+            visitedLinks.push(window.location.pathname);
+            localStorage.setItem('visitedLinks', JSON.stringify([...new Set(visitedLinks)]));
+            
+            
+            $('.topics a').each(function() {
+                var link = $(this);
+                var href = new URL(link.attr('href'), window.location.origin).pathname;
+                if (visitedLinks.includes(href)) {
+                    link.closest('li').addClass('visited');
+                }
+            });
+            
+            
+            $('[data-clear-history-toggle]').on('click', function(e) {
+                e.preventDefault();
+                if (confirm('Clear all visited links history?')) {
+                    localStorage.removeItem('visitedLinks');
+                    $('.topics li').removeClass('visited');
+                }
+            });
+            
+            
+            $('[data-search-clear]').on('click', function() {
+                $('#search-by').val('').focus();
+            });
+            
+            
+            $('#sidebar-toggle-span').on('click', function() {
+                $('#sidebar').toggleClass('active');
+            });
+        });
+    </script>
 </body>
 </html>

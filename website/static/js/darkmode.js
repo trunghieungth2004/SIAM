@@ -1,7 +1,8 @@
 // Dark mode functionality
 (function() {
     const toggle = document.getElementById('darkModeToggle');
-    const toggleIcon = toggle.querySelector('.toggle-icon');
+    const toggleIcon = toggle.querySelector('i');
+    const toggleText = toggle.querySelector('.toggle-text');
     const htmlElement = document.documentElement;
     
     // Check for saved theme preference or default to light mode
@@ -19,6 +20,12 @@
     });
     
     function updateIcon(theme) {
-        toggleIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        if (theme === 'dark') {
+            toggleIcon.className = 'fas fa-sun';
+            toggleText.textContent = 'Light Mode';
+        } else {
+            toggleIcon.className = 'fas fa-moon';
+            toggleText.textContent = 'Dark Mode';
+        }
     }
 })();

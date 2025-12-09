@@ -2,6 +2,21 @@ baseURL = '/'
 languageCode = 'en-us'
 title = 'SIAM'
 
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[[menu.main]]
+  name = "Home"
+  url = "/"
+  weight = 1
+  pre = "1."
+
+[[menu.main]]
+  name = "Proposal"
+  url = "/proposal/"
+  weight = 2
+  pre = "2."
+
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
