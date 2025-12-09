@@ -32,7 +32,7 @@ deploy_frontend() {
     fi
     
     # Check if Application directory exists
-    local app_dir="$(dirname "$(dirname "$0")")/Application"
+    local app_dir="$(dirname "$(dirname "$0")")/application"
     if [ ! -d "$app_dir" ]; then
         print_log -r "[error] " "Application directory not found: $app_dir"
         return 1
