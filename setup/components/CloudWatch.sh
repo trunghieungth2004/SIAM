@@ -15,7 +15,7 @@ setup_cloudwatch() {
 
     # Get SNS topic ARN for alarms
     if [ -z "$SNS_TOPIC_ARN" ]; then
-        SNS_TOPIC_NAME="${PROJECT_NAME}-high-temp-alerts"
+        SNS_TOPIC_NAME="${PROJECT_NAME}-anomaly-alerts"
         SNS_TOPIC_ARN=$(aws sns list-topics --query "Topics[?ends_with(TopicArn, ':${SNS_TOPIC_NAME}')].TopicArn" --output text)
         if [ -z "$SNS_TOPIC_ARN" ] || [ "$SNS_TOPIC_ARN" = "None" ]; then
             print_log -r "[error] " "SNS topic not found. Please ensure SNS setup completed successfully."

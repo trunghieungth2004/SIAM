@@ -4,8 +4,6 @@ date: 2025-12-07
 draft: false
 ---
 
-# SIAM - Smart Industrial Asset's longevity Monitor
-
 Welcome to the SIAM project documentation.
 
 ## Project Overview

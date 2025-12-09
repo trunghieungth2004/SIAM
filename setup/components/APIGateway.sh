@@ -57,46 +57,106 @@ update_frontend_config() {
     
     local api_key=$(aws apigateway get-api-key --region "${AWS_REGION}" --api-key "$api_key_id" --include-value --query 'value' --output text 2>/dev/null)
     
-    # Check if Application directory exists
-    local app_dir="$(dirname "$(dirname "$0")")/Application"
-    if [ ! -d "$app_dir" ]; then
-        print_log -y "[warn] " "Application directory not found: $app_dir"
-        return 0
-    fi
-    
     # Create temporary directory
     local temp_dir="/tmp/siam-frontend-update-$$"
     mkdir -p "$temp_dir"
     
-    # Copy and update app.js with API endpoint and key
-    if [ -f "$app_dir/app.js" ]; then
-        cp "$app_dir/app.js" "$temp_dir/app.js"
-        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/app.js"
+    # Download app.js from S3
+    print_log -c "[download] " "Downloading app.js from S3..."
+    if aws s3 cp "s3://${frontend_bucket}/app.js" "$temp_dir/app.js" 2>/dev/null; then
+        print_log -c "[update] " "Processing app.js..."
         
-        # Inject API key securely
-        if [ -n "$api_key" ]; then
-            sed -i "s|API_KEY_PLACEHOLDER|$api_key|g" "$temp_dir/app.js"
+        # Show what we're replacing
+        print_log -y "[before] " "Current content:"
+        grep "API_GATEWAY_ENDPOINT_PLACEHOLDER\|API_KEY_PLACEHOLDER" "$temp_dir/app.js" | head -3
+        
+        # Replace placeholders (works on both Linux and macOS)
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/app.js"
+            [ -n "$api_key" ] && sed -i '' "s|API_KEY_PLACEHOLDER|$api_key|g" "$temp_dir/app.js"
+        else
+            sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/app.js"
+            [ -n "$api_key" ] && sed -i "s|API_KEY_PLACEHOLDER|$api_key|g" "$temp_dir/app.js"
         fi
+        
+        # Verify replacement worked
+        print_log -y "[after] " "Updated content:"
+        grep "const API_ENDPOINT\|const API_KEY" "$temp_dir/app.js" | head -3
+        
+        if grep -q "API_GATEWAY_ENDPOINT_PLACEHOLDER" "$temp_dir/app.js"; then
+            print_log -r "[error] " "Failed to replace API endpoint placeholder"
+            print_log -y "[debug] " "API URL value: $api_url"
+            print_log -y "[debug] " "sed command was: s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g"
+            cat "$temp_dir/app.js" | grep -A2 -B2 "PLACEHOLDER"
+            rm -rf "$temp_dir"
+            return 1
+        fi
+        
+        if [ -n "$api_key" ] && grep -q "API_KEY_PLACEHOLDER" "$temp_dir/app.js"; then
+            print_log -r "[error] " "Failed to replace API key placeholder"
+            print_log -y "[debug] " "API key value: ${api_key:0:10}..."
+            rm -rf "$temp_dir"
+            return 1
+        fi
+        
+        print_log -g "[replaced] " "API endpoint: $api_url"
+        [ -n "$api_key" ] && print_log -g "[replaced] " "API key: ${api_key:0:10}..."
         
         # Upload updated app.js
-        if aws s3 cp "$temp_dir/app.js" "s3://${frontend_bucket}/app.js"; then
-            print_log -g "[ok] " "Frontend app.js updated with API endpoint and key"
+        if aws s3 cp "$temp_dir/app.js" "s3://${frontend_bucket}/app.js" --content-type "application/javascript"; then
+            print_log -g "[ok] " "Frontend app.js uploaded to S3"
+            
+            # Verify what's in S3
+            print_log -c "[verify] " "Downloading from S3 to verify..."
+            local verify_file="/tmp/verify-app-$$.js"
+            if aws s3 cp "s3://${frontend_bucket}/app.js" "$verify_file" 2>/dev/null; then
+                if grep -q "API_GATEWAY_ENDPOINT_PLACEHOLDER" "$verify_file"; then
+                    print_log -r "[error] " "Verification failed - placeholder still in S3!"
+                    grep "const API_ENDPOINT" "$verify_file" | head -1
+                    rm -f "$verify_file"
+                    rm -rf "$temp_dir"
+                    return 1
+                else
+                    print_log -g "[verified] " "S3 file updated correctly:"
+                    grep "const API_ENDPOINT\|const API_KEY" "$verify_file" | head -2
+                    rm -f "$verify_file"
+                fi
+            fi
         else
-            print_log -y "[warn] " "Failed to update app.js"
+            print_log -r "[error] " "Failed to upload app.js to S3"
+            rm -rf "$temp_dir"
+            return 1
         fi
+    else
+        print_log -y "[warn] " "app.js not found in S3 bucket"
     fi
     
-    # Copy and update swagger.html with API endpoint
-    if [ -f "$app_dir/swagger.html" ]; then
-        cp "$app_dir/swagger.html" "$temp_dir/swagger.html"
-        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/swagger.html"
+    # Download and update swagger.html with API endpoint
+    if aws s3 cp "s3://${frontend_bucket}/swagger.html" "$temp_dir/swagger.html" 2>/dev/null; then
+        print_log -c "[update] " "Processing swagger.html..."
+        
+        # Replace placeholder (works on both Linux and macOS)
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/swagger.html"
+        else
+            sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_url|g" "$temp_dir/swagger.html"
+        fi
+        
+        # Verify replacement
+        if grep -q "API_GATEWAY_ENDPOINT_PLACEHOLDER" "$temp_dir/swagger.html"; then
+            print_log -r "[error] " "Failed to replace API endpoint in swagger.html"
+            return 1
+        fi
         
         # Upload updated swagger.html
-        if aws s3 cp "$temp_dir/swagger.html" "s3://${frontend_bucket}/swagger.html"; then
+        if aws s3 cp "$temp_dir/swagger.html" "s3://${frontend_bucket}/swagger.html" --content-type "text/html"; then
             print_log -g "[ok] " "Swagger page updated with API endpoint"
         else
-            print_log -y "[warn] " "Failed to update swagger.html"
+            print_log -y "[warn] " "Failed to upload swagger.html"
+            return 1
         fi
+    else
+        print_log -y "[warn] " "swagger.html not found in S3 bucket"
     fi
     
     rm -rf "$temp_dir"
@@ -171,13 +231,29 @@ setup_api_gateway() {
         --authorization-type NONE \
         --api-key-required
     
-    # Add method response with CORS headers for GET
+    # Add method response with CORS headers for GET (including error responses)
     aws apigateway put-method-response \
         --rest-api-id "$API_ID" \
         --resource-id "$DATA_RESOURCE_ID" \
         --http-method GET \
         --status-code 200 \
         --response-parameters '{"method.response.header.Access-Control-Allow-Origin":false}'
+    
+    # Add 4xx error response with CORS
+    aws apigateway put-method-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DATA_RESOURCE_ID" \
+        --http-method GET \
+        --status-code 400 \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":false}' 2>/dev/null || true
+    
+    # Add 403 Forbidden response with CORS for missing/invalid API key
+    aws apigateway put-method-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DATA_RESOURCE_ID" \
+        --http-method GET \
+        --status-code 403 \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":false}' 2>/dev/null || true
     
     # Get Lambda function ARN
     LAMBDA_ARN=$(aws lambda get-function --function-name "$QUERY_LAMBDA_NAME" --query 'Configuration.FunctionArn' --output text 2>/dev/null)
@@ -197,7 +273,7 @@ setup_api_gateway() {
         --integration-http-method POST \
         --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/${LAMBDA_ARN}/invocations"
     
-    # Add integration response with CORS headers
+    # Add integration response with CORS headers for success
     aws apigateway put-integration-response \
         --rest-api-id "$API_ID" \
         --resource-id "$DATA_RESOURCE_ID" \
@@ -205,6 +281,26 @@ setup_api_gateway() {
         --status-code 200 \
         --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''"}' \
         --response-templates '{"application/json":""}'
+    
+    # Add integration response for 4xx errors with CORS
+    aws apigateway put-integration-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DATA_RESOURCE_ID" \
+        --http-method GET \
+        --status-code 400 \
+        --selection-pattern "4\d{2}" \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''"}' \
+        --response-templates '{"application/json":""}' 2>/dev/null || true
+    
+    # Add integration response specifically for 403 Forbidden with CORS
+    aws apigateway put-integration-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DATA_RESOURCE_ID" \
+        --http-method GET \
+        --status-code 403 \
+        --selection-pattern "403" \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''"}' \
+        --response-templates '{"application/json":""}' 2>/dev/null || true
     
     # Add Lambda permission for API Gateway
     print_log -c "[permission] " "Adding Lambda invoke permission..."
@@ -281,6 +377,12 @@ setup_api_gateway() {
     
     # Update frontend with API endpoint if S3 frontend bucket exists
     update_frontend_config
+    
+    # Clean up temporary OpenAPI file
+    if [ -f openapi.json ]; then
+        rm -f openapi.json
+        print_log -c "[cleanup] " "Removed temporary openapi.json"
+    fi
 }
 
 cleanup_api_gateway() {
@@ -362,6 +464,12 @@ cleanup_api_gateway() {
     else
         print_log -r "[error] " "Some API Gateway resources may still exist"
         return 1
+    fi
+    
+    # Clean up temporary OpenAPI file if exists
+    if [ -f openapi.json ]; then
+        rm -f openapi.json
+        print_log -c "[cleanup] " "Removed openapi.json"
     fi
 }
 

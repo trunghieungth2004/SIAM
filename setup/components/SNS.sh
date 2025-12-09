@@ -22,7 +22,7 @@ setup_sns() {
     validate_inputs
     setup_aws_environment
 
-    SNS_TOPIC_NAME="${PROJECT_NAME}-high-temp-alerts"
+    SNS_TOPIC_NAME="${PROJECT_NAME}-anomaly-alerts"
     if ! SNS_TOPIC_ARN=$(aws sns list-topics --query "Topics[?ends_with(TopicArn, ':${SNS_TOPIC_NAME}')].TopicArn" --output text); then
         print_log -r "[error] " "Failed to check for existing SNS topics"
         return 1
@@ -139,7 +139,7 @@ cleanup_sns() {
     validate_inputs
     setup_aws_environment
 
-    SNS_TOPIC_NAME="${PROJECT_NAME}-high-temp-alerts"
+    SNS_TOPIC_NAME="${PROJECT_NAME}-anomaly-alerts"
     print_log -b "[delete] " "Deleting SNS Topic..."
     
     if ! SNS_TOPIC_ARN=$(aws sns list-topics --query "Topics[?ends_with(TopicArn, ':${SNS_TOPIC_NAME}')].TopicArn" --output text 2>/dev/null); then

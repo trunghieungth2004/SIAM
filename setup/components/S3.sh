@@ -279,10 +279,53 @@ EOL
     cleanup_temp_files
 }
 
+empty_iot_data() {
+    print_log -b "[empty] " "Emptying IoT data from S3..."
+    
+    # Discover all data buckets for this project
+    PROJECT_CLEAN=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+    local data_buckets=$(aws s3api list-buckets --query "Buckets[?contains(Name, '${PROJECT_CLEAN}') && contains(Name, 'iot-data')].Name" --output text)
+    
+    if [ -z "$data_buckets" ] || [ "$data_buckets" == "None" ]; then
+        print_log -y "[skip] " "No IoT data buckets found for project: ${PROJECT_NAME}"
+        return 0
+    fi
+    
+    # Process each bucket
+    for S3_DATA_BUCKET in $data_buckets; do
+        print_log -g "[found] " "IoT data bucket: $S3_DATA_BUCKET"
+        
+        # Count objects first
+        local object_count=$(aws s3 ls "s3://${S3_DATA_BUCKET}" --recursive 2>/dev/null | wc -l)
+        print_log -y "[info] " "Found ${object_count} objects to delete"
+        
+        if [ "$object_count" -eq 0 ]; then
+            print_log -g "[ok] " "Bucket $S3_DATA_BUCKET is already empty"
+            continue
+        fi
+        
+        # Use efficient batch delete via AWS CLI (no confirmation needed during cleanup)
+        print_log -c "[delete] " "Deleting objects from $S3_DATA_BUCKET in batches..."
+        
+        if aws s3 rm "s3://${S3_DATA_BUCKET}" --recursive --quiet; then
+            print_log -g "[ok] " "All IoT data deleted from $S3_DATA_BUCKET"
+            
+            # Verify
+            local remaining=$(aws s3 ls "s3://${S3_DATA_BUCKET}" --recursive 2>/dev/null | wc -l)
+            print_log -g "[verified] " "Remaining objects: ${remaining}"
+        else
+            print_log -y "[warn] " "Failed to delete some IoT data from $S3_DATA_BUCKET (continuing cleanup)"
+        fi
+    done
+}
+
 cleanup_s3() {
     print_log -b "[delete] " "Cleaning up S3 Storage..."
     validate_inputs
     setup_aws_environment
+
+    # First, empty IoT data bucket
+    empty_iot_data
 
     print_log -b "[delete] " "Deleting S3 Buckets..."
     # Look for resource file in the setup directory (parent of components)
@@ -409,6 +452,8 @@ case "${1:-}" in
         ;;
     *)
         echo "Usage: $0 {setup|cleanup}"
+        echo "  setup   - Create S3 buckets"
+        echo "  cleanup - Empty and delete all S3 buckets"
         echo "Environment variables required: PROJECT_NAME, THING_NAME"
         exit 1
         ;;

@@ -5,6 +5,7 @@
 .vscode/ipch
 .cache
 .csv
+*.log
 
 AWS_KEY.h
 WiFi_KEY.h

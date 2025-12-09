@@ -5,8 +5,6 @@ draft: false
 weight: 7
 ---
 
-# Week 7 Worklog
-
 ### Week 7 Objectives:
 - Master AWS IoT Greengrass component development
 - Convert local datalogger to Greengrass component

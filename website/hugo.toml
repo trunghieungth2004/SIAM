@@ -17,6 +17,207 @@ title = 'SIAM'
   weight = 2
   pre = "2."
 
+[[menu.main]]
+  name = "Worklog"
+  url = "/worklog/"
+  weight = 3
+  pre = "3."
+  identifier = "worklog"
+
+[[menu.main]]
+  name = "Week 1"
+  url = "/worklog/week-1/"
+  weight = 1
+  pre = "3.1"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 2"
+  url = "/worklog/week-2/"
+  weight = 2
+  pre = "3.2"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 3"
+  url = "/worklog/week-3/"
+  weight = 3
+  pre = "3.3"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 4"
+  url = "/worklog/week-4/"
+  weight = 4
+  pre = "3.4"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 5"
+  url = "/worklog/week-5/"
+  weight = 5
+  pre = "3.5"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 6"
+  url = "/worklog/week-6/"
+  weight = 6
+  pre = "3.6"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 7"
+  url = "/worklog/week-7/"
+  weight = 7
+  pre = "3.7"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 8"
+  url = "/worklog/week-8/"
+  weight = 8
+  pre = "3.8"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 9"
+  url = "/worklog/week-9/"
+  weight = 9
+  pre = "3.9"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 10"
+  url = "/worklog/week-10/"
+  weight = 10
+  pre = "3.10"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 11"
+  url = "/worklog/week-11/"
+  weight = 11
+  pre = "3.11"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Week 12"
+  url = "/worklog/week-12/"
+  weight = 12
+  pre = "3.12"
+  parent = "worklog"
+
+[[menu.main]]
+  name = "Translated Blogs"
+  url = "/blog/"
+  weight = 4
+  pre = "4."
+  identifier = "blog"
+
+[[menu.main]]
+  name = "Simplify cost allocation by department with AWS Organizations and Lambda"
+  url = "/blog/post-1/"
+  weight = 1
+  pre = "4.1"
+  parent = "blog"
+
+[[menu.main]]
+  name = "Simplify the path from data to knowledge with new Amazon SageMaker Catalog features"
+  url = "/blog/post-2/"
+  weight = 2
+  pre = "4.2"
+  parent = "blog"
+
+[[menu.main]]
+  name = "New Amazon EC2 C8gn with AWS Graviton4 processors, providing up to 600Gbps network bandwidth"
+  url = "/blog/post-3/"
+  weight = 3
+  pre = "4.3"
+  parent = "blog"
+
+[[menu.main]]
+  name = "Events Participated"
+  url = "/event/"
+  weight = 5
+  pre = "5."
+  identifier = "event"
+
+[[menu.main]]
+  name = "Kick-off AWS FCJ Workforce - FPTU OJT FALL 2025"
+  url = "/event/event-1/"
+  weight = 1
+  pre = "5.1"
+  parent = "event"
+
+[[menu.main]]
+  name = "AWS Cloud Mastery Series #1 - AI/ML/GenAI on AWS"
+  url = "/event/event-2/"
+  weight = 2
+  pre = "5.2"
+  parent = "event"
+
+[[menu.main]]
+  name = "AWS Cloud Mastery Series #2 - DevOps on AWS"
+  url = "/event/event-3/"
+  weight = 3
+  pre = "5.3"
+  parent = "event"
+
+[[menu.main]]
+  name = "AWS Cloud Mastery Series #3 - Security on AWS"
+  url = "/event/event-4/"
+  weight = 4
+  pre = "5.4"
+  parent = "event"
+
+[[menu.main]]
+  name = "Building Agentic AI - Context Optimization with Amazon Bedrock"
+  url = "/event/event-5/"
+  weight = 5
+  pre = "5.5"
+  parent = "event"
+
+[[menu.main]]
+  name = "GenAI-powered App-DB Modernization Workshop"
+  url = "/event/event-6/"
+  weight = 6
+  pre = "5.6"
+  parent = "event"
+
+[[menu.main]]
+  name = "Workshop"
+  url = "/workshop/"
+  weight = 6
+  pre = "6."
+  identifier = "workshop"
+
+[[menu.main]]
+  name = "Deploy and Configure EC2 Instances with AWS CLI"
+  url = "/workshop/workshop-1/"
+  weight = 1
+  pre = "6.1"
+  parent = "workshop"
+
+[[menu.main]]
+  name = "Build and Deploy Machine Learning Models with Amazon SageMaker CLI"
+  url = "/workshop/workshop-2/"
+  weight = 2
+  pre = "6.2"
+  parent = "workshop"
+
+[[menu.main]]
+  name = "Self-Assessment"
+  url = "/self-assessment/"
+  weight = 7
+  pre = "7."
+
+[[menu.main]]
+  name = "Sharing and Feedback"
+  url = "/sharing-and-feedback/"
+  weight = 8
+  pre = "8."
+
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]

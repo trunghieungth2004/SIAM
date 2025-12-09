@@ -5,8 +5,6 @@ draft: false
 weight: 1
 ---
 
-# Worklog
-
 This worklog documents my 12-week internship journey (08/09/2025 - 08/12/2025) with the AWS First Cloud Journey (FCJ) program, during which I developed **SIAM (Smart Industrial Asset's longevity Monitor)** - a hybrid edge-cloud platform for predictive maintenance using AWS IoT services.
 
 The project leverages AWS IoT Greengrass for edge computing on a Raspberry Pi 5, combined with a serverless cloud backend utilizing Lambda, DynamoDB, S3, SageMaker, API Gateway, EventBridge, and CloudWatch. The system demonstrates real-time anomaly detection using a Coral TPU for ML inference at the edge, with automated model retraining and deployment through a complete MLOps pipeline.

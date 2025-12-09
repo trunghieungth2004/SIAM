@@ -5,8 +5,6 @@ draft: false
 weight: 11
 ---
 
-# Week 11 Worklog
-
 ### Week 11 Objectives:
 - Verify system functionality and monitor CloudWatch metrics
 - Optimize system performance and cost efficiency

@@ -5,8 +5,6 @@ draft: false
 weight: 10
 ---
 
-# Week 10 Worklog
-
 ### Week 10 Objectives:
 - Implement automated monthly API key rotation
 - Enhance API Gateway security with rate limiting and throttling

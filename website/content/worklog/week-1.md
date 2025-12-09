@@ -5,8 +5,6 @@ draft: false
 weight: 1
 ---
 
-# Week 1 Worklog
-
 ### Week 1 Objectives:
 - Connect and get acquainted with members and mentors of AWS First Cloud Journey (FCJ).
 - Understand the internship structure, rules, and expectations.

@@ -5,8 +5,6 @@ draft: false
 weight: 5
 ---
 
-# Week 5 Worklog
-
 ### Week 5 Objectives:
 - Analyze local sensor data collected from Raspberry Pi
 - Implement Lambda functions for data ingestion and querying

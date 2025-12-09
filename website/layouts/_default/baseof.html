@@ -52,18 +52,16 @@
         <div class="highlightable">
             <ul class="topics">
                 {{ range .Site.Menus.main }}
-                <li data-nav-id="{{ .URL }}" class="dd-item{{ if .HasChildren }} parent{{ end }}{{ if $.IsMenuCurrent "main" . }} active{{ end }}">
+                <li data-nav-id="{{ .URL }}" class="dd-item{{ if .HasChildren }} parent{{ end }}{{ if or ($.IsMenuCurrent "main" .) (eq $.RelPermalink .URL) }} active{{ end }}">
                     <a href="{{ .URL }}">
                         <b>{{ .Pre }}</b> {{ .Name }}
-                        <i class="fas fa-check read-icon"></i>
                     </a>
                     {{ if .HasChildren }}
-                    <ul>
+                    <ul style="display: none;">
                         {{ range .Children }}
-                        <li data-nav-id="{{ .URL }}" class="dd-item{{ if $.IsMenuCurrent "main" . }} active{{ end }}">
+                        <li data-nav-id="{{ .URL }}" class="dd-item{{ if or ($.IsMenuCurrent "main" .) (eq $.RelPermalink .URL) }} active{{ end }}">
                             <a href="{{ .URL }}">
                                 <b>{{ .Pre }}</b> {{ .Name }}
-                                <i class="fas fa-check read-icon"></i>
                             </a>
                         </li>
                         {{ end }}
@@ -123,12 +121,23 @@
     
     <section id="body">
         <div id="overlay"></div>
-        <div class="padding highlightable">
-            <div id="top-bar" class="menu">
-                <button id="sidebar-toggle-span" class="btn btn-sm btn-default">
-                    <i class="fas fa-bars"></i>
-                </button>
+        <div id="top-bar" style="position: fixed !important; top: 0 !important; left: 300px !important; right: 0 !important; z-index: 100 !important; display: flex !important; align-items: center !important; visibility: visible !important; opacity: 1 !important; background: linear-gradient(135deg, #232F3E 0%, #1a242f 100%) !important; border-bottom: 2px solid #ff9900 !important; padding: 14px 24px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; backdrop-filter: blur(10px) !important;">
+            <div id="breadcrumbs" style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                <span id="sidebar-toggle-span" style="margin-right: 4px;">
+                    <a href="#" id="sidebar-toggle" data-sidebar-toggle="" style="color: #ff9900; text-decoration: none; font-size: 20px; padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s;">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </span>
+                <span class="links" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: #ffffff;">
+                    <a href="/" style="color: #ff9900; text-decoration: none; font-weight: 600; transition: color 0.2s;">SIAM</a>
+                    {{ if ne .RelPermalink "/" }}
+                    <span style="color: #aaaaaa; font-weight: 400;">&gt;</span>
+                    <span style="color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px;">{{ if gt (len .Title) 50 }}{{ slicestr .Title 0 50 }}...{{ else }}{{ .Title }}{{ end }}</span>
+                    {{ end }}
+                </span>
             </div>
+        </div>
+        <div class="padding highlightable">
             {{ block "main" . }}{{ end }}
             <div id="navigation">
                 {{ if .Prev }}
@@ -156,8 +165,25 @@
     <script>
         var baseurl = "{{ .Site.BaseURL }}";
         
+        // Force top-bar to be visible
+        $(window).on('load', function() {
+            $('#top-bar').css({
+                'position': 'fixed',
+                'top': '0',
+                'left': '300px',
+                'right': '0',
+                'z-index': '100',
+                'display': 'block',
+                'visibility': 'visible',
+                'opacity': '1'
+            });
+        });
+        
         // Initialize everything
         $(document).ready(function() {
+            // Force top-bar visible on ready as well
+            $('#top-bar').show().css('visibility', 'visible').css('opacity', '1');
+            
             // Initialize search
             initLunr();
             
@@ -228,6 +254,105 @@
             // Sidebar toggle for mobile
             $('#sidebar-toggle-span').on('click', function() {
                 $('#sidebar').toggleClass('active');
+            });
+            
+            // Collapsible nested menu - double click to toggle, single click to navigate
+            $('.dd-item.parent > a').on('dblclick', function(e) {
+                e.preventDefault();
+                
+                var $parentLink = $(this);
+                var $parent = $parentLink.closest('.dd-item.parent');
+                var $submenu = $parent.find('> ul');
+                
+                if ($parent.hasClass('expanded')) {
+                    // Collapse
+                    $parent.removeClass('expanded');
+                    $parentLink.css('background-color', '');
+                    $submenu.slideUp(200);
+                } else {
+                    // Expand
+                    $parent.addClass('expanded');
+                    $parentLink.css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    $submenu.slideDown(200);
+                    
+                    // Apply darker background to nested items
+                    $submenu.find('li a').each(function() {
+                        var $nestedLink = $(this);
+                        if (!$nestedLink.closest('li').hasClass('active')) {
+                            $nestedLink.css('background-color', 'rgba(0, 0, 0, 0.3)');
+                        }
+                    });
+                    
+                    // Nested item hover effects
+                    $submenu.find('li a').hover(
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.4)');
+                            }
+                        },
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.3)');
+                            }
+                        }
+                    );
+                }
+            });
+            
+            // Auto-expand parent menu if child is active OR parent is active
+            $('.dd-item.parent').each(function() {
+                var $parentLi = $(this);
+                var $parentLink = $parentLi.find('> a');
+                var $submenu = $parentLi.find('> ul');
+                var hasActiveChild = $parentLi.find('ul li.active').length > 0;
+                var isParentActive = $parentLi.hasClass('active');
+                
+                if (hasActiveChild || isParentActive) {
+                    $parentLi.addClass('expanded');
+                    $parentLink.css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    $submenu.show();
+                    
+                    // Apply darker background to nested items
+                    $submenu.find('li a').each(function() {
+                        var $nestedLink = $(this);
+                        if (!$nestedLink.closest('li').hasClass('active')) {
+                            $nestedLink.css('background-color', 'rgba(0, 0, 0, 0.3)');
+                        }
+                    });
+                    
+                    // Nested item hover effects
+                    $submenu.find('li a').hover(
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.4)');
+                            }
+                        },
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.3)');
+                            }
+                        }
+                    );
+                }
+            });
+            
+            // Update hover effect for expanded parent
+            $('.dd-item.parent.expanded > a').hover(
+                function() {
+                    if (!$(this).closest('.dd-item').hasClass('active')) {
+                        $(this).css('background-color', 'rgba(0, 0, 0, 0.25)');
+                    }
+                },
+                function() {
+                    if (!$(this).closest('.dd-item').hasClass('active')) {
+                        $(this).css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    }
+                }
+            );
+            
+            // Allow child links to navigate normally
+            $('.dd-item.parent ul a').on('click', function(e) {
+                e.stopPropagation();
             });
         });
     </script>

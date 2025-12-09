@@ -8,7 +8,7 @@
             "height": 6,
             "properties": {
                 "metrics": [
-                    [ "AWS/Lambda", "Invocations", "FunctionName", "func-ingestion-test" ],
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "func-ingestion-siam" ],
                     [ ".", "Errors", ".", "." ],
                     [ ".", "Duration", ".", "." ]
                 ],
@@ -44,7 +44,7 @@
             "height": 6,
             "properties": {
                 "metrics": [
-                    [ "AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "test-sensor-readings" ],
+                    [ "AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "siam-sensor-readings" ],
                     [ ".", "ConsumedWriteCapacityUnits", ".", "." ]
                 ],
                 "period": 300,

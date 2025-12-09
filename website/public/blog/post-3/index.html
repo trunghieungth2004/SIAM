@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" class="js csstransforms3d">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>New Amazon EC2 C8gn with AWS Graviton4 processors, providing up to 600Gbps network bandwidth - SIAM</title>
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <style>
+      :root #header + #content > #left > #rlblock_left{
+          display:none !important;
+      }
+    </style>
+</head>
+<body class="" data-url="/">
+    <nav id="sidebar" class="showVisitedLinks">
+        <div id="header-wrapper">
+            <div id="header">
+                <a id="logo" href="//localhost:1313/">
+                    <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="30%">
+                        <defs>
+                            <style>
+                                .cls-1 { fill: #fff; }
+                                .cls-2 { fill: #f90; fill-rule: evenodd; }
+                            </style>
+                        </defs>
+                        <title>AWS-Logo_White-Color</title>
+                        <path class="cls-1" d="M14.09,10.85a4.7,4.7,0,0,0,.19,1.48,7.73,7.73,0,0,0,.54,1.19.77.77,0,0,1,.12.38.64.64,0,0,1-.32.49l-1,.7a.83.83,0,0,1-.44.15.69.69,0,0,1-.49-.23,3.8,3.8,0,0,1-.6-.77q-.25-.42-.51-1a6.14,6.14,0,0,1-4.89,2.3,4.54,4.54,0,0,1-3.32-1.19,4.27,4.27,0,0,1-1.22-3.2A4.28,4.28,0,0,1,3.61,7.75,6.06,6.06,0,0,1,7.69,6.46a12.47,12.47,0,0,1,1.76.13q.92.13,1.91.36V5.73a3.65,3.65,0,0,0-.79-2.66A3.81,3.81,0,0,0,7.86,2.3a7.71,7.71,0,0,0-1.79.22,12.78,12.78,0,0,0-1.79.57,4.55,4.55,0,0,1-.58.22l-.26,0q-.35,0-.35-.52V2a1.09,1.09,0,0,1,.12-.58,1.2,1.2,0,0,1,.47-.35A10.88,10.88,0,0,1,5.77.32,10.19,10.19,0,0,1,8.36,0a6,6,0,0,1,4.35,1.35,5.49,5.49,0,0,1,1.38,4.09ZM7.34,13.38a5.36,5.36,0,0,0,1.72-.31A3.63,3.63,0,0,0,10.63,12,2.62,2.62,0,0,0,11.19,11a5.63,5.63,0,0,0,.16-1.44v-.7a14.35,14.35,0,0,0-1.53-.28,12.37,12.37,0,0,0-1.56-.1,3.84,3.84,0,0,0-2.47.67A2.34,2.34,0,0,0,5,11a2.35,2.35,0,0,0,.61,1.76A2.4,2.4,0,0,0,7.34,13.38Zm13.35,1.8a1,1,0,0,1-.64-.16,1.3,1.3,0,0,1-.35-.65L15.81,1.51a3,3,0,0,1-.15-.67.36.36,0,0,1,.41-.41H17.7a1,1,0,0,1,.65.16,1.4,1.4,0,0,1,.33.65l2.79,11,2.59-11A1.17,1.17,0,0,1,24.39.6a1.1,1.1,0,0,1,.67-.16H26.4a1.1,1.1,0,0,1,.67.16,1.17,1.17,0,0,1,.32.65L30,12.39,32.88,1.25A1.39,1.39,0,0,1,33.22.6a1,1,0,0,1,.65-.16h1.54a.36.36,0,0,1,.41.41,1.36,1.36,0,0,1,0,.26,3.64,3.64,0,0,1-.12.41l-4,12.86a1.3,1.3,0,0,1-.35.65,1,1,0,0,1-.64.16H29.25a1,1,0,0,1-.67-.17,1.26,1.26,0,0,1-.32-.67L25.67,3.64,23.11,14.34a1.26,1.26,0,0,1-.32.67,1,1,0,0,1-.67.17Zm21.36.44a11.28,11.28,0,0,1-2.56-.29,7.44,7.44,0,0,1-1.92-.67,1,1,0,0,1-.61-.93v-.84q0-.52.38-.52a.9.9,0,0,1,.31.06l.42.17a8.77,8.77,0,0,0,1.83.58,9.78,9.78,0,0,0,2,.2,4.48,4.48,0,0,0,2.43-.55,1.76,1.76,0,0,0,.86-1.57,1.61,1.61,0,0,0-.45-1.16A4.29,4.29,0,0,0,43,9.22l-2.41-.76A5.15,5.15,0,0,1,38,6.78a3.94,3.94,0,0,1-.83-2.41,3.7,3.7,0,0,1,.45-1.85,4.47,4.47,0,0,1,1.19-1.37A5.27,5.27,0,0,1,40.51.29,7.4,7.4,0,0,1,42.6,0a8.87,8.87,0,0,1,1.12.07q.57.07,1.08.19t.95.26a4.27,4.27,0,0,1,.7.29,1.59,1.59,0,0,1,.49.41.94.94,0,0,1,.15.55v.79q0,.52-.38.52a1.76,1.76,0,0,1-.64-.2,7.74,7.74,0,0,0-3.2-.64,4.37,4.37,0,0,0-2.21.47,1.6,1.6,0,0,0-.79,1.48,1.58,1.58,0,0,0,.49,1.18,4.94,4.94,0,0,0,1.83.92L44.55,7a5.08,5.08,0,0,1,2.57,1.6A3.76,3.76,0,0,1,47.9,11a4.21,4.21,0,0,1-.44,1.93,4.4,4.4,0,0,1-1.21,1.47,5.43,5.43,0,0,1-1.85.93A8.25,8.25,0,0,1,42.05,15.62Z"></path>
+                        <path class="cls-2" d="M45.19,23.81C39.72,27.85,31.78,30,25,30A36.64,36.64,0,0,1,.22,20.57c-.51-.46-.06-1.09.56-.74A49.78,49.78,0,0,0,25.53,26.4,49.23,49.23,0,0,0,44.4,22.53C45.32,22.14,46.1,23.14,45.19,23.81Z"></path>
+                        <path class="cls-2" d="M47.47,21.21c-.7-.9-4.63-.42-6.39-.21-.53.06-.62-.4-.14-.74,3.13-2.2,8.27-1.57,8.86-.83s-.16,5.89-3.09,8.35c-.45.38-.88.18-.68-.32C46.69,25.8,48.17,22.11,47.47,21.21Z"></path>
+                    </svg>
+                </a>
+            </div>
+            <div class="searchbox">
+                <label for="search-by"><i class="fas fa-search"></i></label>
+                <input data-search-input id="search-by" type="search" placeholder="Search...">
+                <span data-search-clear=""><i class="fas fa-times"></i></span>
+            </div>
+        </div>
+        
+        <div class="highlightable">
+            <ul class="topics">
+                
+                <li data-nav-id="/" class="dd-item">
+                    <a href="/">
+                        <b>1.</b> Home
+                    </a>
+                    
+                </li>
+                
+                <li data-nav-id="/proposal/" class="dd-item">
+                    <a href="/proposal/">
+                        <b>2.</b> Proposal
+                    </a>
+                    
+                </li>
+                
+                <li data-nav-id="/worklog/" class="dd-item parent">
+                    <a href="/worklog/">
+                        <b>3.</b> Worklog
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/worklog/week-1/" class="dd-item">
+                            <a href="/worklog/week-1/">
+                                <b>3.1</b> Week 1
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-2/" class="dd-item">
+                            <a href="/worklog/week-2/">
+                                <b>3.2</b> Week 2
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-3/" class="dd-item">
+                            <a href="/worklog/week-3/">
+                                <b>3.3</b> Week 3
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-4/" class="dd-item">
+                            <a href="/worklog/week-4/">
+                                <b>3.4</b> Week 4
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-5/" class="dd-item">
+                            <a href="/worklog/week-5/">
+                                <b>3.5</b> Week 5
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-6/" class="dd-item">
+                            <a href="/worklog/week-6/">
+                                <b>3.6</b> Week 6
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-7/" class="dd-item">
+                            <a href="/worklog/week-7/">
+                                <b>3.7</b> Week 7
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-8/" class="dd-item">
+                            <a href="/worklog/week-8/">
+                                <b>3.8</b> Week 8
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-9/" class="dd-item">
+                            <a href="/worklog/week-9/">
+                                <b>3.9</b> Week 9
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-10/" class="dd-item">
+                            <a href="/worklog/week-10/">
+                                <b>3.10</b> Week 10
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-11/" class="dd-item">
+                            <a href="/worklog/week-11/">
+                                <b>3.11</b> Week 11
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-12/" class="dd-item">
+                            <a href="/worklog/week-12/">
+                                <b>3.12</b> Week 12
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/blog/" class="dd-item parent">
+                    <a href="/blog/">
+                        <b>4.</b> Translated Blogs
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/blog/post-1/" class="dd-item">
+                            <a href="/blog/post-1/">
+                                <b>4.1</b> Simplify cost allocation by department with AWS Organizations and Lambda
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/blog/post-2/" class="dd-item">
+                            <a href="/blog/post-2/">
+                                <b>4.2</b> Simplify the path from data to knowledge with new Amazon SageMaker Catalog features
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/blog/post-3/" class="dd-item active">
+                            <a href="/blog/post-3/">
+                                <b>4.3</b> New Amazon EC2 C8gn with AWS Graviton4 processors, providing up to 600Gbps network bandwidth
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/event/" class="dd-item parent">
+                    <a href="/event/">
+                        <b>5.</b> Events Participated
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/event/event-1/" class="dd-item">
+                            <a href="/event/event-1/">
+                                <b>5.1</b> Kick-off AWS FCJ Workforce - FPTU OJT FALL 2025
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-2/" class="dd-item">
+                            <a href="/event/event-2/">
+                                <b>5.2</b> AWS Cloud Mastery Series #1 - AI/ML/GenAI on AWS
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-3/" class="dd-item">
+                            <a href="/event/event-3/">
+                                <b>5.3</b> AWS Cloud Mastery Series #2 - DevOps on AWS
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-4/" class="dd-item">
+                            <a href="/event/event-4/">
+                                <b>5.4</b> AWS Cloud Mastery Series #3 - Security on AWS
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-5/" class="dd-item">
+                            <a href="/event/event-5/">
+                                <b>5.5</b> Building Agentic AI - Context Optimization with Amazon Bedrock
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-6/" class="dd-item">
+                            <a href="/event/event-6/">
+                                <b>5.6</b> GenAI-powered App-DB Modernization Workshop
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/workshop/" class="dd-item parent">
+                    <a href="/workshop/">
+                        <b>6.</b> Workshop
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/workshop/workshop-1/" class="dd-item">
+                            <a href="/workshop/workshop-1/">
+                                <b>6.1</b> Deploy and Configure EC2 Instances with AWS CLI
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/workshop/workshop-2/" class="dd-item">
+                            <a href="/workshop/workshop-2/">
+                                <b>6.2</b> Build and Deploy Machine Learning Models with Amazon SageMaker CLI
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/self-assessment/" class="dd-item">
+                    <a href="/self-assessment/">
+                        <b>7.</b> Self-Assessment
+                    </a>
+                    
+                </li>
+                
+                <li data-nav-id="/sharing-and-feedback/" class="dd-item">
+                    <a href="/sharing-and-feedback/">
+                        <b>8.</b> Sharing and Feedback
+                    </a>
+                    
+                </li>
+                
+            </ul>
+            
+            <div class="sidebar-footer-sections">
+                <section id="shortcuts">
+                    <h3>More</h3>
+                    <ul>
+                        <li>
+                            <a class="padding" href="https://www.facebook.com/groups/awsstudygroupfcj/">
+                                <i class='fab fa-facebook'></i> AWS Study Group
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                
+                <section id="prefooter">
+                    <ul>
+                        <li>
+                            <a class="padding">
+                                <i class="fas fa-language fa-fw"></i>
+                                <div class="select-style">
+                                    <select id="select-language" onchange="location = this.value;">
+                                        <option id="en" value="//localhost:1313/" selected>English</option>
+                                    </select>
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="255px" height="255px" viewBox="0 0 255 255" style="enable-background: new 0 0 255 255">
+                                        <g><g id="arrow-drop-down"><polygon points="0,63.75 127.5,191.25 255,63.75" /></g></g>
+                                    </svg>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="padding" href="#" data-clear-history-toggle="">
+                                <i class="fas fa-history fa-fw"></i> Clear History
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                
+                <div id="footer" class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showFooter">
+                    <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon"></i>
+                        <span class="toggle-text">Dark Mode</span>
+                    </button>
+                    <div id="prefooter">
+                        <h5 class="copyright">© 2025 Your Name</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <section id="body">
+        <div id="overlay"></div>
+        <div id="top-bar" style="position: fixed !important; top: 0 !important; left: 300px !important; right: 0 !important; z-index: 100 !important; display: flex !important; align-items: center !important; visibility: visible !important; opacity: 1 !important; background: linear-gradient(135deg, #232F3E 0%, #1a242f 100%) !important; border-bottom: 2px solid #ff9900 !important; padding: 14px 24px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; backdrop-filter: blur(10px) !important;">
+            <div id="breadcrumbs" style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                <span id="sidebar-toggle-span" style="margin-right: 4px;">
+                    <a href="#" id="sidebar-toggle" data-sidebar-toggle="" style="color: #ff9900; text-decoration: none; font-size: 20px; padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s;">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </span>
+                <span class="links" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: #ffffff;">
+                    <a href="/" style="color: #ff9900; text-decoration: none; font-weight: 600; transition: color 0.2s;">SIAM</a>
+                    
+                    <span style="color: #aaaaaa; font-weight: 400;">&gt;</span>
+                    <span style="color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px;">New Amazon EC2 C8gn with AWS Graviton4 processors,...</span>
+                    
+                </span>
+            </div>
+        </div>
+        <div class="padding highlightable">
+            
+<article>
+    <h1>New Amazon EC2 C8gn with AWS Graviton4 processors, providing up to 600Gbps network bandwidth</h1>
+    <div class="content">
+        <div style="width: 100%; max-width: 900px; margin: 0 auto;">
+    <iframe src="https://docs.google.com/document/d/e/2PACX-1vQrm_FE-LpsLNPXDzOjQ81_dM67ninvFms04CBcUo578j-MnPT3siw-4ZET6keGdQrTwgthmXTBR1nL/pub?embedded=true" 
+            width="100%" 
+            height="1000px" 
+            style="border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    </iframe>
+</div>
+
+    </div>
+</article>
+
+            <div id="navigation">
+                
+                <a class="nav nav-prev" href="//localhost:1313/blog/post-1/" title="Simplify cost allocation by department with AWS Organizations and Lambda">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+                
+                
+                <a class="nav nav-next" href="//localhost:1313/workshop/workshop-1/" title="Deploy and Configure EC2 Instances with AWS CLI">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+                
+            </div>
+        </div>
+    </section>
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js"></script>
+    
+    
+    <script src="/js/search.js"></script>
+    <script src="/js/darkmode.js"></script>
+    <script>
+        var baseurl = "\/\/localhost:1313\/";
+        
+        
+        $(window).on('load', function() {
+            $('#top-bar').css({
+                'position': 'fixed',
+                'top': '0',
+                'left': '300px',
+                'right': '0',
+                'z-index': '100',
+                'display': 'block',
+                'visibility': 'visible',
+                'opacity': '1'
+            });
+        });
+        
+        
+        $(document).ready(function() {
+            
+            $('#top-bar').show().css('visibility', 'visible').css('opacity', '1');
+            
+            
+            initLunr();
+            
+            hljs.highlightAll();
+            
+            
+            $('pre code').each(function() {
+                var code = $(this);
+                var btn = $('<button class="copy-btn" title="Copy to clipboard"><i class="fas fa-copy"></i></button>');
+                code.parent().css('position', 'relative').prepend(btn);
+                
+                btn.on('click', function() {
+                    var text = code.text();
+                    navigator.clipboard.writeText(text).then(function() {
+                        btn.html('<i class="fas fa-check"></i>');
+                        setTimeout(function() {
+                            btn.html('<i class="fas fa-copy"></i>');
+                        }, 2000);
+                    });
+                });
+            });
+            
+            
+            $('#body img').each(function() {
+                var img = $(this);
+                img.css('cursor', 'pointer').on('click', function() {
+                    var modal = $('<div class="image-modal"><img src="' + img.attr('src') + '"></div>');
+                    $('body').append(modal);
+                    modal.on('click', function() { modal.remove(); });
+                });
+            });
+            
+            
+            $('#body h1, #body h2, #body h3, #body h4, #body h5, #body h6').filter('[id]').each(function() {
+                var heading = $(this);
+                var anchor = $('<a class="anchor-link" href="#' + heading.attr('id') + '"><i class="fas fa-link"></i></a>');
+                heading.append(anchor);
+            });
+            
+            
+            var visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]');
+            visitedLinks.push(window.location.pathname);
+            localStorage.setItem('visitedLinks', JSON.stringify([...new Set(visitedLinks)]));
+            
+            
+            $('.topics a').each(function() {
+                var link = $(this);
+                var href = new URL(link.attr('href'), window.location.origin).pathname;
+                if (visitedLinks.includes(href)) {
+                    link.closest('li').addClass('visited');
+                }
+            });
+            
+            
+            $('[data-clear-history-toggle]').on('click', function(e) {
+                e.preventDefault();
+                if (confirm('Clear all visited links history?')) {
+                    localStorage.removeItem('visitedLinks');
+                    $('.topics li').removeClass('visited');
+                }
+            });
+            
+            
+            $('[data-search-clear]').on('click', function() {
+                $('#search-by').val('').focus();
+            });
+            
+            
+            $('#sidebar-toggle-span').on('click', function() {
+                $('#sidebar').toggleClass('active');
+            });
+            
+            
+            $('.dd-item.parent > a').on('dblclick', function(e) {
+                e.preventDefault();
+                
+                var $parentLink = $(this);
+                var $parent = $parentLink.closest('.dd-item.parent');
+                var $submenu = $parent.find('> ul');
+                
+                if ($parent.hasClass('expanded')) {
+                    
+                    $parent.removeClass('expanded');
+                    $parentLink.css('background-color', '');
+                    $submenu.slideUp(200);
+                } else {
+                    
+                    $parent.addClass('expanded');
+                    $parentLink.css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    $submenu.slideDown(200);
+                    
+                    
+                    $submenu.find('li a').each(function() {
+                        var $nestedLink = $(this);
+                        if (!$nestedLink.closest('li').hasClass('active')) {
+                            $nestedLink.css('background-color', 'rgba(0, 0, 0, 0.3)');
+                        }
+                    });
+                    
+                    
+                    $submenu.find('li a').hover(
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.4)');
+                            }
+                        },
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.3)');
+                            }
+                        }
+                    );
+                }
+            });
+            
+            
+            $('.dd-item.parent').each(function() {
+                var $parentLi = $(this);
+                var $parentLink = $parentLi.find('> a');
+                var $submenu = $parentLi.find('> ul');
+                var hasActiveChild = $parentLi.find('ul li.active').length > 0;
+                var isParentActive = $parentLi.hasClass('active');
+                
+                if (hasActiveChild || isParentActive) {
+                    $parentLi.addClass('expanded');
+                    $parentLink.css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    $submenu.show();
+                    
+                    
+                    $submenu.find('li a').each(function() {
+                        var $nestedLink = $(this);
+                        if (!$nestedLink.closest('li').hasClass('active')) {
+                            $nestedLink.css('background-color', 'rgba(0, 0, 0, 0.3)');
+                        }
+                    });
+                    
+                    
+                    $submenu.find('li a').hover(
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.4)');
+                            }
+                        },
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.3)');
+                            }
+                        }
+                    );
+                }
+            });
+            
+            
+            $('.dd-item.parent.expanded > a').hover(
+                function() {
+                    if (!$(this).closest('.dd-item').hasClass('active')) {
+                        $(this).css('background-color', 'rgba(0, 0, 0, 0.25)');
+                    }
+                },
+                function() {
+                    if (!$(this).closest('.dd-item').hasClass('active')) {
+                        $(this).css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    }
+                }
+            );
+            
+            
+            $('.dd-item.parent ul a').on('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    </script>
+</body>
+</html>

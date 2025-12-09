@@ -5,8 +5,6 @@ draft: false
 weight: 4
 ---
 
-# Week 4 Worklog
-
 ### Week 4 Objectives:
 - Deep dive into EC2 instance types and use cases
 - Master VPC networking and security configuration

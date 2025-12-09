@@ -5,8 +5,6 @@ draft: false
 weight: 3
 ---
 
-# Week 3 Worklog
-
 ### Week 3 Objectives:
 - Learn Infrastructure as Code (IaC) principles and shell scripting
 - Design and implement automated AWS infrastructure deployment scripts

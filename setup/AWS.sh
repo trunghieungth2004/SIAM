@@ -11,6 +11,15 @@ source "$(dirname "$0")/components/common.sh"
 # Components directory
 COMPONENTS_DIR="$(dirname "$0")/components"
 
+# Create log directory
+LOG_DIR="$(dirname "$0")/log"
+mkdir -p "$LOG_DIR"
+
+# Set up logging to file
+LOG_FILE="${LOG_DIR}/aws_$(date +%Y%m%d_%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+print_log -c "[log] " "Logging to: $LOG_FILE"
+
 # Available components
 declare -A COMPONENTS=(
     ["1"]="S3" 

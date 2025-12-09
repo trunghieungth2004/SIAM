@@ -63,7 +63,7 @@ setup_lambda() {
     fi
 
     if [ -z "$SNS_TOPIC_ARN" ]; then
-        SNS_TOPIC_NAME="${PROJECT_NAME}-high-temp-alerts"
+        SNS_TOPIC_NAME="${PROJECT_NAME}-anomaly-alerts"
         if ! SNS_TOPIC_ARN=$(aws sns list-topics --query "Topics[?ends_with(TopicArn, ':${SNS_TOPIC_NAME}')].TopicArn" --output text); then
             print_log -r "[error] " "Failed to get SNS topic ARN"
             return 1
@@ -245,6 +245,18 @@ EOL
         --statement-id iot-invoke-lambda \
         --action lambda:InvokeFunction \
         --principal iot.amazonaws.com 2>/dev/null || print_log -y "[skip] " "IoT permission already exists"
+    
+    # Create IoT rule for sensor data topic
+    print_log -c "[iot] " "Creating IoT rule for sensor data..."
+    SENSOR_RULE_NAME="${PROJECT_NAME}_sensor_data_rule"
+    aws iot create-topic-rule --rule-name "$SENSOR_RULE_NAME" --topic-rule-payload "{\"sql\":\"SELECT * FROM 'iot/data'\",\"actions\":[{\"lambda\":{\"functionArn\":\"$LAMBDA_FUNCTION_ARN\"}}],\"ruleDisabled\":false}" 2>/dev/null || print_log -y "[skip] " "Sensor data rule already exists"
+    
+    aws lambda add-permission \
+        --function-name $LAMBDA_FUNCTION_NAME \
+        --statement-id iot-sensor-data \
+        --action lambda:InvokeFunction \
+        --principal iot.amazonaws.com \
+        --source-arn "arn:aws:iot:$AWS_REGION:$ACCOUNT_ID:rule/$SENSOR_RULE_NAME" 2>/dev/null || print_log -y "[skip] " "Sensor data permission already exists"
     
     # Create IoT rule for ml/predictions topic
     print_log -c "[iot] " "Creating IoT rule for ML predictions..."

@@ -5,8 +5,6 @@ draft: false
 weight: 12
 ---
 
-# Week 12 Worklog
-
 ### Week 12 Objectives:
 - Finalize all project documentation and deliverables
 - Conduct final system demo for FCJ mentors and stakeholders

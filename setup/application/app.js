@@ -106,6 +106,104 @@ async function discoverDevices() {
     }
 }
 
+// Calculate trend direction using linear regression
+function calculateTrend(values) {
+    if (!values || values.length < 3) return { slope: 0, trend: 'stable' };
+    
+    const n = values.length;
+    const indices = Array.from({length: n}, (_, i) => i);
+    const sumX = indices.reduce((a, b) => a + b, 0);
+    const sumY = values.reduce((a, b) => a + b, 0);
+    const sumXY = indices.reduce((sum, x, i) => sum + x * values[i], 0);
+    const sumX2 = indices.reduce((sum, x) => sum + x * x, 0);
+    
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const avgValue = sumY / n;
+    const relativeSlope = Math.abs(slope) / (avgValue || 1);
+    
+    // Classify trend based on relative slope
+    let trend = 'stable';
+    if (relativeSlope > 0.05) {
+        trend = slope > 0 ? 'increasing' : 'decreasing';
+    }
+    
+    return { slope, trend, relativeSlope };
+}
+
+// Analyze anomaly pattern to distinguish false alarms from real issues
+function analyzeAnomalyPattern(sensorData, predictionData) {
+    if (!predictionData || predictionData.length < 3) {
+        return {
+            confidence: 'low',
+            diagnosis: 'Insufficient data for trend analysis',
+            isRealAnomaly: false
+        };
+    }
+    
+    // Get reconstruction errors over time (most recent first, so reverse for trend)
+    const reconErrors = [...predictionData].reverse().map(p => p.reconstruction_error || 0);
+    const scores = [...predictionData].reverse().map(p => p.score || 0);
+    
+    // Calculate trends
+    const errorTrend = calculateTrend(reconErrors);
+    const scoreTrend = calculateTrend(scores);
+    
+    // Get sensor value trends
+    let tempTrend = { trend: 'stable' };
+    let vibTrend = { trend: 'stable' };
+    let currentTrend = { trend: 'stable' };
+    
+    if (sensorData && sensorData.length >= 3) {
+        const temps = [...sensorData].reverse().map(s => s.temp_c || 0);
+        const vibs = [...sensorData].reverse().map(s => Math.sqrt((s.ax||0)**2 + (s.ay||0)**2 + (s.az||0)**2));
+        const currents = [...sensorData].reverse().map(s => s.current_a || 0);
+        
+        tempTrend = calculateTrend(temps);
+        vibTrend = calculateTrend(vibs);
+        currentTrend = calculateTrend(currents);
+    }
+    
+    // Count how many metrics are trending up
+    const increasingCount = [tempTrend, vibTrend, currentTrend, errorTrend]
+        .filter(t => t.trend === 'increasing').length;
+    
+    // Diagnosis logic
+    let diagnosis = '';
+    let isRealAnomaly = false;
+    let confidence = 'medium';
+    
+    if (errorTrend.trend === 'increasing' && increasingCount >= 2) {
+        diagnosis = 'REAL FAILURE: Multiple sensors showing degradation trend';
+        isRealAnomaly = true;
+        confidence = 'high';
+    } else if (errorTrend.trend === 'increasing' && increasingCount === 1) {
+        diagnosis = 'Possible Issue: Reconstruction error trending up';
+        isRealAnomaly = true;
+        confidence = 'medium';
+    } else if (errorTrend.trend === 'stable' && reconErrors[reconErrors.length - 1] > reconErrors[0] * 1.5) {
+        diagnosis = 'Possible False Alarm: Random spike without sustained trend';
+        isRealAnomaly = false;
+        confidence = 'medium';
+    } else {
+        diagnosis = 'Likely Normal: No concerning trends detected';
+        isRealAnomaly = false;
+        confidence = 'high';
+    }
+    
+    return {
+        confidence,
+        diagnosis,
+        isRealAnomaly,
+        trends: {
+            temperature: tempTrend.trend,
+            vibration: vibTrend.trend,
+            current: currentTrend.trend,
+            reconError: errorTrend.trend,
+            score: scoreTrend.trend
+        }
+    };
+}
+
 // Calculate derived metrics
 function calculateMetrics(sensorData) {
     if (!sensorData || sensorData.length === 0) {
@@ -148,37 +246,68 @@ function createDeviceRow(deviceId, data) {
     const isOnline = sensorData.length > 0 && 
                      (Date.now() / 1000 - sensorData[0].timestamp) < 60;
     
-    // Prediction badge
+    // Prediction badge - Apply same 3/5 sustained pattern logic as SNS alerts
     let predictionHtml = '';
     if (latestPrediction) {
+        // Check last 5 predictions for sustained anomaly pattern (same as SNS logic)
+        const recentPredictions = predictionData.slice(0, 5);
+        const highScoreCount = recentPredictions.filter(p => p.score >= 50).length;
+        
+        let displayPrediction = latestPrediction.prediction;
         let badgeClass = 'healthy';
-        const pred = latestPrediction.prediction;
-        if (pred === 'Anomaly Detected') {
+        
+        // Override prediction based on sustained pattern
+        if (highScoreCount >= 4) {
+            // 4-5 out of 5: Sustained anomaly - matches SNS "SUSTAINED ANOMALY ALERT"
+            displayPrediction = 'Anomaly Detected';
             badgeClass = 'maintenance';
-        } else if (pred === 'Warning') {
+        } else if (highScoreCount === 3) {
+            // Exactly 3 out of 5: Warning - matches SNS "WARNING"
+            displayPrediction = 'Warning';
             badgeClass = 'monitor';
-        } else if (pred === 'Normal') {
-            badgeClass = 'healthy';
-        } else if (pred === 'Maintenance Required') {  // Backward compatibility
-            badgeClass = 'maintenance';
-        } else if (pred === 'Monitor') {  // Backward compatibility
-            badgeClass = 'monitor';
-        } else if (pred === 'Good') {  // Backward compatibility
+        } else {
+            // Less than 3 out of 5: Likely false alarm or normal
+            displayPrediction = 'Normal';
             badgeClass = 'healthy';
         }
         
         const reconError = latestPrediction.reconstruction_error ? 
             `Recon Error: ${latestPrediction.reconstruction_error.toFixed(6)}` : '';
         
+        // Analyze anomaly pattern
+        const analysis = analyzeAnomalyPattern(sensorData, predictionData);
+        const trendSymbols = {
+            increasing: '↑',
+            decreasing: '↓',
+            stable: '→'
+        };
+        
+        // Determine diagnosis color
+        let diagnosisColor = '#4CAF50'; // green for normal
+        if (analysis.isRealAnomaly && analysis.confidence === 'high') {
+            diagnosisColor = '#f44336'; // red for real failure
+        } else if (analysis.isRealAnomaly) {
+            diagnosisColor = '#ff9800'; // orange for possible issue
+        }
+        
         predictionHtml = `
             <div class="ml-prediction">
-                <span class="prediction-badge ${badgeClass}">${latestPrediction.prediction}</span>
+                <span class="prediction-badge ${badgeClass}">${displayPrediction}</span>
                 <span class="prediction-details">
-                    Confidence: ${(latestPrediction.confidence * 100).toFixed(1)}% | 
-                    Score: ${latestPrediction.score.toFixed(1)} | 
+                    ML Score: ${latestPrediction.score.toFixed(1)} | 
+                    Sustained Pattern: ${highScoreCount}/5 high scores | 
                     ${reconError ? reconError + ' | ' : ''}
                     Days to Maintenance: ${latestPrediction.days_until_maintenance || 'N/A'}
                 </span>
+                <div class="trend-analysis" style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.1); border-radius: 4px;">
+                    <div style="font-weight: bold; margin-bottom: 4px; color: ${diagnosisColor};">${analysis.diagnosis}</div>
+                    <div style="font-size: 0.9em; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <span>Temp: ${trendSymbols[analysis.trends.temperature]} ${analysis.trends.temperature}</span>
+                        <span>Vib: ${trendSymbols[analysis.trends.vibration]} ${analysis.trends.vibration}</span>
+                        <span>Current: ${trendSymbols[analysis.trends.current]} ${analysis.trends.current}</span>
+                        <span>Error: ${trendSymbols[analysis.trends.reconError]} ${analysis.trends.reconError}</span>
+                    </div>
+                </div>
             </div>
         `;
     }

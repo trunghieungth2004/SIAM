@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en" class="js csstransforms3d">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Hugo 0.152.2">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Sharing and Feedback - SIAM</title>
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <style>
+      :root #header + #content > #left > #rlblock_left{
+          display:none !important;
+      }
+    </style>
+</head>
+<body class="" data-url="/">
+    <nav id="sidebar" class="showVisitedLinks">
+        <div id="header-wrapper">
+            <div id="header">
+                <a id="logo" href="//localhost:1313/">
+                    <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="30%">
+                        <defs>
+                            <style>
+                                .cls-1 { fill: #fff; }
+                                .cls-2 { fill: #f90; fill-rule: evenodd; }
+                            </style>
+                        </defs>
+                        <title>AWS-Logo_White-Color</title>
+                        <path class="cls-1" d="M14.09,10.85a4.7,4.7,0,0,0,.19,1.48,7.73,7.73,0,0,0,.54,1.19.77.77,0,0,1,.12.38.64.64,0,0,1-.32.49l-1,.7a.83.83,0,0,1-.44.15.69.69,0,0,1-.49-.23,3.8,3.8,0,0,1-.6-.77q-.25-.42-.51-1a6.14,6.14,0,0,1-4.89,2.3,4.54,4.54,0,0,1-3.32-1.19,4.27,4.27,0,0,1-1.22-3.2A4.28,4.28,0,0,1,3.61,7.75,6.06,6.06,0,0,1,7.69,6.46a12.47,12.47,0,0,1,1.76.13q.92.13,1.91.36V5.73a3.65,3.65,0,0,0-.79-2.66A3.81,3.81,0,0,0,7.86,2.3a7.71,7.71,0,0,0-1.79.22,12.78,12.78,0,0,0-1.79.57,4.55,4.55,0,0,1-.58.22l-.26,0q-.35,0-.35-.52V2a1.09,1.09,0,0,1,.12-.58,1.2,1.2,0,0,1,.47-.35A10.88,10.88,0,0,1,5.77.32,10.19,10.19,0,0,1,8.36,0a6,6,0,0,1,4.35,1.35,5.49,5.49,0,0,1,1.38,4.09ZM7.34,13.38a5.36,5.36,0,0,0,1.72-.31A3.63,3.63,0,0,0,10.63,12,2.62,2.62,0,0,0,11.19,11a5.63,5.63,0,0,0,.16-1.44v-.7a14.35,14.35,0,0,0-1.53-.28,12.37,12.37,0,0,0-1.56-.1,3.84,3.84,0,0,0-2.47.67A2.34,2.34,0,0,0,5,11a2.35,2.35,0,0,0,.61,1.76A2.4,2.4,0,0,0,7.34,13.38Zm13.35,1.8a1,1,0,0,1-.64-.16,1.3,1.3,0,0,1-.35-.65L15.81,1.51a3,3,0,0,1-.15-.67.36.36,0,0,1,.41-.41H17.7a1,1,0,0,1,.65.16,1.4,1.4,0,0,1,.33.65l2.79,11,2.59-11A1.17,1.17,0,0,1,24.39.6a1.1,1.1,0,0,1,.67-.16H26.4a1.1,1.1,0,0,1,.67.16,1.17,1.17,0,0,1,.32.65L30,12.39,32.88,1.25A1.39,1.39,0,0,1,33.22.6a1,1,0,0,1,.65-.16h1.54a.36.36,0,0,1,.41.41,1.36,1.36,0,0,1,0,.26,3.64,3.64,0,0,1-.12.41l-4,12.86a1.3,1.3,0,0,1-.35.65,1,1,0,0,1-.64.16H29.25a1,1,0,0,1-.67-.17,1.26,1.26,0,0,1-.32-.67L25.67,3.64,23.11,14.34a1.26,1.26,0,0,1-.32.67,1,1,0,0,1-.67.17Zm21.36.44a11.28,11.28,0,0,1-2.56-.29,7.44,7.44,0,0,1-1.92-.67,1,1,0,0,1-.61-.93v-.84q0-.52.38-.52a.9.9,0,0,1,.31.06l.42.17a8.77,8.77,0,0,0,1.83.58,9.78,9.78,0,0,0,2,.2,4.48,4.48,0,0,0,2.43-.55,1.76,1.76,0,0,0,.86-1.57,1.61,1.61,0,0,0-.45-1.16A4.29,4.29,0,0,0,43,9.22l-2.41-.76A5.15,5.15,0,0,1,38,6.78a3.94,3.94,0,0,1-.83-2.41,3.7,3.7,0,0,1,.45-1.85,4.47,4.47,0,0,1,1.19-1.37A5.27,5.27,0,0,1,40.51.29,7.4,7.4,0,0,1,42.6,0a8.87,8.87,0,0,1,1.12.07q.57.07,1.08.19t.95.26a4.27,4.27,0,0,1,.7.29,1.59,1.59,0,0,1,.49.41.94.94,0,0,1,.15.55v.79q0,.52-.38.52a1.76,1.76,0,0,1-.64-.2,7.74,7.74,0,0,0-3.2-.64,4.37,4.37,0,0,0-2.21.47,1.6,1.6,0,0,0-.79,1.48,1.58,1.58,0,0,0,.49,1.18,4.94,4.94,0,0,0,1.83.92L44.55,7a5.08,5.08,0,0,1,2.57,1.6A3.76,3.76,0,0,1,47.9,11a4.21,4.21,0,0,1-.44,1.93,4.4,4.4,0,0,1-1.21,1.47,5.43,5.43,0,0,1-1.85.93A8.25,8.25,0,0,1,42.05,15.62Z"></path>
+                        <path class="cls-2" d="M45.19,23.81C39.72,27.85,31.78,30,25,30A36.64,36.64,0,0,1,.22,20.57c-.51-.46-.06-1.09.56-.74A49.78,49.78,0,0,0,25.53,26.4,49.23,49.23,0,0,0,44.4,22.53C45.32,22.14,46.1,23.14,45.19,23.81Z"></path>
+                        <path class="cls-2" d="M47.47,21.21c-.7-.9-4.63-.42-6.39-.21-.53.06-.62-.4-.14-.74,3.13-2.2,8.27-1.57,8.86-.83s-.16,5.89-3.09,8.35c-.45.38-.88.18-.68-.32C46.69,25.8,48.17,22.11,47.47,21.21Z"></path>
+                    </svg>
+                </a>
+            </div>
+            <div class="searchbox">
+                <label for="search-by"><i class="fas fa-search"></i></label>
+                <input data-search-input id="search-by" type="search" placeholder="Search...">
+                <span data-search-clear=""><i class="fas fa-times"></i></span>
+            </div>
+        </div>
+        
+        <div class="highlightable">
+            <ul class="topics">
+                
+                <li data-nav-id="/" class="dd-item">
+                    <a href="/">
+                        <b>1.</b> Home
+                    </a>
+                    
+                </li>
+                
+                <li data-nav-id="/proposal/" class="dd-item">
+                    <a href="/proposal/">
+                        <b>2.</b> Proposal
+                    </a>
+                    
+                </li>
+                
+                <li data-nav-id="/worklog/" class="dd-item parent">
+                    <a href="/worklog/">
+                        <b>3.</b> Worklog
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/worklog/week-1/" class="dd-item">
+                            <a href="/worklog/week-1/">
+                                <b>3.1</b> Week 1
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-2/" class="dd-item">
+                            <a href="/worklog/week-2/">
+                                <b>3.2</b> Week 2
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-3/" class="dd-item">
+                            <a href="/worklog/week-3/">
+                                <b>3.3</b> Week 3
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-4/" class="dd-item">
+                            <a href="/worklog/week-4/">
+                                <b>3.4</b> Week 4
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-5/" class="dd-item">
+                            <a href="/worklog/week-5/">
+                                <b>3.5</b> Week 5
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-6/" class="dd-item">
+                            <a href="/worklog/week-6/">
+                                <b>3.6</b> Week 6
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-7/" class="dd-item">
+                            <a href="/worklog/week-7/">
+                                <b>3.7</b> Week 7
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-8/" class="dd-item">
+                            <a href="/worklog/week-8/">
+                                <b>3.8</b> Week 8
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-9/" class="dd-item">
+                            <a href="/worklog/week-9/">
+                                <b>3.9</b> Week 9
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-10/" class="dd-item">
+                            <a href="/worklog/week-10/">
+                                <b>3.10</b> Week 10
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-11/" class="dd-item">
+                            <a href="/worklog/week-11/">
+                                <b>3.11</b> Week 11
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/worklog/week-12/" class="dd-item">
+                            <a href="/worklog/week-12/">
+                                <b>3.12</b> Week 12
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/blog/" class="dd-item parent">
+                    <a href="/blog/">
+                        <b>4.</b> Translated Blogs
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/blog/post-1/" class="dd-item">
+                            <a href="/blog/post-1/">
+                                <b>4.1</b> Simplify cost allocation by department with AWS Organizations and Lambda
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/blog/post-2/" class="dd-item">
+                            <a href="/blog/post-2/">
+                                <b>4.2</b> Simplify the path from data to knowledge with new Amazon SageMaker Catalog features
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/blog/post-3/" class="dd-item">
+                            <a href="/blog/post-3/">
+                                <b>4.3</b> New Amazon EC2 C8gn with AWS Graviton4 processors, providing up to 600Gbps network bandwidth
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/event/" class="dd-item parent">
+                    <a href="/event/">
+                        <b>5.</b> Events Participated
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/event/event-1/" class="dd-item">
+                            <a href="/event/event-1/">
+                                <b>5.1</b> Kick-off AWS FCJ Workforce - FPTU OJT FALL 2025
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-2/" class="dd-item">
+                            <a href="/event/event-2/">
+                                <b>5.2</b> AWS Cloud Mastery Series #1 - AI/ML/GenAI on AWS
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-3/" class="dd-item">
+                            <a href="/event/event-3/">
+                                <b>5.3</b> AWS Cloud Mastery Series #2 - DevOps on AWS
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-4/" class="dd-item">
+                            <a href="/event/event-4/">
+                                <b>5.4</b> AWS Cloud Mastery Series #3 - Security on AWS
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-5/" class="dd-item">
+                            <a href="/event/event-5/">
+                                <b>5.5</b> Building Agentic AI - Context Optimization with Amazon Bedrock
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/event/event-6/" class="dd-item">
+                            <a href="/event/event-6/">
+                                <b>5.6</b> GenAI-powered App-DB Modernization Workshop
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/workshop/" class="dd-item parent">
+                    <a href="/workshop/">
+                        <b>6.</b> Workshop
+                    </a>
+                    
+                    <ul style="display: none;">
+                        
+                        <li data-nav-id="/workshop/workshop-1/" class="dd-item">
+                            <a href="/workshop/workshop-1/">
+                                <b>6.1</b> Deploy and Configure EC2 Instances with AWS CLI
+                            </a>
+                        </li>
+                        
+                        <li data-nav-id="/workshop/workshop-2/" class="dd-item">
+                            <a href="/workshop/workshop-2/">
+                                <b>6.2</b> Build and Deploy Machine Learning Models with Amazon SageMaker CLI
+                            </a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li data-nav-id="/self-assessment/" class="dd-item">
+                    <a href="/self-assessment/">
+                        <b>7.</b> Self-Assessment
+                    </a>
+                    
+                </li>
+                
+                <li data-nav-id="/sharing-and-feedback/" class="dd-item active">
+                    <a href="/sharing-and-feedback/">
+                        <b>8.</b> Sharing and Feedback
+                    </a>
+                    
+                </li>
+                
+            </ul>
+            
+            <div class="sidebar-footer-sections">
+                <section id="shortcuts">
+                    <h3>More</h3>
+                    <ul>
+                        <li>
+                            <a class="padding" href="https://www.facebook.com/groups/awsstudygroupfcj/">
+                                <i class='fab fa-facebook'></i> AWS Study Group
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                
+                <section id="prefooter">
+                    <ul>
+                        <li>
+                            <a class="padding">
+                                <i class="fas fa-language fa-fw"></i>
+                                <div class="select-style">
+                                    <select id="select-language" onchange="location = this.value;">
+                                        <option id="en" value="//localhost:1313/" selected>English</option>
+                                    </select>
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="255px" height="255px" viewBox="0 0 255 255" style="enable-background: new 0 0 255 255">
+                                        <g><g id="arrow-drop-down"><polygon points="0,63.75 127.5,191.25 255,63.75" /></g></g>
+                                    </svg>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="padding" href="#" data-clear-history-toggle="">
+                                <i class="fas fa-history fa-fw"></i> Clear History
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                
+                <div id="footer" class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showFooter">
+                    <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon"></i>
+                        <span class="toggle-text">Dark Mode</span>
+                    </button>
+                    <div id="prefooter">
+                        <h5 class="copyright">© 2025 Your Name</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <section id="body">
+        <div id="overlay"></div>
+        <div id="top-bar" style="position: fixed !important; top: 0 !important; left: 300px !important; right: 0 !important; z-index: 100 !important; display: flex !important; align-items: center !important; visibility: visible !important; opacity: 1 !important; background: linear-gradient(135deg, #232F3E 0%, #1a242f 100%) !important; border-bottom: 2px solid #ff9900 !important; padding: 14px 24px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; backdrop-filter: blur(10px) !important;">
+            <div id="breadcrumbs" style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                <span id="sidebar-toggle-span" style="margin-right: 4px;">
+                    <a href="#" id="sidebar-toggle" data-sidebar-toggle="" style="color: #ff9900; text-decoration: none; font-size: 20px; padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s;">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </span>
+                <span class="links" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: #ffffff;">
+                    <a href="/" style="color: #ff9900; text-decoration: none; font-weight: 600; transition: color 0.2s;">SIAM</a>
+                    
+                    <span style="color: #aaaaaa; font-weight: 400;">&gt;</span>
+                    <span style="color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px;">Sharing and Feedback</span>
+                    
+                </span>
+            </div>
+        </div>
+        <div class="padding highlightable">
+            
+<article>
+    <h1>Sharing and Feedback</h1>
+    <div class="content">
+        <p>This section shares my personal experience and feedback about participating in the AWS First Cloud Journey program. The insights provided aim to help the FCJ team improve the program based on various aspects of the internship experience.</p>
+<hr>
+<h2 id="overall-evaluation">Overall Evaluation</h2>
+<h3 id="1-working-environment">1. Working Environment</h3>
+<p>The working environment provided by AWS First Cloud Journey is exceptionally professional and supportive. The program structure balances independent project work with collaborative learning through workshops and community engagement.</p>
+<p><strong>Strengths:</strong></p>
+<ul>
+<li>Remote-friendly setup allowing flexible scheduling while maintaining accountability through weekly worklogs</li>
+<li>Access to AWS resources and sandbox environments for hands-on experimentation without cost concerns</li>
+<li>Well-organized workshop series (AI/ML, DevOps, Security, Generative AI) at the AWS Vietnam office providing professional learning spaces</li>
+<li>Strong online community (AWS Study Group with 47,000+ members) offering peer support and networking</li>
+</ul>
+<p><strong>Suggestions for Improvement:</strong></p>
+<ul>
+<li>More structured peer collaboration opportunities - perhaps pairing interns working on complementary projects for knowledge exchange</li>
+<li>Regular virtual meetups (bi-weekly) for interns to share progress, challenges, and solutions in informal setting</li>
+<li>Optional co-working sessions at AWS office for interns who prefer in-person collaboration</li>
+</ul>
+<p><strong>Rating: 9/10</strong> - The environment is highly conducive to learning and professional growth, with minor opportunities for enhanced peer interaction.</p>
+<hr>
+<h3 id="2-support-from-mentor--team-admin">2. Support from Mentor / Team Admin</h3>
+<p>The mentorship model employed by FCJ is outstanding, striking the perfect balance between guidance and independent learning.</p>
+<p><strong>Mentor Support:</strong></p>
+<ul>
+<li>Provided clear project scope and technical direction at the beginning</li>
+<li>Available for technical questions and architecture discussions</li>
+<li>Encouraged problem-solving and experimentation rather than providing direct answers</li>
+<li>Offered constructive feedback on implementations and suggested optimizations</li>
+<li>Shared real-world industry insights about cloud architecture and ML operations</li>
+</ul>
+<p><strong>Admin Team Support:</strong></p>
+<ul>
+<li>Efficient handling of AWS account setup and resource provisioning</li>
+<li>Timely communication about workshop schedules and events</li>
+<li>Responsive to administrative questions and documentation needs</li>
+<li>Seamless coordination of event registrations and access credentials</li>
+</ul>
+<p><strong>What Worked Well:</strong></p>
+<ul>
+<li>The &ldquo;guide, don&rsquo;t solve&rdquo; mentorship philosophy fostered deep learning and problem-solving skills</li>
+<li>Regular check-ins (weekly worklog reviews) provided accountability without micromanagement</li>
+<li>Mentors demonstrated patience when I struggled with complex concepts like ML model sensitivity tuning</li>
+</ul>
+<p><strong>Suggestions:</strong></p>
+<ul>
+<li>Establish office hours (2-3 scheduled hours per week) where interns can drop in with questions to reduce response time uncertainty</li>
+<li>Provide a &ldquo;mentor feedback template&rdquo; for interns to give structured feedback on mentorship effectiveness</li>
+<li>Consider assigning a peer mentor (recent FCJ alumni) in addition to professional mentor for more relatable guidance</li>
+</ul>
+<p><strong>Rating: 10/10</strong> - Exceptional mentorship that enabled both independence and support when needed.</p>
+<hr>
+<h3 id="3-relevance-of-work-to-academic-major">3. Relevance of Work to Academic Major</h3>
+<p>As a computer science student specializing in software engineering, the project aligned excellently with academic coursework while introducing practical skills not covered in university.</p>
+<p><strong>Academic Knowledge Applied:</strong></p>
+<ul>
+<li><strong>Data Structures &amp; Algorithms:</strong> Implemented efficient data processing pipelines, trend analysis using linear regression</li>
+<li><strong>Database Systems:</strong> Designed DynamoDB schema for time-series IoT data with proper partition keys</li>
+<li><strong>Software Engineering:</strong> Applied modular design, error handling, testing, and documentation best practices</li>
+<li><strong>Computer Networks:</strong> Worked with VPC configuration, security groups, API Gateway, and HTTP protocols</li>
+<li><strong>Operating Systems:</strong> Managed Linux instances, bash scripting, process management, and system services</li>
+</ul>
+<p><strong>New Practical Skills Gained:</strong></p>
+<ul>
+<li><strong>Cloud Architecture:</strong> Learned cloud-native design patterns not covered in traditional CS curriculum</li>
+<li><strong>ML Operations:</strong> Bridged gap between ML theory (learned in class) and production deployment</li>
+<li><strong>Infrastructure as Code:</strong> Gained automation skills through AWS CLI scripting</li>
+<li><strong>DevOps Practices:</strong> Learned CI/CD concepts, monitoring, and observability</li>
+<li><strong>IoT Integration:</strong> Connected embedded systems to cloud infrastructure</li>
+</ul>
+<p><strong>Gap Analysis:</strong></p>
+<ul>
+<li>University courses focus heavily on theory; FCJ provided essential practical implementation experience</li>
+<li>Academic projects are often isolated assignments; FCJ project simulated real-world system integration</li>
+<li>Classroom learning lacks emphasis on cloud computing and modern DevOps practices - FCJ filled this gap perfectly</li>
+</ul>
+<p><strong>Suggestions:</strong></p>
+<ul>
+<li>Provide pre-internship reading list or mini-courses on cloud fundamentals for students with limited cloud exposure</li>
+<li>Create optional &ldquo;theory deep-dives&rdquo; for interns interested in understanding underlying concepts (e.g., distributed systems theory behind DynamoDB)</li>
+</ul>
+<p><strong>Rating: 10/10</strong> - Perfect blend of applying academic knowledge and gaining industry-relevant practical skills.</p>
+<hr>
+<h3 id="4-learning--skill-development-opportunities">4. Learning &amp; Skill Development Opportunities</h3>
+<p>The FCJ program provided exceptional breadth and depth of learning opportunities through multiple channels.</p>
+<p><strong>Hands-on Project Learning:</strong></p>
+<ul>
+<li>Building complete IoT-ML system from scratch provided end-to-end understanding</li>
+<li>Debugging real issues (CORS errors, placeholder replacement, ML sensitivity) taught problem-solving</li>
+<li>Infrastructure automation developed scripting and DevOps skills</li>
+<li>Documentation requirements improved technical writing abilities</li>
+</ul>
+<p><strong>Workshop Series:</strong></p>
+<ul>
+<li><strong>AI/ML/GenAI on AWS (Nov 15):</strong> SageMaker, Bedrock, RAG architecture, prompt engineering</li>
+<li><strong>DevOps on AWS (Nov 17):</strong> CI/CD pipelines, IaC, containers, monitoring</li>
+<li><strong>Security on AWS (Nov 29):</strong> Well-Architected Security Pillar, IAM, detection, incident response</li>
+<li><strong>Building Agentic AI (Dec 5):</strong> Advanced Bedrock agents, context optimization, autonomous workflows</li>
+<li><strong>App-DB Modernization (Aug 13):</strong> DDD, event-driven architecture, Amazon Q Developer</li>
+</ul>
+<p>Each workshop provided L300 (advanced) level content with hands-on demos, directly applicable to the project.</p>
+<p><strong>Community Learning:</strong></p>
+<ul>
+<li>AWS Study Group provided access to shared resources, discussions, and peer learning</li>
+<li>Event networking connected me with AWS professionals and fellow learners</li>
+<li>Blog translation assignments reinforced understanding of complex topics</li>
+</ul>
+<p><strong>Skill Development Achieved:</strong></p>
+<p><strong>Technical Skills:</strong></p>
+<ul>
+<li>AWS Services: EC2, S3, Lambda, SageMaker, DynamoDB, API Gateway, CloudWatch, IAM, VPC, Greengrass</li>
+<li>Programming: Python (ML/data processing), JavaScript (frontend), Bash (automation), C (embedded IoT)</li>
+<li>ML/AI: Model training, deployment, inference, anomaly detection, Generative AI concepts</li>
+<li>DevOps: Infrastructure as code, monitoring, alerting, resource lifecycle management</li>
+<li>Security: IAM policies, encryption, secrets management, network security</li>
+</ul>
+<p><strong>Soft Skills:</strong></p>
+<ul>
+<li>Technical documentation and communication</li>
+<li>Time management and self-directed learning</li>
+<li>Problem-solving and debugging methodologies</li>
+<li>Professional event participation and networking</li>
+</ul>
+<p><strong>Suggestions:</strong></p>
+<ul>
+<li>Add optional &ldquo;capstone presentation&rdquo; where interns present their projects to FCJ community</li>
+<li>Provide AWS certification study resources and vouchers for interns who complete program successfully</li>
+<li>Create mentor-led code review sessions to learn best practices from industry professionals</li>
+</ul>
+<p><strong>Rating: 10/10</strong> - Unparalleled learning opportunities across technical and professional dimensions.</p>
+<hr>
+<h3 id="5-company-culture--team-spirit">5. Company Culture &amp; Team Spirit</h3>
+<p>AWS First Cloud Journey embodies a culture of learning, innovation, and mutual support that reflects AWS&rsquo;s broader &ldquo;customer obsession&rdquo; and &ldquo;learn and be curious&rdquo; leadership principles.</p>
+<p><strong>Cultural Strengths:</strong></p>
+<ul>
+<li><strong>Learning-First Mindset:</strong> Mistakes viewed as learning opportunities rather than failures</li>
+<li><strong>Inclusivity:</strong> Welcoming environment regardless of experience level (&ldquo;She in Tech&rdquo; session particularly inspiring)</li>
+<li><strong>Knowledge Sharing:</strong> Alumni returning to share journeys (GenAI Engineer, Cloud Engineers) demonstrated community investment</li>
+<li><strong>Professional Excellence:</strong> High standards maintained while providing support to achieve them</li>
+<li><strong>Innovation Encouragement:</strong> Freedom to experiment with different approaches and technologies</li>
+</ul>
+<p><strong>Team Spirit Observations:</strong></p>
+<ul>
+<li>Strong sense of community despite remote work setup</li>
+<li>Collaborative atmosphere during workshops with active Q&amp;A and peer discussions</li>
+<li>Mentors and AWS staff genuinely invested in intern success</li>
+<li>Alumni network creates long-term professional relationships</li>
+</ul>
+<p><strong>Memorable Moments:</strong></p>
+<ul>
+<li>Kick-off event bringing together 2025 cohort and creating sense of shared journey</li>
+<li>Workshop speakers staying after sessions to answer individual questions</li>
+<li>Community members sharing real-world war stories and lessons learned</li>
+<li>Celebration of small wins and progress milestones</li>
+</ul>
+<p><strong>Suggestions:</strong></p>
+<ul>
+<li>Create a &ldquo;FCJ Alumni Network&rdquo; platform (Slack/Discord) for ongoing connection post-internship</li>
+<li>Establish &ldquo;FCJ Showcase&rdquo; where exceptional intern projects are highlighted to AWS community</li>
+<li>Organize social events (virtual game nights, coffee chats) to strengthen interpersonal bonds</li>
+</ul>
+<p><strong>Rating: 9/10</strong> - Strong culture of learning and support, with opportunities to enhance social connection.</p>
+<hr>
+<h3 id="6-internship-policies--benefits">6. Internship Policies / Benefits</h3>
+<p>The FCJ program provides excellent benefits and policies that support intern success.</p>
+<p><strong>Benefits Received:</strong></p>
+<p><strong>Financial:</strong></p>
+<ul>
+<li>Internship stipend/allowance covering basic expenses</li>
+<li>Free access to AWS workshops and training sessions (significant value)</li>
+<li>AWS sandbox account with credits for project resources</li>
+</ul>
+<p><strong>Professional Development:</strong></p>
+<ul>
+<li>Access to premium workshop content normally requiring payment</li>
+<li>Networking opportunities with AWS professionals and partner companies</li>
+<li>Resume-building experience with recognized AWS program</li>
+<li>Potential pathway to employment at AWS partner companies (150+ alumni placed)</li>
+</ul>
+<p><strong>Learning Resources:</strong></p>
+<ul>
+<li>AWS documentation and best practice guides</li>
+<li>Workshop materials and recordings</li>
+<li>Community access (47,000+ member study group)</li>
+<li>Mentorship from experienced cloud professionals</li>
+</ul>
+<p><strong>Flexibility:</strong></p>
+<ul>
+<li>Remote work allowing geographical flexibility</li>
+<li>Self-paced project work with weekly milestone accountability</li>
+<li>Flexible event attendance based on availability</li>
+</ul>
+<p><strong>Policy Strengths:</strong></p>
+<ul>
+<li>Clear expectations set at program start (weekly worklogs, project deliverables)</li>
+<li>Reasonable workload allowing depth over breadth</li>
+<li>Supportive environment for asking questions and seeking help</li>
+</ul>
+<p><strong>Suggestions for Enhancement:</strong></p>
+<ul>
+<li>Provide AWS certification exam voucher upon successful program completion (encourages continued learning)</li>
+<li>Offer letter of recommendation template from mentors for job applications</li>
+<li>Consider providing cloud credits for interns to continue learning post-program</li>
+<li>Establish formal job placement assistance or partner company recruitment events</li>
+</ul>
+<p><strong>Rating: 9/10</strong> - Comprehensive benefits package with strong professional development value.</p>
+<hr>
+<h2 id="additional-questions">Additional Questions</h2>
+<h3 id="what-did-you-find-most-satisfying-during-your-internship">What did you find most satisfying during your internship?</h3>
+<p>The most satisfying aspect was the moment when the complete system came together - seeing real sensor data flow from the IoT device through Greengrass to the cloud, processed by the ML model, triggering intelligent alerts, and displayed on the dashboard with trend analysis. This end-to-end integration validated months of learning and problem-solving.</p>
+<p>Beyond the technical achievement, the satisfaction came from:</p>
+<ol>
+<li><strong>Mastery of Complex Systems:</strong> Going from basic cloud knowledge to confidently architecting multi-service AWS solutions</li>
+<li><strong>Problem-Solving Victories:</strong> Debugging and resolving real production-like issues (CORS, placeholders, ML sensitivity) through systematic analysis</li>
+<li><strong>Learning Velocity:</strong> Rapid skill acquisition enabled by excellent workshops and mentorship</li>
+<li><strong>Professional Growth:</strong> Developing engineering practices (IaC, documentation, testing) that will serve entire career</li>
+<li><strong>Community Connection:</strong> Building relationships with mentors, workshop speakers, and fellow interns</li>
+</ol>
+<p>The progression from &ldquo;I don&rsquo;t know where to start&rdquo; at week 1 to &ldquo;I can architect, implement, and deploy cloud-native systems&rdquo; by week 12 was incredibly rewarding.</p>
+<hr>
+<h3 id="what-do-you-think-the-company-should-improve-for-future-interns">What do you think the company should improve for future interns?</h3>
+<p><strong>1. Pre-Internship Preparation</strong></p>
+<ul>
+<li><strong>Issue:</strong> Some interns may lack cloud fundamentals, causing initial struggle</li>
+<li><strong>Solution:</strong> Provide 2-week pre-program &ldquo;Cloud Basics Bootcamp&rdquo; (optional) covering AWS core services, CLI basics, and Linux fundamentals</li>
+</ul>
+<p><strong>2. Peer Collaboration Structures</strong></p>
+<ul>
+<li><strong>Issue:</strong> Remote setup limits spontaneous peer learning</li>
+<li><strong>Solution:</strong> Implement &ldquo;buddy system&rdquo; pairing interns on complementary projects for weekly knowledge exchange sessions</li>
+</ul>
+<p><strong>3. Mid-Program Check-in</strong></p>
+<ul>
+<li><strong>Issue:</strong> No formal review until end of program</li>
+<li><strong>Solution:</strong> Add week 6 mid-program review with mentor to course-correct if needed and celebrate progress</li>
+</ul>
+<p><strong>4. Post-Program Pathway</strong></p>
+<ul>
+<li><strong>Issue:</strong> Unclear next steps after program completion</li>
+<li><strong>Solution:</strong> Provide clear pathway information - certification roadmap, job placement assistance, alumni network access, continuing education options</li>
+</ul>
+<p><strong>5. Technical Deep-Dives</strong></p>
+<ul>
+<li><strong>Issue:</strong> Workshops are broad; some topics deserve deeper exploration</li>
+<li><strong>Solution:</strong> Offer optional &ldquo;office hours&rdquo; sessions where experts deep-dive into specific topics (e.g., &ldquo;DynamoDB Performance Optimization,&rdquo; &ldquo;ML Model Debugging&rdquo;)</li>
+</ul>
+<p><strong>6. Project Showcase Platform</strong></p>
+<ul>
+<li><strong>Issue:</strong> Limited visibility for intern achievements</li>
+<li><strong>Solution:</strong> Create public showcase (blog, YouTube) featuring intern projects to build portfolios and inspire future participants</li>
+</ul>
+<hr>
+<h3 id="if-recommending-to-a-friend-would-you-suggest-they-intern-here-why-or-why-not">If recommending to a friend, would you suggest they intern here? Why or why not?</h3>
+<p><strong>Absolutely yes - I would highly recommend AWS First Cloud Journey to friends, with specific contexts:</strong></p>
+<p><strong>Recommend to friends who:</strong></p>
+<ul>
+<li>Want to build practical cloud computing skills beyond academic theory</li>
+<li>Are self-motivated learners comfortable with independent project work</li>
+<li>Aspire to careers in cloud engineering, ML operations, or DevOps</li>
+<li>Value quality mentorship and professional development over routine tasks</li>
+<li>Are willing to invest time in deep learning (not a &ldquo;easy internship&rdquo;)</li>
+</ul>
+<p><strong>Recommendation Pitch:</strong></p>
+<p>&ldquo;FCJ is not a typical internship where you do repetitive tasks or shadow senior engineers. Instead, you own a complete project from architecture to deployment, guided by experienced mentors who teach you to think like a professional cloud architect.</p>
+<p>You&rsquo;ll gain hands-on experience with the same AWS services used by Netflix, Airbnb, and major enterprises. The workshop series alone is worth thousands of dollars in training value, and you&rsquo;ll build a portfolio project that demonstrates real competency to future employers.</p>
+<p>The program expects self-direction and initiative - you&rsquo;ll struggle at times, debug frustrating issues, and push your limits. But that struggle is where growth happens. By the end, you won&rsquo;t just know AWS services - you&rsquo;ll know how to architect, build, and operate production cloud systems.</p>
+<p>If you want a resume line item, this isn&rsquo;t for you. If you want to accelerate your career and become a cloud engineer who companies compete to hire, FCJ is unmatched.&rdquo;</p>
+<p><strong>Why such strong recommendation:</strong></p>
+<ol>
+<li><strong>ROI:</strong> The value received (training, mentorship, resources, experience) far exceeds typical internship compensation</li>
+<li><strong>Career Impact:</strong> Skills gained are directly applicable and highly valued in job market</li>
+<li><strong>Quality:</strong> Program is professionally run with excellent mentorship and resources</li>
+<li><strong>Network:</strong> Access to AWS professionals and alumni network provides ongoing career benefits</li>
+<li><strong>Growth:</strong> Genuine learning and skill development, not just credential collecting</li>
+</ol>
+<p><strong>Rating: 10/10</strong> - Would recommend without hesitation to qualified, motivated friends.</p>
+<hr>
+<h2 id="suggestions--expectations">Suggestions &amp; Expectations</h2>
+<h3 id="do-you-have-any-suggestions-to-improve-the-internship-experience">Do you have any suggestions to improve the internship experience?</h3>
+<p><strong>Short-term Improvements (Implementable Immediately):</strong></p>
+<ol>
+<li>
+<p><strong>Structured Peer Learning Sessions</strong></p>
+<ul>
+<li>Bi-weekly virtual meetups where interns present weekly learnings (15 min presentations)</li>
+<li>Creates accountability, practice communication, and shared learning</li>
+</ul>
+</li>
+<li>
+<p><strong>Common Technical Challenges Repository</strong></p>
+<ul>
+<li>Shared document/wiki where interns document problems encountered and solutions</li>
+<li>Reduces duplicated debugging efforts and builds collective knowledge base</li>
+</ul>
+</li>
+<li>
+<p><strong>Mentor Office Hours</strong></p>
+<ul>
+<li>2-hour weekly block where interns can drop in with questions</li>
+<li>Reduces response time uncertainty and encourages asking questions</li>
+</ul>
+</li>
+<li>
+<p><strong>Pre-Program Checklist</strong></p>
+<ul>
+<li>Send checklist 2 weeks before start: &ldquo;Set up AWS CLI, review Linux basics, complete AWS Cloud Practitioner Essentials (free course)&rdquo;</li>
+<li>Ensures all interns start with baseline knowledge</li>
+</ul>
+</li>
+<li>
+<p><strong>End-of-Program Showcase</strong></p>
+<ul>
+<li>Final week event where interns present projects to FCJ community, mentors, and AWS staff</li>
+<li>Provides presentation practice and celebration of achievements</li>
+</ul>
+</li>
+</ol>
+<p><strong>Medium-term Improvements (Require More Planning):</strong></p>
+<ol>
+<li>
+<p><strong>Certification Track</strong></p>
+<ul>
+<li>Provide AWS certification exam voucher for interns who successfully complete program</li>
+<li>Offer optional study groups for AWS Certified Solutions Architect Associate</li>
+<li>Incentivizes continued learning and provides valuable credential</li>
+</ul>
+</li>
+<li>
+<p><strong>Alumni Network Platform</strong></p>
+<ul>
+<li>Create dedicated Slack/Discord for FCJ alumni to maintain connections</li>
+<li>Organize quarterly alumni meetups (virtual/in-person)</li>
+<li>Facilitate job referrals and mentorship for current interns</li>
+</ul>
+</li>
+<li>
+<p><strong>Industry Partner Events</strong></p>
+<ul>
+<li>Host recruitment events with AWS partner companies seeking cloud talent</li>
+<li>Provide job placement support and resume review services</li>
+<li>Create pathway from internship to employment</li>
+</ul>
+</li>
+<li>
+<p><strong>Advanced Workshop Track</strong></p>
+<ul>
+<li>Offer optional L400 (expert) level workshops for interns showing exceptional progress</li>
+<li>Topics: Advanced VPC networking, Multi-account strategy, ML at scale, etc.</li>
+<li>Challenges high performers and provides differentiation</li>
+</ul>
+</li>
+<li>
+<p><strong>Project Templates &amp; Examples</strong></p>
+<ul>
+<li>Provide reference architectures and code templates for common patterns</li>
+<li>Showcase exceptional projects from previous cohorts (with permission)</li>
+<li>Accelerates learning while maintaining creativity</li>
+</ul>
+</li>
+</ol>
+<p><strong>Long-term Strategic Improvements:</strong></p>
+<ol>
+<li>
+<p><strong>FCJ Certification Program</strong></p>
+<ul>
+<li>Create official &ldquo;AWS FCJ Certified Cloud Engineer&rdquo; designation</li>
+<li>Recognized credential demonstrating completion and competency</li>
+<li>Differentiation for job applications</li>
+</ul>
+</li>
+<li>
+<p><strong>Extended Program Tracks</strong></p>
+<ul>
+<li>Offer 6-month or 1-year extended tracks for exceptional interns</li>
+<li>Dive deeper into specializations (ML, Security, Networking)</li>
+<li>Potential pathway to AWS employment</li>
+</ul>
+</li>
+<li>
+<p><strong>Open Source Contributions</strong></p>
+<ul>
+<li>Encourage interns to contribute to AWS open source projects</li>
+<li>Builds portfolio and gives back to community</li>
+<li>Provides experience with collaborative development</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="would-you-like-to-continue-this-program-in-the-future">Would you like to continue this program in the future?</h3>
+<p><strong>Yes, absolutely</strong> - in multiple capacities:</p>
+<p><strong>1. As Alumni Mentor</strong>
+I would love to return as a peer mentor for future FCJ cohorts, sharing recent experiences and providing guidance on common challenges. The &ldquo;recent graduate&rdquo; perspective can complement professional mentorship.</p>
+<p><strong>2. As Workshop Participant</strong>
+I want to continue attending FCJ workshops and staying connected with the community for ongoing professional development.</p>
+<p><strong>3. As Project Showcase Contributor</strong>
+I&rsquo;m happy to allow my project to be used as a reference example for future interns, and to present at events about the learning journey.</p>
+<p><strong>4. As AWS Study Group Contributor</strong>
+I plan to remain active in the AWS Study Group community, sharing knowledge and helping others learning cloud computing.</p>
+<p><strong>5. Professional Relationship</strong>
+I hope to maintain professional relationships with mentors and the FCJ team, seeking guidance as my career progresses and potentially collaborating on future initiatives.</p>
+<p><strong>Extended Program Interest:</strong>
+If FCJ offered an advanced track or capstone project opportunity (6-12 months), I would be very interested in participating to deepen expertise in ML operations and cloud architecture.</p>
+<p><strong>Value to Future Participation:</strong></p>
+<ul>
+<li>Pay forward the exceptional mentorship and support I received</li>
+<li>Stay current with evolving AWS services and cloud best practices</li>
+<li>Build long-term professional network in cloud computing community</li>
+<li>Continue learning journey with structured guidance</li>
+</ul>
+<hr>
+<h3 id="any-other-comments-free-sharing">Any other comments (free sharing):</h3>
+<p><strong>Gratitude:</strong></p>
+<p>I want to express profound gratitude to everyone who made this internship exceptional:</p>
+<ul>
+<li><strong>AWS First Cloud Journey Team:</strong> For creating this incredible program and investing in developing the next generation of cloud professionals</li>
+<li><strong>My Mentor:</strong> For patience, wisdom, and the perfect balance of guidance and independence</li>
+<li><strong>Workshop Speakers:</strong> Nguyen Gia Hung, Kien Nguyen, Viet Pham, Henry Bui, and all others who shared expertise generously</li>
+<li><strong>AWS Study Group Community:</strong> For creating a supportive learning environment</li>
+<li><strong>Fellow Interns:</strong> For shared struggles, celebrations, and mutual support</li>
+</ul>
+<p><strong>Personal Impact:</strong></p>
+<p>This internship fundamentally changed my career trajectory. I entered uncertain about specialization within computer science - interested in many areas but uncommitted to any specific path.</p>
+<p>Through FCJ, I discovered a passion for cloud architecture and ML operations. The combination of infrastructure automation, system design, and machine learning integration perfectly aligns with my skills and interests. I now have clear career direction and the practical skills to pursue it.</p>
+<p>Beyond technical skills, I gained confidence. The experience of building a complete production-grade system from scratch - encountering real problems, debugging frustrating issues, and ultimately succeeding - proved that I can tackle complex engineering challenges. This confidence will serve me throughout my career.</p>
+<p><strong>Key Insight:</strong></p>
+<p>The most valuable aspect of FCJ wasn&rsquo;t any single AWS service or technology learned - it was developing the <strong>mindset of a professional cloud engineer</strong>: systematic problem-solving, architectural thinking, documentation practices, security consciousness, and commitment to continuous learning.</p>
+<p>These meta-skills transcend specific technologies and will remain valuable even as cloud services evolve. This is what distinguishes FCJ from typical internships or online courses - it develops engineers, not just coders.</p>
+<p><strong>Looking Forward:</strong></p>
+<p>I&rsquo;m excited to apply these skills in my career, continue learning through AWS certifications, and eventually give back to the FCJ community as a mentor. The journey from student to cloud engineer has truly begun, and FCJ provided the launch pad.</p>
+<p>Thank you for an unforgettable experience that will shape my professional future.</p>
+<hr>
+<h2 id="conclusion">Conclusion</h2>
+<p>AWS First Cloud Journey exceeded expectations in every dimension. This is not just an internship - it&rsquo;s a comprehensive professional development program that transforms motivated students into competent cloud engineers ready to contribute value to industry.</p>
+<p>I wholeheartedly recommend this program to future participants seeking meaningful professional development in cloud computing.</p>
+
+    </div>
+</article>
+
+            <div id="navigation">
+                
+                <a class="nav nav-prev" href="//localhost:1313/worklog/week-8/" title="Week 8 Worklog">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+                
+                
+                <a class="nav nav-next" href="//localhost:1313/worklog/week-7/" title="Week 7 Worklog">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+                
+            </div>
+        </div>
+    </section>
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js"></script>
+    
+    
+    <script src="/js/search.js"></script>
+    <script src="/js/darkmode.js"></script>
+    <script>
+        var baseurl = "\/\/localhost:1313\/";
+        
+        
+        $(window).on('load', function() {
+            $('#top-bar').css({
+                'position': 'fixed',
+                'top': '0',
+                'left': '300px',
+                'right': '0',
+                'z-index': '100',
+                'display': 'block',
+                'visibility': 'visible',
+                'opacity': '1'
+            });
+        });
+        
+        
+        $(document).ready(function() {
+            
+            $('#top-bar').show().css('visibility', 'visible').css('opacity', '1');
+            
+            
+            initLunr();
+            
+            hljs.highlightAll();
+            
+            
+            $('pre code').each(function() {
+                var code = $(this);
+                var btn = $('<button class="copy-btn" title="Copy to clipboard"><i class="fas fa-copy"></i></button>');
+                code.parent().css('position', 'relative').prepend(btn);
+                
+                btn.on('click', function() {
+                    var text = code.text();
+                    navigator.clipboard.writeText(text).then(function() {
+                        btn.html('<i class="fas fa-check"></i>');
+                        setTimeout(function() {
+                            btn.html('<i class="fas fa-copy"></i>');
+                        }, 2000);
+                    });
+                });
+            });
+            
+            
+            $('#body img').each(function() {
+                var img = $(this);
+                img.css('cursor', 'pointer').on('click', function() {
+                    var modal = $('<div class="image-modal"><img src="' + img.attr('src') + '"></div>');
+                    $('body').append(modal);
+                    modal.on('click', function() { modal.remove(); });
+                });
+            });
+            
+            
+            $('#body h1, #body h2, #body h3, #body h4, #body h5, #body h6').filter('[id]').each(function() {
+                var heading = $(this);
+                var anchor = $('<a class="anchor-link" href="#' + heading.attr('id') + '"><i class="fas fa-link"></i></a>');
+                heading.append(anchor);
+            });
+            
+            
+            var visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]');
+            visitedLinks.push(window.location.pathname);
+            localStorage.setItem('visitedLinks', JSON.stringify([...new Set(visitedLinks)]));
+            
+            
+            $('.topics a').each(function() {
+                var link = $(this);
+                var href = new URL(link.attr('href'), window.location.origin).pathname;
+                if (visitedLinks.includes(href)) {
+                    link.closest('li').addClass('visited');
+                }
+            });
+            
+            
+            $('[data-clear-history-toggle]').on('click', function(e) {
+                e.preventDefault();
+                if (confirm('Clear all visited links history?')) {
+                    localStorage.removeItem('visitedLinks');
+                    $('.topics li').removeClass('visited');
+                }
+            });
+            
+            
+            $('[data-search-clear]').on('click', function() {
+                $('#search-by').val('').focus();
+            });
+            
+            
+            $('#sidebar-toggle-span').on('click', function() {
+                $('#sidebar').toggleClass('active');
+            });
+            
+            
+            $('.dd-item.parent > a').on('dblclick', function(e) {
+                e.preventDefault();
+                
+                var $parentLink = $(this);
+                var $parent = $parentLink.closest('.dd-item.parent');
+                var $submenu = $parent.find('> ul');
+                
+                if ($parent.hasClass('expanded')) {
+                    
+                    $parent.removeClass('expanded');
+                    $parentLink.css('background-color', '');
+                    $submenu.slideUp(200);
+                } else {
+                    
+                    $parent.addClass('expanded');
+                    $parentLink.css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    $submenu.slideDown(200);
+                    
+                    
+                    $submenu.find('li a').each(function() {
+                        var $nestedLink = $(this);
+                        if (!$nestedLink.closest('li').hasClass('active')) {
+                            $nestedLink.css('background-color', 'rgba(0, 0, 0, 0.3)');
+                        }
+                    });
+                    
+                    
+                    $submenu.find('li a').hover(
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.4)');
+                            }
+                        },
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.3)');
+                            }
+                        }
+                    );
+                }
+            });
+            
+            
+            $('.dd-item.parent').each(function() {
+                var $parentLi = $(this);
+                var $parentLink = $parentLi.find('> a');
+                var $submenu = $parentLi.find('> ul');
+                var hasActiveChild = $parentLi.find('ul li.active').length > 0;
+                var isParentActive = $parentLi.hasClass('active');
+                
+                if (hasActiveChild || isParentActive) {
+                    $parentLi.addClass('expanded');
+                    $parentLink.css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    $submenu.show();
+                    
+                    
+                    $submenu.find('li a').each(function() {
+                        var $nestedLink = $(this);
+                        if (!$nestedLink.closest('li').hasClass('active')) {
+                            $nestedLink.css('background-color', 'rgba(0, 0, 0, 0.3)');
+                        }
+                    });
+                    
+                    
+                    $submenu.find('li a').hover(
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.4)');
+                            }
+                        },
+                        function() {
+                            if (!$(this).closest('li').hasClass('active')) {
+                                $(this).css('background-color', 'rgba(0, 0, 0, 0.3)');
+                            }
+                        }
+                    );
+                }
+            });
+            
+            
+            $('.dd-item.parent.expanded > a').hover(
+                function() {
+                    if (!$(this).closest('.dd-item').hasClass('active')) {
+                        $(this).css('background-color', 'rgba(0, 0, 0, 0.25)');
+                    }
+                },
+                function() {
+                    if (!$(this).closest('.dd-item').hasClass('active')) {
+                        $(this).css('background-color', 'rgba(0, 0, 0, 0.15)');
+                    }
+                }
+            );
+            
+            
+            $('.dd-item.parent ul a').on('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    </script>
+</body>
+</html>

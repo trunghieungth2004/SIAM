@@ -4,8 +4,6 @@ date: 2025-11-11
 draft: false
 ---
 
-# Project Proposal: SIAM (Smart Industrial Asset's longevity Monitor)
-
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
   <h2 style="margin: 0;">A Hybrid Edge-Cloud Platform for Predictive Maintenance</h2>
   <a href="https://github.com/trunghieungth2004/SIAM/releases/download/proposal-20251204-201648/SIAM_Proposal.docx" download style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 2px solid #0078d4; text-decoration: none; border-radius: 5px; font-size: 24px;" title="Download Proposal (Word Document)">📄</a>

@@ -5,8 +5,6 @@ draft: false
 weight: 2
 ---
 
-# Week 2 Worklog
-
 ### Week 2 Objectives:
 - Learn AWS IoT Core fundamentals and MQTT protocol
 - Understand AWS IoT device connectivity and security

@@ -1,6 +1,6 @@
 // Import AWS SDK for JavaScript v3 clients
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
@@ -96,23 +96,65 @@ async function handleMLPrediction(payload) {
     await s3Client.send(new PutObjectCommand(s3Params));
     console.log("Successfully wrote ML prediction to S3.");
     
-    // Send alert if anomaly detected
-    if (payload.prediction === 'Anomaly Detected' || payload.prediction === 'Warning') {
-        const alertMessage = `ANOMALY ALERT for Device ${device_id}:\n` +
-            `Status: ${payload.prediction}\n` +
-            `Confidence: ${(payload.confidence * 100).toFixed(1)}%\n` +
-            `Anomaly Score: ${payload.score.toFixed(1)}/100\n` +
-            `Reconstruction Error: ${payload.reconstruction_error?.toFixed(6) || 'N/A'}\n` +
-            `Days Until Maintenance: ${payload.days_until_maintenance || 'Unknown'}\n` +
-            `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
-        
-        const snsParams = {
-            TopicArn: SNS_TOPIC_ARN,
-            Message: alertMessage,
-            Subject: `Anomaly Alert: ${device_id} - ${payload.prediction}`
+    // Anti-spike filtering: Check recent predictions to avoid alerting on single spikes
+    // Query last 5 predictions from DynamoDB to check for sustained anomaly
+    if (payload.score >= 50) {
+        const queryParams = {
+            TableName: predictionTable,
+            KeyConditionExpression: 'device_id = :device_id',
+            ExpressionAttributeValues: {
+                ':device_id': device_id
+            },
+            ScanIndexForward: false,  // Descending order (newest first)
+            Limit: 5
         };
-        await snsClient.send(new PublishCommand(snsParams));
-        console.log("Sent anomaly alert to SNS.");
+        
+        try {
+            const recentData = await docClient.send(new QueryCommand(queryParams));
+            const recentPredictions = recentData.Items || [];
+            
+            // Count how many recent predictions have score >= 50
+            const highScoreCount = recentPredictions.filter(item => item.score >= 50).length;
+            
+            // Send warning if exactly 3/5, full alert if more than 3/5
+            if (highScoreCount >= 3) {
+                const isWarning = highScoreCount === 3;
+                const alertType = isWarning ? 'WARNING' : 'SUSTAINED ANOMALY ALERT';
+                const alertMessage = `${alertType} for Device ${device_id}:\n` +
+                    `Status: ${payload.prediction}\n` +
+                    `Confidence: ${(payload.confidence * 100).toFixed(1)}%\n` +
+                    `Current Anomaly Score: ${payload.score.toFixed(1)}/100\n` +
+                    `Recent High Scores: ${highScoreCount}/5 readings\n` +
+                    `Reconstruction Error: ${payload.reconstruction_error?.toFixed(6) || 'N/A'}\n` +
+                    `Days Until Maintenance: ${payload.days_until_maintenance || 'Unknown'}\n` +
+                    `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
+                
+                const snsParams = {
+                    TopicArn: SNS_TOPIC_ARN,
+                    Message: alertMessage,
+                    Subject: `${isWarning ? 'Warning' : 'Sustained Anomaly Alert'}: ${device_id} - ${payload.prediction}`
+                };
+                await snsClient.send(new PublishCommand(snsParams));
+                console.log(`Sent ${isWarning ? 'warning' : 'sustained anomaly alert'} to SNS (${highScoreCount}/5 high scores).`);
+            } else {
+                console.log(`Anomaly detected but not sustained (${highScoreCount}/5 high scores). No alert sent to avoid false alarm.`);
+            }
+        } catch (error) {
+            console.error("Error querying recent predictions:", error);
+            // Fallback: send alert anyway if we can't check history
+            const alertMessage = `ANOMALY ALERT for Device ${device_id}:\n` +
+                `Status: ${payload.prediction}\n` +
+                `Anomaly Score: ${payload.score.toFixed(1)}/100\n` +
+                `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
+            
+            const snsParams = {
+                TopicArn: SNS_TOPIC_ARN,
+                Message: alertMessage,
+                Subject: `Anomaly Alert: ${device_id} - ${payload.prediction}`
+            };
+            await snsClient.send(new PublishCommand(snsParams));
+            console.log("Sent anomaly alert to SNS (fallback - couldn't check history).");
+        }
     }
     
     return {
@@ -199,27 +241,8 @@ async function handleSensorData(payload) {
         await s3Client.send(new PutObjectCommand(s3Params));
         console.log("Successfully wrote to S3.");
 
-        // 4. Check for alert conditions and publish to SNS
-        const tempAlert = Number(temp_c) > 35; // Temperature threshold
-        const vibAlert = Number(vibration) > 15; // Vibration magnitude threshold
-        const currentAlert = Number(current_a) > 0.2; // High current draw
-        
-        if (tempAlert || vibAlert || currentAlert) {
-            let alertMessage = `ALERT for Device ${device_id}:\n`;
-            if (tempAlert) alertMessage += `- High temperature: ${temp_c}°C\n`;
-            if (vibAlert) alertMessage += `- High vibration: ${vibration.toFixed(2)} (magnitude)\n`;
-            if (currentAlert) alertMessage += `- High current draw: ${current_a}A\n`;
-            alertMessage += `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
-            
-            console.log(`Sending alert: ${alertMessage}`);
-            const snsParams = {
-                TopicArn: SNS_TOPIC_ARN,
-                Message: alertMessage,
-                Subject: `IoT Alert for ${device_id}`,
-            };
-            await snsClient.send(new PublishCommand(snsParams));
-            console.log("Successfully published to SNS.");
-        }
+        // Note: Alerts are now handled exclusively by ML-based anomaly detection
+        // Sensor data is stored for ML inference, no hardcoded threshold alerts
 
         return {
             statusCode: 200,
@@ -227,7 +250,7 @@ async function handleSensorData(payload) {
                 message: 'Sensor data processed successfully',
                 device_id: device_id,
                 timestamp: timestamp,
-                alerts_triggered: tempAlert || vibAlert || currentAlert
+                alerts_triggered: false // Alerts only from ML predictions
             }),
         };
 }

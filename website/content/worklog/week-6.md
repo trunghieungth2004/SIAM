@@ -5,8 +5,6 @@ draft: false
 weight: 6
 ---
 
-# Week 6 Worklog
-
 ### Week 6 Objectives:
 - Learn Amazon SageMaker fundamentals and ML workflows
 - Implement SageMaker component script for automated training

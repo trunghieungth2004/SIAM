@@ -5,8 +5,6 @@ draft: false
 weight: 9
 ---
 
-# Week 9 Worklog
-
 ### Week 9 Objectives:
 - Implement EventBridge scheduled rules for automation
 - Develop retrain Lambda for automated model retraining

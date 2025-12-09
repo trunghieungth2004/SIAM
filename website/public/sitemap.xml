@@ -2,11 +2,98 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>//localhost:1313/worklog/week-1/</loc>
+    <lastmod>2025-09-08T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/</loc>
+    <lastmod>2025-09-08T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-2/</loc>
+    <lastmod>2025-09-15T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-3/</loc>
+    <lastmod>2025-09-22T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/blog/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-4/</loc>
+    <lastmod>2025-09-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/event/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-5/</loc>
+    <lastmod>2025-10-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/workshop/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-6/</loc>
+    <lastmod>2025-10-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/self-assessment/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-7/</loc>
+    <lastmod>2025-10-20T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/sharing-and-feedback/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-8/</loc>
+    <lastmod>2025-10-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-9/</loc>
+    <lastmod>2025-11-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-10/</loc>
+    <lastmod>2025-11-10T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-11/</loc>
+    <lastmod>2025-11-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/worklog/week-12/</loc>
+    <lastmod>2025-11-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/workshop/workshop-2/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/workshop/workshop-1/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/blog/post-3/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/blog/post-1/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/blog/post-2/</loc>
+    <lastmod>2025-12-09T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>//localhost:1313/</loc>
     <lastmod>2025-12-07T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>//localhost:1313/event/event-5/</loc>
+    <lastmod>2025-12-05T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/event/event-4/</loc>
+    <lastmod>2025-11-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/event/event-3/</loc>
+    <lastmod>2025-11-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/event/event-2/</loc>
+    <lastmod>2025-11-15T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>//localhost:1313/proposal/</loc>
     <lastmod>2025-11-11T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/event/event-1/</loc>
+    <lastmod>2025-09-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>//localhost:1313/event/event-6/</loc>
+    <lastmod>2025-08-13T00:00:00+00:00</lastmod>
   </url><url>
     <loc>//localhost:1313/categories/</loc>
   </url><url>

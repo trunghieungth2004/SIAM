@@ -5,8 +5,6 @@ draft: false
 weight: 8
 ---
 
-# Week 8 Worklog
-
 ### Week 8 Objectives:
 - Complete end-to-end pipeline integration (edge to cloud)
 - Implement CloudWatch monitoring and alarms
