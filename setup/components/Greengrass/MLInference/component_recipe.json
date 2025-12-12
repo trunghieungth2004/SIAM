@@ -27,17 +27,17 @@
       },
       "Artifacts": [
         {
-          "Uri": "s3://siam-iot-data-720302c0/models/model_edgetpu_latest.tar.gz",
+          "Uri": "s3://siam-iot-data-2c642070/models/model_edgetpu_latest.tar.gz",
           "Unarchive": "NONE"
         },
         {
-          "Uri": "s3://siam-iot-data-720302c0/greengrass/artifacts/inference_service.py"
+          "Uri": "s3://siam-iot-data-2c642070/greengrass/artifacts/inference_service.py"
         },
         {
-          "Uri": "s3://siam-iot-data-720302c0/greengrass/artifacts/Dockerfile.tpu"
+          "Uri": "s3://siam-iot-data-2c642070/greengrass/artifacts/Dockerfile.tpu"
         },
         {
-          "Uri": "s3://siam-iot-data-720302c0/greengrass/artifacts/tpu_inference_service.py"
+          "Uri": "s3://siam-iot-data-2c642070/greengrass/artifacts/tpu_inference_service.py"
         }
       ]
     }

@@ -14,69 +14,29 @@ source "$(dirname "$0")/common.sh"
 deploy_frontend() {
     print_log -c "[deploy] " "Deploying frontend application..."
     
-    # Get API Gateway endpoint from other components
-    local api_endpoint=""
-    if [ -n "$API_URL" ]; then
-        api_endpoint="$API_URL"
-    else
-        # Try to discover API Gateway endpoint
-        local api_name="${PROJECT_NAME}-api"
-        local api_id=$(aws apigateway get-rest-apis --query "items[?name=='${api_name}'].id" --output text 2>/dev/null)
-        if [ -n "$api_id" ] && [ "$api_id" != "None" ]; then
-            api_endpoint="https://${api_id}.execute-api.${AWS_REGION}.amazonaws.com/prod/data"
-            print_log -g "[found] " "Discovered API endpoint: $api_endpoint"
-        else
-            print_log -y "[warn] " "API Gateway not found, using placeholder"
-            api_endpoint="API_GATEWAY_ENDPOINT_PLACEHOLDER"
-        fi
-    fi
-    
-    # Check if Application directory exists
+    # Check if application directory exists
     local app_dir="$(dirname "$(dirname "$0")")/application"
     if [ ! -d "$app_dir" ]; then
         print_log -r "[error] " "Application directory not found: $app_dir"
+        print_log -y "[debug] " "Looking in: $app_dir"
         return 1
     fi
+    print_log -g "[found] " "Application directory: $app_dir"
     
     # Create temporary directory for deployment
     local temp_dir="/tmp/siam-frontend-$$"
     mkdir -p "$temp_dir"
     
     # Copy frontend files
-    cp "$app_dir"/* "$temp_dir/" 2>/dev/null || {
+    print_log -c "[copy] " "Copying frontend files..."
+    if ! cp -r "$app_dir"/* "$temp_dir/" 2>&1; then
         print_log -r "[error] " "Failed to copy frontend files from $app_dir"
         return 1
-    }
-    
-    # Try to discover API key if API Gateway exists
-    local api_key=""
-    if [ "$api_endpoint" != "API_GATEWAY_ENDPOINT_PLACEHOLDER" ]; then
-        local api_name="${PROJECT_NAME}-api"
-        local usage_plan_id=$(aws apigateway get-usage-plans --query "items[?contains(name, '${PROJECT_NAME}')].id" --output text 2>/dev/null | head -1)
-        if [ -n "$usage_plan_id" ] && [ "$usage_plan_id" != "None" ]; then
-            local api_key_id=$(aws apigateway get-usage-plan-keys --usage-plan-id "$usage_plan_id" --query 'items[0].id' --output text 2>/dev/null)
-            if [ -n "$api_key_id" ] && [ "$api_key_id" != "None" ]; then
-                api_key=$(aws apigateway get-api-key --api-key "$api_key_id" --include-value --query 'value' --output text 2>/dev/null)
-            fi
-        fi
     fi
+    print_log -g "[ok] " "Files copied to temporary directory"
     
-    # Inject API endpoint and key into app.js and swagger.html
-    if [ -f "$temp_dir/app.js" ]; then
-        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_endpoint|g" "$temp_dir/app.js"
-        
-        if [ -n "$api_key" ]; then
-            sed -i "s|API_KEY_PLACEHOLDER|$api_key|g" "$temp_dir/app.js"
-            print_log -g "[config] " "API endpoint and key injected into app.js"
-        else
-            print_log -g "[config] " "API endpoint injected: $api_endpoint (key will be injected when APIGateway is deployed)"
-        fi
-    fi
-    
-    if [ -f "$temp_dir/swagger.html" ]; then
-        sed -i "s|API_GATEWAY_ENDPOINT_PLACEHOLDER|$api_endpoint|g" "$temp_dir/swagger.html"
-        print_log -g "[config] " "API endpoint injected into swagger.html: $api_endpoint"
-    fi
+    # Note: API endpoint will be injected by APIGateway.sh after API is created
+    print_log -y "[info] " "Frontend will be deployed with placeholders - run APIGateway setup to inject API endpoint"
     
     # Upload to S3
     print_log -c "[upload] " "Uploading frontend files to S3..."
@@ -240,7 +200,10 @@ EOL
     export WEBSITE_URL
 
     # Deploy frontend application
-    deploy_frontend
+    if ! deploy_frontend; then
+        print_log -r "[error] " "Frontend deployment failed"
+        return 1
+    fi
     
     print_log -g "[ok] " "S3 Storage setup complete!"
     print_log -m "[S3 Data Bucket] " "${BUCKET_NAME}"

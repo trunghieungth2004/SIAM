@@ -1,6 +1,6 @@
 // Import AWS SDK for JavaScript v3 clients
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
@@ -14,6 +14,9 @@ const snsClient = new SNSClient({});
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME;
 const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;
+
+// Alert cooldown configuration
+const ALERT_COOLDOWN_SECONDS = 120; // 2 minutes
 
 export const handler = async (event) => {
     console.log(`Received event: ${JSON.stringify(event)}`);
@@ -119,23 +122,60 @@ async function handleMLPrediction(payload) {
             // Send warning if exactly 3/5, full alert if more than 3/5
             if (highScoreCount >= 3) {
                 const isWarning = highScoreCount === 3;
-                const alertType = isWarning ? 'WARNING' : 'SUSTAINED ANOMALY ALERT';
-                const alertMessage = `${alertType} for Device ${device_id}:\n` +
-                    `Status: ${payload.prediction}\n` +
-                    `Confidence: ${(payload.confidence * 100).toFixed(1)}%\n` +
-                    `Current Anomaly Score: ${payload.score.toFixed(1)}/100\n` +
-                    `Recent High Scores: ${highScoreCount}/5 readings\n` +
-                    `Reconstruction Error: ${payload.reconstruction_error?.toFixed(6) || 'N/A'}\n` +
-                    `Days Until Maintenance: ${payload.days_until_maintenance || 'Unknown'}\n` +
-                    `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
+                const alertType = isWarning ? 'WARNING' : 'SUSTAINED_ANOMALY';
                 
-                const snsParams = {
-                    TopicArn: SNS_TOPIC_ARN,
-                    Message: alertMessage,
-                    Subject: `${isWarning ? 'Warning' : 'Sustained Anomaly Alert'}: ${device_id} - ${payload.prediction}`
-                };
-                await snsClient.send(new PublishCommand(snsParams));
-                console.log(`Sent ${isWarning ? 'warning' : 'sustained anomaly alert'} to SNS (${highScoreCount}/5 high scores).`);
+                // Check cooldown: Get the most recent prediction's alert metadata
+                const lastAlert = recentPredictions[0]; // Most recent prediction
+                const lastAlertTimestamp = lastAlert?.last_alert_timestamp || 0;
+                const lastAlertType = lastAlert?.last_alert_type || null;
+                const timeSinceLastAlert = timestamp - lastAlertTimestamp;
+                
+                // Check if we're within cooldown period for the same alert type
+                if (timeSinceLastAlert < ALERT_COOLDOWN_SECONDS && lastAlertType === alertType) {
+                    console.log(`Alert suppressed - within ${ALERT_COOLDOWN_SECONDS}s cooldown period. ` +
+                        `Last ${lastAlertType} alert sent ${timeSinceLastAlert}s ago. ` +
+                        `Current: ${highScoreCount}/5 high scores.`);
+                } else {
+                    // Send alert - either cooldown expired, different alert type, or first alert
+                    const alertDisplayName = isWarning ? 'WARNING' : 'SUSTAINED ANOMALY ALERT';
+                    const alertMessage = `${alertDisplayName} for Device ${device_id}:\n` +
+                        `Status: ${payload.prediction}\n` +
+                        `Confidence: ${(payload.confidence * 100).toFixed(1)}%\n` +
+                        `Current Anomaly Score: ${payload.score.toFixed(1)}/100\n` +
+                        `Recent High Scores: ${highScoreCount}/5 readings\n` +
+                        `Reconstruction Error: ${payload.reconstruction_error?.toFixed(6) || 'N/A'}\n` +
+                        `Days Until Maintenance: ${payload.days_until_maintenance || 'Unknown'}\n` +
+                        `Timestamp: ${new Date(timestamp * 1000).toISOString()}`;
+                    
+                    const snsParams = {
+                        TopicArn: SNS_TOPIC_ARN,
+                        Message: alertMessage,
+                        Subject: `${isWarning ? 'Warning' : 'Sustained Anomaly Alert'}: ${device_id} - ${payload.prediction}`
+                    };
+                    await snsClient.send(new PublishCommand(snsParams));
+                    
+                    // Update current prediction item with alert metadata
+                    const updateParams = {
+                        TableName: predictionTable,
+                        Key: {
+                            device_id: device_id,
+                            timestamp: timestamp
+                        },
+                        UpdateExpression: 'SET last_alert_timestamp = :alert_ts, last_alert_type = :alert_type',
+                        ExpressionAttributeValues: {
+                            ':alert_ts': timestamp,
+                            ':alert_type': alertType
+                        }
+                    };
+                    await docClient.send(new UpdateCommand(updateParams));
+                    
+                    const cooldownReason = lastAlertType && lastAlertType !== alertType 
+                        ? `(alert type changed: ${lastAlertType} → ${alertType})` 
+                        : lastAlertTimestamp > 0 
+                            ? `(cooldown expired: ${timeSinceLastAlert}s since last alert)` 
+                            : '(first alert)';
+                    console.log(`Sent ${isWarning ? 'warning' : 'sustained anomaly alert'} to SNS (${highScoreCount}/5 high scores) ${cooldownReason}`);
+                }
             } else {
                 console.log(`Anomaly detected but not sustained (${highScoreCount}/5 high scores). No alert sent to avoid false alarm.`);
             }

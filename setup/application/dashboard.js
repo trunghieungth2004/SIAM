@@ -1,6 +1,5 @@
-const API_ENDPOINT = 'API_GATEWAY_ENDPOINT_PLACEHOLDER';
-const API_KEY = 'API_KEY_PLACEHOLDER';
-const REFRESH_INTERVAL = 5000; // 5 seconds
+// Dashboard Main Script
+const REFRESH_INTERVAL = 3000; // 3 seconds for more real-time updates
 let charts = {};
 let refreshTimer = null;
 let lastApiResponse = null; // Store last API response for debugging
@@ -49,15 +48,7 @@ function showError(message) {
 // Fetch data for all devices
 async function fetchDeviceData(deviceId) {
     try {
-        const response = await fetch(`${API_ENDPOINT}?device_id=${deviceId}&type=both&hours=1&limit=50`, {
-            headers: {
-                'x-api-key': API_KEY
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return await response.json();
+        return await window.apiClient.fetchDeviceData(deviceId, 'both', 1, 50);
     } catch (error) {
         console.error(`Error fetching data for ${deviceId}:`, error);
         return null;
@@ -67,37 +58,39 @@ async function fetchDeviceData(deviceId) {
 // Discover all unique devices
 async function discoverDevices() {
     try {
-        // Query for all devices
-        const response = await fetch(`${API_ENDPOINT}?device_id=all&type=both&hours=1&limit=50`, {
-            headers: {
-                'x-api-key': API_KEY
-            }
-        });
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API Error:', response.status, errorText);
-            showError(`API Error (${response.status}): ${errorText}`);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log('API Response:', data);
-        lastApiResponse = data; // Store for debugging
+        const deviceDataMap = await window.apiClient.discoverDevices(1, 50);
+        console.log('=== REAL-TIME DATA FETCH ===');
+        console.log('Timestamp:', new Date().toISOString());
+        console.log('Device Count:', deviceDataMap.size);
+        console.log('API Response:', deviceDataMap);
         
-        // Check if we got the all-devices response format
-        if (data.devices) {
-            const deviceDataMap = new Map();
-            for (const [deviceId, deviceData] of Object.entries(data.devices)) {
-                deviceDataMap.set(deviceId, deviceData);
+        // Log each device's data in detail
+        for (const [deviceId, data] of deviceDataMap) {
+            console.log(`\n[Device: ${deviceId}]`);
+            console.log('  Sensor Data Points:', data.sensor_data?.length || 0);
+            console.log('  Prediction Data Points:', data.prediction_data?.length || 0);
+            
+            if (data.sensor_data?.length > 0) {
+                const latest = data.sensor_data[0];
+                console.log('  Latest Sensor Reading:');
+                console.log('    Timestamp:', new Date(latest.timestamp * 1000).toISOString());
+                console.log('    Temp:', latest.temp_c, '°C');
+                console.log('    Current:', latest.current_a, 'A');
+                console.log('    Accel:', { x: latest.ax, y: latest.ay, z: latest.az });
             }
-            return deviceDataMap;
+            
+            if (data.prediction_data?.length > 0) {
+                const latest = data.prediction_data[0];
+                console.log('  Latest ML Prediction:');
+                console.log('    Timestamp:', new Date(latest.timestamp * 1000).toISOString());
+                console.log('    Prediction:', latest.prediction);
+                console.log('    Score:', latest.score);
+                console.log('    Confidence:', latest.confidence);
+            }
         }
+        console.log('============================\n');
         
-        // Fallback: try default device
-        const deviceDataMap = new Map();
-        const fallbackData = await fetchDeviceData('esp32-device');
-        if (fallbackData && (fallbackData.sensor_count > 0 || fallbackData.prediction_count > 0)) {
-            deviceDataMap.set('esp32-device', fallbackData);
-        }
+        lastApiResponse = { devices: Object.fromEntries(deviceDataMap) }; // Store for debugging
         return deviceDataMap;
     } catch (error) {
         console.error('Error discovering devices:', error);
@@ -249,24 +242,24 @@ function createDeviceRow(deviceId, data) {
     // Prediction badge - Apply same 3/5 sustained pattern logic as SNS alerts
     let predictionHtml = '';
     if (latestPrediction) {
-        // Check last 5 predictions for sustained anomaly pattern (same as SNS logic)
+        // Check last 5 predictions for sustained anomaly pattern (EXACT match to ingestion.js lines 108-126)
         const recentPredictions = predictionData.slice(0, 5);
         const highScoreCount = recentPredictions.filter(p => p.score >= 50).length;
         
         let displayPrediction = latestPrediction.prediction;
         let badgeClass = 'healthy';
         
-        // Override prediction based on sustained pattern
-        if (highScoreCount >= 4) {
-            // 4-5 out of 5: Sustained anomaly - matches SNS "SUSTAINED ANOMALY ALERT"
-            displayPrediction = 'Anomaly Detected';
+        // Override prediction based on sustained pattern (MATCHES ingestion.js)
+        if (highScoreCount > 3) {
+            // More than 3 out of 5: Sustained anomaly - matches SNS "SUSTAINED_ANOMALY" (line 118)
+            displayPrediction = 'Sustained Anomaly';
             badgeClass = 'maintenance';
         } else if (highScoreCount === 3) {
-            // Exactly 3 out of 5: Warning - matches SNS "WARNING"
+            // Exactly 3 out of 5: Warning - matches SNS "WARNING" (line 117)
             displayPrediction = 'Warning';
             badgeClass = 'monitor';
         } else {
-            // Less than 3 out of 5: Likely false alarm or normal
+            // Less than 3 out of 5: Suppressed - matches ingestion.js line 174 (no alert sent)
             displayPrediction = 'Normal';
             badgeClass = 'healthy';
         }
@@ -314,6 +307,8 @@ function createDeviceRow(deviceId, data) {
     
     const deviceRow = document.createElement('div');
     deviceRow.className = 'device-row';
+    deviceRow.style.cursor = 'pointer';
+    deviceRow.setAttribute('data-device-id', deviceId);
     deviceRow.innerHTML = `
         <div class="device-header">
             <div class="device-title">
@@ -348,37 +343,44 @@ function createDeviceRow(deviceId, data) {
                     <span class="metric-unit">A</span>
                 </div>
             </div>
-            <div class="metric-card">
-                <div class="metric-label">Avg Temperature</div>
-                <div class="metric-value">
-                    ${metrics.avgTemp}
-                    <span class="metric-unit">°C</span>
-                </div>
-            </div>
         </div>
         
-        <div class="charts-container">
+        <div class="charts-header" style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px 0; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 1.1em;">Historical Data</h3>
+            <button class="chart-toggle-all" data-device-id="${deviceId}" style="padding: 8px 16px; background: #4da6ff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: background 0.3s ease; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#3d96ef'" onmouseout="this.style.background='#4da6ff'">
+                <span class="toggle-icon">▼</span> Toggle All Charts
+            </button>
+        </div>
+        <div class="charts-container" data-device-id="${deviceId}">
             <div class="chart-card">
-                <div class="chart-title">Temperature History</div>
-                <div class="chart-wrapper">
+                <div class="chart-header">
+                    <div class="chart-title">Temperature History</div>
+                </div>
+                <div class="chart-wrapper" data-chart-id="temp-chart-${deviceId}">
                     <canvas id="temp-chart-${deviceId}"></canvas>
                 </div>
             </div>
             <div class="chart-card">
-                <div class="chart-title">Vibration (Accelerometer)</div>
-                <div class="chart-wrapper">
+                <div class="chart-header">
+                    <div class="chart-title">Vibration (Accelerometer)</div>
+                </div>
+                <div class="chart-wrapper" data-chart-id="vibration-chart-${deviceId}">
                     <canvas id="vibration-chart-${deviceId}"></canvas>
                 </div>
             </div>
             <div class="chart-card">
-                <div class="chart-title">Current Draw</div>
-                <div class="chart-wrapper">
+                <div class="chart-header">
+                    <div class="chart-title">Current Draw</div>
+                </div>
+                <div class="chart-wrapper" data-chart-id="current-chart-${deviceId}">
                     <canvas id="current-chart-${deviceId}"></canvas>
                 </div>
             </div>
             <div class="chart-card">
-                <div class="chart-title">Anomaly Detection Score</div>
-                <div class="chart-wrapper">
+                <div class="chart-header">
+                    <div class="chart-title">Anomaly Detection Score</div>
+                </div>
+                <div class="chart-wrapper" data-chart-id="ml-chart-${deviceId}">
                     <canvas id="ml-chart-${deviceId}"></canvas>
                 </div>
             </div>
@@ -609,6 +611,46 @@ async function renderDashboard() {
         
         // Create charts after DOM is ready
         setTimeout(() => createCharts(deviceId, data), 100);
+        
+        // Add click handler for device row to open details modal
+        setTimeout(() => {
+            const row = container.querySelector(`[data-device-id="${deviceId}"]`);
+            if (row) {
+                row.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on charts or toggle buttons
+                    if (!e.target.closest('.chart-wrapper') && 
+                        !e.target.closest('.chart-toggle-all') &&
+                        !e.target.closest('.chart-card')) {
+                        window.openDeviceDetails(deviceId, data);
+                    }
+                });
+            }
+        }, 150);
+        
+        // Add toggle-all chart handlers
+        setTimeout(() => {
+            const toggleButtons = container.querySelectorAll('.chart-toggle-all');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent device row click
+                    const deviceId = button.getAttribute('data-device-id');
+                    const chartsContainer = container.querySelector(`.charts-container[data-device-id="${deviceId}"]`);
+                    const icon = button.querySelector('.toggle-icon');
+                    
+                    if (chartsContainer) {
+                        const wrappers = chartsContainer.querySelectorAll('.chart-wrapper');
+                        const isCollapsed = chartsContainer.classList.contains('collapsed');
+                        
+                        chartsContainer.classList.toggle('collapsed');
+                        wrappers.forEach(wrapper => {
+                            wrapper.classList.toggle('collapsed');
+                        });
+                        
+                        icon.textContent = chartsContainer.classList.contains('collapsed') ? '▶' : '▼';
+                    }
+                });
+            });
+        }, 150);
     }
     
     updateLastUpdateTime();
@@ -617,93 +659,64 @@ async function renderDashboard() {
 // Update existing dashboard
 async function updateDashboard() {
     try {
-        const response = await fetch(`${API_ENDPOINT}?device_id=all&type=both&hours=1&limit=50`, {
-            headers: {
-                'x-api-key': API_KEY
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const responseData = await response.json();
-        
-        let deviceDataMap = new Map();
-        
-        // Handle all-devices response
-        if (responseData.devices) {
-            for (const [deviceId, deviceData] of Object.entries(responseData.devices)) {
-                deviceDataMap.set(deviceId, deviceData);
-            }
-        } else {
-            // Fallback for single device
-            const fallbackData = await fetchDeviceData('esp32-device');
-            if (fallbackData && (fallbackData.sensor_count > 0 || fallbackData.prediction_count > 0)) {
-                deviceDataMap.set('esp32-device', fallbackData);
-            }
-        }
+        const deviceDataMap = await discoverDevices();
         
         for (const [deviceId, data] of deviceDataMap) {
-            // Update metrics
-            const deviceRow = Array.from(document.querySelectorAll('.device-row')).find(
-                row => row.querySelector('.device-name').textContent === deviceId
-            );
+            const deviceRow = document.querySelector(`[data-device-id="${deviceId}"]`);
+            if (!deviceRow) continue;
             
-            if (deviceRow) {
-                // Update status
-                const sensorData = data.sensor_data || [];
-                const isOnline = sensorData.length > 0 && 
-                               (Date.now() / 1000 - sensorData[0].timestamp) < 60;
-                
-                const statusIndicator = deviceRow.querySelector('.status-indicator');
-                const statusText = deviceRow.querySelector('.device-status span:last-child');
-                
-                if (statusIndicator && statusText) {
-                    statusIndicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
-                    statusText.textContent = isOnline ? 'Online' : 'Offline';
-                }
-                
-                // Update metric values
+            // Update sensor metrics if present
+            const sensorData = data.sensor_data || [];
+            if (sensorData.length > 0) {
                 const metrics = calculateMetrics(sensorData);
-                const metricCards = deviceRow.querySelectorAll('.metric-value');
-                
-                if (metricCards.length >= 4 && sensorData.length > 0) {
-                    metricCards[0].innerHTML = `${sensorData[0].temp_c.toFixed(1)} <span class="metric-unit">°C</span>`;
-                    metricCards[1].innerHTML = `${metrics.vibrationMagnitude} <span class="metric-unit">m/s²</span>`;
-                    metricCards[2].innerHTML = `${sensorData[0].current_a.toFixed(3)} <span class="metric-unit">A</span>`;
-                    metricCards[3].innerHTML = `${metrics.avgTemp} <span class="metric-unit">°C</span>`;
+                const tempElement = deviceRow.querySelector('.metric-value.temp');
+                if (tempElement) {
+                    tempElement.innerHTML = `${metrics.avgTemp} <span class="metric-unit">°C</span>`;
                 }
-                
-                // Update ML prediction badge if present
-                const predictionData = data.prediction_data || [];
-                if (predictionData.length > 0) {
-                    const latestPrediction = predictionData[0];
-                    const mlPrediction = deviceRow.querySelector('.ml-prediction');
-                    
-                    if (mlPrediction) {
-                        let badgeClass = 'healthy';
-                        const pred = latestPrediction.prediction;
-                        if (pred === 'Maintenance Required') {
-                            badgeClass = 'maintenance';
-                        } else if (pred === 'Monitor' || pred === 'Monitor Closely') {
-                            badgeClass = 'monitor';
-                        } else if (pred === 'Good') {
-                            badgeClass = 'healthy';
-                        }
-                        
-                        mlPrediction.innerHTML = `
-                            <span class="prediction-badge ${badgeClass}">${latestPrediction.prediction}</span>
-                            <span class="prediction-details">
-                                Confidence: ${(latestPrediction.confidence * 100).toFixed(1)}% | 
-                                Score: ${latestPrediction.score.toFixed(1)} | 
-                                Days to Maintenance: ${latestPrediction.days_until_maintenance || 'N/A'}
-                            </span>
-                        `;
-                    }
-                }
-                
-                // Update charts
-                updateCharts(deviceId, data);
             }
+            
+            // Update ML prediction badge if present
+            const predictionData = data.prediction_data || [];
+            if (predictionData.length > 0) {
+                const latestPrediction = predictionData[0];
+                const mlPrediction = deviceRow.querySelector('.ml-prediction');
+                
+                if (mlPrediction) {
+                    // Apply same 3/5 sustained pattern logic as SNS alerts (MATCHES ingestion.js)
+                    const recentPredictions = predictionData.slice(0, 5);
+                    const highScoreCount = recentPredictions.filter(p => p.score >= 50).length;
+                    
+                    let displayPrediction = latestPrediction.prediction;
+                    let badgeClass = 'healthy';
+                    
+                    // Override prediction based on sustained pattern
+                    if (highScoreCount > 3) {
+                        // More than 3 out of 5: Sustained anomaly
+                        displayPrediction = 'Sustained Anomaly';
+                        badgeClass = 'maintenance';
+                    } else if (highScoreCount === 3) {
+                        // Exactly 3 out of 5: Warning
+                        displayPrediction = 'Warning';
+                        badgeClass = 'monitor';
+                    } else {
+                        // Less than 3 out of 5: Suppressed - no alert
+                        displayPrediction = 'Normal';
+                        badgeClass = 'healthy';
+                    }
+                    
+                    mlPrediction.innerHTML = `
+                        <span class="prediction-badge ${badgeClass}">${displayPrediction}</span>
+                        <span class="prediction-details">
+                            Confidence: ${(latestPrediction.confidence * 100).toFixed(1)}% | 
+                            Score: ${latestPrediction.score.toFixed(1)} | 
+                            Days to Maintenance: ${latestPrediction.days_until_maintenance || 'N/A'}
+                        </span>
+                    `;
+                }
+            }
+            
+            // Update charts
+            updateCharts(deviceId, data);
         }
         
         updateLastUpdateTime();
@@ -740,10 +753,12 @@ document.getElementById('refresh-btn').addEventListener('click', async () => {
 
 // Debug export
 document.getElementById('debug-btn').addEventListener('click', () => {
+    const apiConfig = window.apiClient.getConfig();
     const debugData = {
         timestamp: new Date().toISOString(),
-        apiEndpoint: API_ENDPOINT,
-        hasApiKey: API_KEY !== 'API_KEY_PLACEHOLDER',
+        apiEndpoint: apiConfig.endpoint,
+        hasApiKey: apiConfig.hasApiKey,
+        isConfigured: apiConfig.isConfigured,
         lastApiResponse: lastApiResponse,
         deviceMapSize: lastApiResponse?.devices ? Object.keys(lastApiResponse.devices).length : 0,
         devices: lastApiResponse?.devices ? Object.keys(lastApiResponse.devices) : [],
@@ -756,21 +771,20 @@ document.getElementById('debug-btn').addEventListener('click', () => {
     console.log('Export Time:', debugData.timestamp);
     console.log('API Endpoint:', debugData.apiEndpoint);
     console.log('API Key Present:', debugData.hasApiKey);
+    console.log('API Configured:', debugData.isConfigured);
     console.log('---');
     console.log('Full Debug Data:', JSON.stringify(debugData, null, 2));
     console.log('---');
     console.log('Last API Response:', lastApiResponse);
     console.log('========================');
     
-    // Also create a downloadable JSON file
+    // Download debug data
     const blob = new Blob([JSON.stringify(debugData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `siam-debug-${Date.now()}.json`;
-    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
     alert('Debug data exported to console and downloaded as JSON file');

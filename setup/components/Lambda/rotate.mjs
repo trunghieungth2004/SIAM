@@ -78,18 +78,41 @@ export const handler = async (event) => {
     // Update frontend if bucket exists
     if (frontendBucket) {
         try {
-            const getCmd = new GetObjectCommand({Bucket: frontendBucket, Key: 'app.js'});
-            const appjs = await s3.send(getCmd);
-            let content = await appjs.Body.transformToString();
-            content = content.replace(/const API_KEY = '[^']*'/, `const API_KEY = '${newKeyValue}'`);
-            const putCmd = new PutObjectCommand({
-                Bucket: frontendBucket, 
-                Key: 'app.js', 
-                Body: content, 
-                ContentType: 'application/javascript'
-            });
-            await s3.send(putCmd);
-            console.log('Frontend updated with new API key');
+            // Try apiClient.js first (new structure)
+            let updated = false;
+            try {
+                const getCmd = new GetObjectCommand({Bucket: frontendBucket, Key: 'api/apiClient.js'});
+                const apiClientJs = await s3.send(getCmd);
+                let content = await apiClientJs.Body.transformToString();
+                content = content.replace(/apiKey:\s*['"][^'"]*['"]/,  `apiKey: '${newKeyValue}'`);
+                const putCmd = new PutObjectCommand({
+                    Bucket: frontendBucket, 
+                    Key: 'api/apiClient.js', 
+                    Body: content, 
+                    ContentType: 'application/javascript'
+                });
+                await s3.send(putCmd);
+                console.log('Frontend apiClient.js updated with new API key');
+                updated = true;
+            } catch (e) {
+                console.log(`apiClient.js update failed, trying app.js: ${e.message}`);
+            }
+            
+            // Fall back to app.js (old structure)
+            if (!updated) {
+                const getCmd = new GetObjectCommand({Bucket: frontendBucket, Key: 'app.js'});
+                const appjs = await s3.send(getCmd);
+                let content = await appjs.Body.transformToString();
+                content = content.replace(/const API_KEY = '[^']*'/, `const API_KEY = '${newKeyValue}'`);
+                const putCmd = new PutObjectCommand({
+                    Bucket: frontendBucket, 
+                    Key: 'app.js', 
+                    Body: content, 
+                    ContentType: 'application/javascript'
+                });
+                await s3.send(putCmd);
+                console.log('Frontend app.js updated with new API key');
+            }
         } catch (e) {
             console.log(`Frontend update failed: ${e.message}`);
         }

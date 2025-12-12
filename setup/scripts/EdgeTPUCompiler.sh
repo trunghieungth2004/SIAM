@@ -242,8 +242,12 @@ USERDATA_EOF
     print_log -c "[validate] " "Validating compiled model..."
     COMPILED_MODEL_S3="s3://${S3_DATA_BUCKET}/models/model_edgetpu_latest.tar.gz"
     
-    # Wait a moment for S3 eventual consistency
-    sleep 5
+    # Wait for model to exist in S3
+    print_log -y "[wait] " "Waiting for compiled model in S3..."
+    while ! aws s3 ls "${COMPILED_MODEL_S3}" > /dev/null 2>&1; do
+        sleep 2
+    done
+    print_log -g "[found] " "Compiled model detected in S3"
     
     if aws s3 ls "${COMPILED_MODEL_S3}" > /dev/null 2>&1; then
         # Download and verify contents

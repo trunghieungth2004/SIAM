@@ -98,10 +98,12 @@ generate_component_recipes() {
     # Get next component versions
     DATALOGGER_VERSION=$(get_next_component_version "com.${PROJECT_NAME}.DataLogger")
     MLINFERENCE_VERSION=$(get_next_component_version "com.${PROJECT_NAME}.MLInference")
+    RECOVERYMANAGER_VERSION=$(get_next_component_version "com.${PROJECT_NAME}.RecoveryManager")
     
     # Create directories if they don't exist
     mkdir -p "$(dirname "$0")/Greengrass/DataLogger"
     mkdir -p "$(dirname "$0")/Greengrass/MLInference"
+    mkdir -p "$(dirname "$0")/Greengrass/RecoveryManager"
     
     # Generate DataLogger component recipe
     cat > "$(dirname "$0")/Greengrass/DataLogger/component_recipe.json" << DATALOGGER_EOF
@@ -193,11 +195,58 @@ DATALOGGER_EOF
 }
 MLINFERENCE_EOF
 
+    # Generate RecoveryManager component recipe
+    cat > "$(dirname "$0")/Greengrass/RecoveryManager/component_recipe.json" << RECOVERYMANAGER_EOF
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "com.${PROJECT_NAME}.RecoveryManager",
+  "ComponentVersion": "${RECOVERYMANAGER_VERSION}",
+  "ComponentDescription": "StreamManager recovery service for offline resilience",
+  "ComponentPublisher": "${PROJECT_NAME}",
+  "ComponentDependencies": {
+    "aws.greengrass.StreamManager": {
+      "VersionRequirement": ">=2.0.0",
+      "DependencyType": "HARD"
+    }
+  },
+  "ComponentConfiguration": {
+    "DefaultConfiguration": {
+      "RecoveryIntervalSeconds": 60,
+      "LogLevel": "INFO"
+    }
+  },
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Lifecycle": {
+        "Install": {
+          "Script": "python3 -m pip install --break-system-packages git+https://github.com/aws-greengrass/aws-greengrass-stream-manager-sdk-python",
+          "Timeout": 300
+        },
+        "Run": "python3 -u {artifacts:path}/recovery_service.py",
+        "Shutdown": {
+          "Script": "pkill -f recovery_service.py || true",
+          "Timeout": 10
+        }
+      },
+      "Artifacts": [
+        {
+          "Uri": "s3://${S3_DATA_BUCKET}/greengrass/artifacts/recovery_service.py"
+        }
+      ]
+    }
+  ]
+}
+RECOVERYMANAGER_EOF
+
     print_log -g "[ok] " "Component recipes generated with discovered S3 bucket and model path"
     print_log -m "[S3 Bucket] " "${S3_DATA_BUCKET}"
     print_log -m "[Model URI] " "${MODEL_S3_URI}"
     print_log -m "[DataLogger Component] " "com.${PROJECT_NAME}.DataLogger v${DATALOGGER_VERSION}"
     print_log -m "[MLInference Component] " "com.${PROJECT_NAME}.MLInference v${MLINFERENCE_VERSION}"
+    print_log -m "[RecoveryManager Component] " "com.${PROJECT_NAME}.RecoveryManager v${RECOVERYMANAGER_VERSION}"
 }
 
 deploy_greengrass_components() {
@@ -232,10 +281,16 @@ deploy_greengrass_components() {
         return 1
     fi
     
+    # Upload RecoveryManager artifacts
+    if ! aws s3 cp "$(dirname "$0")/Greengrass/RecoveryManager/recovery_service.py" "s3://${S3_DATA_BUCKET}/greengrass/artifacts/recovery_service.py"; then
+        print_log -r "[error] " "Failed to upload recovery_service.py"
+        return 1
+    fi
+    
     # Verify all artifacts were uploaded
     print_log -c "[verify] " "Verifying artifact uploads..."
     MISSING_ARTIFACTS=""
-    for artifact in "datalogger.c" "streammanager_datalogger.py" "inference_service.py" "Dockerfile.tpu" "tpu_inference_service.py"; do
+    for artifact in "datalogger.c" "streammanager_datalogger.py" "inference_service.py" "Dockerfile.tpu" "tpu_inference_service.py" "recovery_service.py"; do
         if ! aws s3 ls "s3://${S3_DATA_BUCKET}/greengrass/artifacts/${artifact}" > /dev/null 2>&1; then
             MISSING_ARTIFACTS="${MISSING_ARTIFACTS} ${artifact}"
         fi
@@ -278,8 +333,24 @@ deploy_greengrass_components() {
     fi
     rm -f /tmp/component_create_ml.log
     
+    # Create and deploy RecoveryManager component
+    print_log -c "[create] " "Creating RecoveryManager component..."
+    RECOVERYMANAGER_VERSION=$(grep -o '"ComponentVersion": "[^"]*"' "$(dirname "$0")/Greengrass/RecoveryManager/component_recipe.json" | cut -d'"' -f4)
+    if aws greengrassv2 create-component-version --inline-recipe fileb://"$(dirname "$0")/Greengrass/RecoveryManager/component_recipe.json" 2>&1 | tee /tmp/component_create_recovery.log; then
+        print_log -g "[ok] " "RecoveryManager component v${RECOVERYMANAGER_VERSION} created"
+    else
+        if grep -q "already exists" /tmp/component_create_recovery.log; then
+            print_log -y "[skip] " "RecoveryManager component v${RECOVERYMANAGER_VERSION} already exists"
+        else
+            print_log -r "[error] " "Failed to create RecoveryManager component"
+            cat /tmp/component_create_recovery.log
+        fi
+    fi
+    rm -f /tmp/component_create_recovery.log
+    
     # Get component versions
     MLINFERENCE_VERSION=$(grep -o '"ComponentVersion": "[^"]*"' "$(dirname "$0")/Greengrass/MLInference/component_recipe.json" | cut -d'"' -f4 2>/dev/null || echo "1.0.3")
+    RECOVERYMANAGER_VERSION=$(grep -o '"ComponentVersion": "[^"]*"' "$(dirname "$0")/Greengrass/RecoveryManager/component_recipe.json" | cut -d'"' -f4 2>/dev/null || echo "1.0.1")
     
     # Create deployment
     print_log -c "[deploy] " "Creating Greengrass deployment..."
@@ -299,6 +370,12 @@ deploy_greengrass_components() {
       "configurationUpdate": {
         "merge": "{\"accessControl\":{\"aws.greengrass.ipc.mqttproxy\":{\"com.${PROJECT_NAME}.MLInference:mqttproxy:1\":{\"policyDescription\":\"Allow publishing ML predictions to IoT Core\",\"operations\":[\"aws.greengrass#PublishToIoTCore\"],\"resources\":[\"ml/predictions\"]}},\"aws.greengrass.StreamManager\":{\"com.${PROJECT_NAME}.MLInference:streammanager:1\":{\"policyDescription\":\"Allow full access to StreamManager\",\"operations\":[\"aws.greengrass#CreateMessageStream\",\"aws.greengrass#AppendMessage\",\"aws.greengrass#ReadFromStream\"],\"resources\":[\"*\"]}}}}"
       }
+    },
+    "com.${PROJECT_NAME}.RecoveryManager": {
+      "componentVersion": "${RECOVERYMANAGER_VERSION}",
+      "configurationUpdate": {
+        "merge": "{\"accessControl\":{\"aws.greengrass.ipc.mqttproxy\":{\"com.${PROJECT_NAME}.RecoveryManager:mqttproxy:1\":{\"policyDescription\":\"Allow publishing recovered messages to IoT Core\",\"operations\":[\"aws.greengrass#PublishToIoTCore\"],\"resources\":[\"iot/data\",\"ml/predictions\"]}},\"aws.greengrass.StreamManager\":{\"com.${PROJECT_NAME}.RecoveryManager:streammanager:1\":{\"policyDescription\":\"Allow reading from StreamManager for recovery\",\"operations\":[\"aws.greengrass#DescribeMessageStream\",\"aws.greengrass#ReadFromStream\"],\"resources\":[\"*\"]}}}}"
+      }
     }
   }
 }
@@ -307,7 +384,7 @@ DEPLOYMENT_EOF
     if DEPLOYMENT_ID=$(aws greengrassv2 create-deployment --cli-input-json file:///tmp/deployment.json --query "deploymentId" --output text 2>/dev/null); then
         print_log -g "[ok] " "Deployment created: ${DEPLOYMENT_ID}"
         print_log -m "[Target] " "GreengrassCore_${PROJECT_NAME}"
-        print_log -m "[Components] " "DataLogger v${DATALOGGER_VERSION}, MLInference v${MLINFERENCE_VERSION}"
+        print_log -m "[Components] " "DataLogger v${DATALOGGER_VERSION}, MLInference v${MLINFERENCE_VERSION}, RecoveryManager v${RECOVERYMANAGER_VERSION}"
         print_log -c "[wait] " "Waiting for deployment to complete..."
         
         # Wait for deployment to complete (infinite loop until completed or failed)
@@ -368,8 +445,16 @@ DEPLOYMENT_EOF
         print_log -y "[status] " "MLInference component: $MLINFERENCE_STATUS"
     fi
     
+    # Get component status for RecoveryManager
+    RECOVERYMANAGER_STATUS=$(aws greengrassv2 list-installed-components --core-device-thing-name "$GG_THING_NAME" --query "installedComponents[?componentName=='com.${PROJECT_NAME}.RecoveryManager'].lifecycleState" --output text 2>/dev/null || echo "UNKNOWN")
+    if [ "$RECOVERYMANAGER_STATUS" = "RUNNING" ]; then
+        print_log -g "[ok] " "RecoveryManager component: RUNNING"
+    else
+        print_log -y "[status] " "RecoveryManager component: $RECOVERYMANAGER_STATUS"
+    fi
+    
     # If any component is not running, show recent logs
-    if [ "$DATALOGGER_STATUS" != "RUNNING" ] || [ "$MLINFERENCE_STATUS" != "RUNNING" ]; then
+    if [ "$DATALOGGER_STATUS" != "RUNNING" ] || [ "$MLINFERENCE_STATUS" != "RUNNING" ] || [ "$RECOVERYMANAGER_STATUS" != "RUNNING" ]; then
         print_log -y "[info] " "Checking component logs on Pi..."
         ssh "${PI_SSH_TARGET}" 'bash -s' << 'COMPONENT_LOG_EOF'
 echo "[DataLogger logs - last 10 lines]:"
@@ -377,6 +462,9 @@ sudo tail -10 /greengrass/v2/logs/com.test.DataLogger.log 2>/dev/null || echo "N
 echo ""
 echo "[MLInference logs - last 10 lines]:"
 sudo tail -10 /greengrass/v2/logs/com.test.MLInference.log 2>/dev/null || echo "No MLInference logs found"
+echo ""
+echo "[RecoveryManager logs - last 10 lines]:"
+sudo tail -10 /greengrass/v2/logs/com.test.RecoveryManager.log 2>/dev/null || echo "No RecoveryManager logs found"
 COMPONENT_LOG_EOF
     fi
     
@@ -1400,7 +1488,9 @@ cleanup_greengrass() {
     
     # Cleanup all components
     print_log -c "[cleanup] " "Cleaning up all Greengrass components..."
-    for COMPONENT_NAME in "com.${PROJECT_NAME}.DataLogger" "com.${PROJECT_NAME}.MLInference"; do
+    # Cleanup all components
+    print_log -c "[cleanup] " "Cleaning up all Greengrass components..."
+    for COMPONENT_NAME in "com.${PROJECT_NAME}.DataLogger" "com.${PROJECT_NAME}.MLInference" "com.${PROJECT_NAME}.RecoveryManager"; do
         if aws greengrassv2 list-component-versions --arn "arn:aws:greengrass:${AWS_REGION}:${ACCOUNT_ID}:components:${COMPONENT_NAME}" > /dev/null 2>&1; then
             VERSIONS=$(aws greengrassv2 list-component-versions --arn "arn:aws:greengrass:${AWS_REGION}:${ACCOUNT_ID}:components:${COMPONENT_NAME}" --query "componentVersions[].componentVersion" --output text 2>/dev/null || echo "")
             for version in $VERSIONS; do
@@ -1466,6 +1556,7 @@ sudo systemctl daemon-reload
 sudo rm -rf /greengrass
 sudo rm -rf /tmp/greengrass_ml
 sudo rm -rf /tmp/coral-docker
+sudo rm -rf /tmp/greengrass-recovery
 rm -f ~/greengrass_remote_install.sh
 if id "ggc_user" &>/dev/null; then sudo userdel ggc_user 2>/dev/null || true; fi
 if getent group "ggc_group" &>/dev/null; then sudo groupdel ggc_group 2>/dev/null || true; fi

@@ -294,6 +294,8 @@ EOL
             --handler query.handler \
             --zip-file fileb://query_deployment.zip \
             --environment "Variables={DYNAMODB_TABLE_NAME=$DDB_TABLE_NAME}" \
+            --timeout 30 \
+            --memory-size 512 \
             --query FunctionArn --output text); then
             print_log -r "[error] " "Failed to create Query Lambda function: ${QUERY_LAMBDA_NAME}"
             return 1

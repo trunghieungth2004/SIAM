@@ -54,10 +54,12 @@
     </div>
     <div id="swagger-ui"></div>
 
+    <script src="api/apiClient.js"></script>
     <script src="https://unpkg.com/swagger-ui-dist@5.10.0/swagger-ui-bundle.js"></script>
     <script src="https://unpkg.com/swagger-ui-dist@5.10.0/swagger-ui-standalone-preset.js"></script>
     <script>
-        const API_ENDPOINT = 'API_GATEWAY_ENDPOINT_PLACEHOLDER';
+        // Get API endpoint from centralized API client
+        const API_ENDPOINT = window.apiClient ? window.apiClient.getConfig().endpoint : 'API_GATEWAY_ENDPOINT_PLACEHOLDER';
         
         const spec = {
             "openapi": "3.0.0",

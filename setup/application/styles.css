@@ -238,16 +238,12 @@ main {
 }
 
 .charts-container {
-    display: none;
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 1.5rem;
     margin-top: 1.5rem;
     padding-top: 1.5rem;
     border-top: 2px solid var(--border-color);
-}
-
-.device-row:hover .charts-container {
-    display: grid;
 }
 
 .chart-card {
@@ -257,16 +253,53 @@ main {
     border: 1px solid var(--border-color);
 }
 
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
 .chart-title {
     font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 0.75rem;
     color: var(--text-primary);
+}
+
+.chart-toggle {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.chart-toggle:hover {
+    background: var(--accent-secondary);
+    transform: scale(1.05);
+}
+
+.toggle-icon {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
 }
 
 .chart-wrapper {
     position: relative;
     height: 250px;
+    overflow: hidden;
+    transition: height 0.3s ease, opacity 0.3s ease;
+}
+
+.chart-wrapper.collapsed {
+    height: 0;
+    opacity: 0;
 }
 
 .error-message {
@@ -315,9 +348,5 @@ main {
     
     .charts-container {
         grid-template-columns: 1fr;
-    }
-    
-    .device-row:hover .charts-container {
-        display: grid;
     }
 }
